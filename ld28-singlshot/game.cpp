@@ -57,6 +57,7 @@ Game::Game()
     m_tiles[1]->AddTile(ibox2(60, 0, 80, 20)); /* alien 1 */
     m_tiles[1]->AddTile(ibox2(0, 20, 20, 40)); /* rocket */
     m_tiles[1]->AddTile(ibox2(20, 20, 40, 40)); /* rocket */
+    m_tiles[1]->AddTile(ibox2(40, 20, 60, 40)); /* powerup */
 
     m_camera = new Camera();
     m_camera->SetView(mat4(1.f));
@@ -79,15 +80,14 @@ Game::Game()
     m_ship->m_position = vec3(0.f, -ARENA.y * 0.4f, 20.f);
     Ticker::Ref(m_ship);
 
-    /* Waves */
-    m_waves.Push(new Wave(this, 0));
-    Ticker::Ref(m_waves.Last());
-
     m_camera_pos = vec3(0.f, 0.f, 0.f);
 
     m_power = 1;
 
-    m_time = 0.0;
+    m_score = 0;
+    m_combo = 100;
+
+    m_prev_time = m_time = 0.0;
     m_ready = false;
 }
 
@@ -116,31 +116,46 @@ void Game::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
+    m_prev_time = m_time;
     m_time += seconds;
 
 //    m_camera_pos += 0.02f * (m_ship->m_position - m_camera_pos);
 
+    /* Spawn shit */
+    SpawnShit();
+
     /* Resolve input */
-    vec3 velocity(0.f);
-    velocity.x = (int)m_controller->GetKey(KEY_RIGHT).IsDown()
-               - (int)m_controller->GetKey(KEY_LEFT).IsDown();
-    velocity.y = (int)m_controller->GetKey(KEY_UP).IsDown()
-               - (int)m_controller->GetKey(KEY_DOWN).IsDown();
-    m_ship->m_position += normalize(velocity) * SHIP_SPEED * seconds;
-    m_ship->m_position.x = clamp(m_ship->m_position.x,
-                                 -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
-    m_ship->m_position.y = clamp(m_ship->m_position.y,
-                                 -ARENA.y / 2 + 9.f, ARENA.y / 2 - 9.f);
+    if (!m_ship->m_dead)
+    {
+        vec3 velocity(0.f);
+        velocity.x = (int)m_controller->GetKey(KEY_RIGHT).IsDown()
+                   - (int)m_controller->GetKey(KEY_LEFT).IsDown();
+        velocity.y = (int)m_controller->GetKey(KEY_UP).IsDown()
+                   - (int)m_controller->GetKey(KEY_DOWN).IsDown();
+        m_ship->m_position += normalize(velocity) * SHIP_SPEED * seconds;
+        m_ship->m_position.x = clamp(m_ship->m_position.x,
+                                     -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
+        m_ship->m_position.y = clamp(m_ship->m_position.y,
+                                     -ARENA.y / 2 + 9.f, ARENA.y / 2 - 9.f);
+    }
 
     /* Advance rockets */
     for (int i = m_rockets.Count(); i--; )
     {
         m_rockets[i]->m_position.y += ROCKET_SPEED * seconds;
 
-        if (m_rockets[i]->m_position.y > ARENA.y + 15.f)
+        if (m_rockets[i]->m_dead)
         {
             Ticker::Unref(m_rockets[i]);
             m_rockets.Remove(i);
+        }
+        else if (m_rockets[i]->m_position.y > ARENA.y * 0.5f + 15.f)
+        {
+            Ticker::Unref(m_rockets[i]);
+            m_rockets.Remove(i);
+
+            /* Rocket is lost: reset combo to minimum */
+            m_combo = 100;
         }
     }
 
@@ -155,18 +170,32 @@ void Game::TickGame(float seconds)
     }
 
     /* Resolve fire */
-    if (m_power && m_controller->GetKey(KEY_FIRE).IsDown())
+    if (!m_ship->m_dead && m_power && m_controller->GetKey(KEY_FIRE).IsDown())
     {
-        m_power = 0;
         m_rockets.Push(new Thing(this, 1, 5));
         m_rockets.Last()->m_position = m_ship->m_position;
         Ticker::Ref(m_rockets.Last());
+
+        m_power = 0;
     }
 
     /* Advance powerups */
-    for (int i = 0; i < m_powerups.Count(); ++i)
+    for (int i = m_powerups.Count(); i--; )
     {
         m_powerups[i]->m_position.y -= SCROLL_SPEED * seconds;
+
+        if (distance(m_ship->m_position.xy,
+                     m_powerups[i]->m_position.xy) < 12.f)
+        {
+            ++m_power;
+            Ticker::Unref(m_powerups[i]);
+            m_powerups.Remove(i);
+        }
+        else if (m_powerups[i]->m_position.y < -ARENA.y * 0.5f - 15.f)
+        {
+            Ticker::Unref(m_powerups[i]);
+            m_powerups.Remove(i);
+        }
     }
 }
 
@@ -191,5 +220,30 @@ void Game::KillPlayer()
     }
 
     m_ship->m_dead = true;
+}
+
+bool Game::HasPassed(double period, double phase)
+{
+    return (m_prev_time + phase) / period
+             <= lol::floor((m_time + phase) / period);
+}
+
+void Game::SpawnShit()
+{
+    /* Spawn a powerup every 8 seconds */
+    if (HasPassed(8.0))
+    {
+        m_powerups.Push(new Thing(this, 1, 6));
+        m_powerups.Last()->m_position = vec3(rand(-0.4f, 0.4f) * ARENA.x,
+                                             ARENA.y, 10.f);
+        Ticker::Ref(m_powerups.Last());
+    }
+
+    /* Spawn an enemy wave every 4 seconds, offset 1 second */
+    if (HasPassed(4.0, 1.0))
+    {
+        m_waves.Push(new Wave(this, 0));
+        Ticker::Ref(m_waves.Last());
+    }
 }
 

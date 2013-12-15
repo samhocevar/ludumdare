@@ -26,6 +26,10 @@ public:
     void KillPlayer();
 
 private:
+    void SpawnShit();
+    bool HasPassed(double period, double phase = 0.0);
+
+public:
     Controller *m_controller;
     Camera *m_camera;
     TileSet *m_tiles[2];
@@ -41,7 +45,8 @@ private:
     vec3 m_camera_pos;
 
     int m_power;
-    double m_time;
+    int m_score, m_combo;
+    double m_prev_time, m_time;
 
     bool m_ready;
 };

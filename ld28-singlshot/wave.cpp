@@ -87,8 +87,15 @@ void Wave::HandleCollisions(Thing *thing)
             m_game->m_explosions.Last()->m_position = thing->m_position;
             Ticker::Ref(m_game->m_explosions.Last());
 
+            m_game->m_powerups.Push(new Thing(m_game, 1, 6));
+            m_game->m_powerups.Last()->m_position = thing->m_position;
+            Ticker::Ref(m_game->m_powerups.Last());
+
             thing->m_dead = true;
             m_game->m_rockets[i]->m_dead = true;
+
+            m_game->m_score += m_game->m_combo;
+            m_game->m_combo += 100;
         }
     }
 }

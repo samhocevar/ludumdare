@@ -23,12 +23,14 @@ public:
     Hud(Game *game)
       : m_game(game)
     {
-        m_score = new Text("00000000", "data/font.png");
-        m_score->SetPos(vec3(-ARENA.x / 2, -ARENA.y / 2, 0.f));
+        m_score = new Text("", "data/font.png");
+        m_score->SetPos(vec3(-ARENA.x / 2 + 5.f, -ARENA.y / 2 + 5.f, 0.f));
     }
 
     virtual void TickGame(float seconds)
     {
+        m_score->SetText(String::Printf("%08d", m_game->m_score));
+
         WorldEntity::TickGame(seconds);
     }
 
