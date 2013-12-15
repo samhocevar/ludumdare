@@ -20,6 +20,7 @@ public:
 private:
     Controller *m_controller;
     Camera *m_camera;
+    TileSet *m_tiles1, *m_tiles2;
 
     vec2 m_ship_pos;
 

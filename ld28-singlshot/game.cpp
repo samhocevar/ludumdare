@@ -26,10 +26,17 @@ Game::Game()
     m_controller->GetKey(KEY_LEFT).Bind("Keyboard", "Left");
     m_controller->GetKey(KEY_RIGHT).Bind("Keyboard", "Right");
 
+    /* First tileset */
+    m_tiles1 = Tiler::Register("data/tiles1.png");
+
+    /* Second tileset */
+    m_tiles2 = Tiler::Register("data/tiles2.png");
+    m_tiles2->AddTile(ibox2(0, 100, 18, 118));
+
     m_camera = new Camera();
     m_camera->SetView(mat4(1.f));
-    m_camera->SetProjection(mat4::ortho(-320.f, 320.f,
-                                        -240.f, 240.f,
+    m_camera->SetProjection(mat4::ortho(-160.f, 160.f,
+                                        -120.f, 120.f,
                                         -100.f, 100.f));
     g_scene->PushCamera(m_camera);
     Ticker::Ref(m_camera);
@@ -43,6 +50,9 @@ Game::Game()
 
 Game::~Game()
 {
+    Tiler::Deregister(m_tiles1);
+    Tiler::Deregister(m_tiles2);
+
     g_scene->PopCamera(m_camera);
     Ticker::Unref(m_camera);
 }
@@ -54,8 +64,8 @@ void Game::TickGame(float seconds)
     m_camera_pos += 0.1f * (m_ship_pos - m_camera_pos);
 
     /* Resolve input */
-    float speed = (m_controller->GetKey(KEY_LEFT).IsDown() ? SPEED : 0.f)
-                - (m_controller->GetKey(KEY_RIGHT).IsDown() ? SPEED : 0.f);
+    float speed = (m_controller->GetKey(KEY_RIGHT).IsDown() ? SPEED : 0.f)
+                - (m_controller->GetKey(KEY_LEFT).IsDown() ? SPEED : 0.f);
     m_ship_pos += vec2(speed, 0.f) * seconds;
 }
 
@@ -68,5 +78,9 @@ void Game::TickDraw(float seconds)
         g_renderer->SetClearColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
         m_ready = true;
     }
+
+    g_scene->AddTile(m_tiles2, 0,
+                     vec3(m_ship_pos, 0.f) - vec3(m_camera_pos, 0.f),
+                     0.f, vec2(1.f));
 }
 
