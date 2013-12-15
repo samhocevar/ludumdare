@@ -20,6 +20,7 @@ vec2 const ARENA(320.f, 240.f);
 
 float const SCROLL_SPEED = 50.f;
 float const SHIP_SPEED = 180.0f;
+float const ROCKET_SPEED = 240.0f;
 
 enum
 {
@@ -27,6 +28,7 @@ enum
     KEY_RIGHT,
     KEY_UP,
     KEY_DOWN,
+    KEY_FIRE,
     KEY_MAX,
 };
 

@@ -23,8 +23,8 @@ class Explosion : public WorldEntity
 {
 public:
     Explosion(Game *game) :
-        m_game(game),
         m_time(0.0),
+        m_game(game),
         m_ready(false)
     {
         m_vertices << vec2(-1.0,  1.0);
@@ -70,6 +70,9 @@ public:
         m_vdecl->Unbind();
     }
 
+public:
+    float m_time;
+
 private:
     Game *m_game;
 
@@ -80,7 +83,6 @@ private:
     VertexDeclaration *m_vdecl;
     VertexBuffer *m_vbo;
 
-    float m_time;
     bool m_ready;
 };
 

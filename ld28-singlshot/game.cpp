@@ -43,14 +43,20 @@ Game::Game()
     m_controller->GetKey(KEY_UP).Bind("Keyboard", "W");
     m_controller->GetKey(KEY_UP).Bind("Keyboard", "Z");
     m_controller->GetKey(KEY_DOWN).Bind("Keyboard", "S");
+    /* Fire */
+    m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Space");
 
     /* First tileset */
     m_tiles[0] = Tiler::Register("data/tiles1.png");
 
     /* Second tileset */
     m_tiles[1] = Tiler::Register("data/tiles2.png");
-    m_tiles[1]->AddTile(ibox2(0, 100, 18, 118)); /* ship */
-    m_tiles[1]->AddTile(ibox2(174, 24, 190, 38)); /* alien 1 */
+    m_tiles[1]->AddTile(ibox2(0, 0, 20, 20)); /* ship */
+    m_tiles[1]->AddTile(ibox2(20, 0, 40, 20)); /* ship */
+    m_tiles[1]->AddTile(ibox2(40, 0, 60, 20)); /* alien 1 */
+    m_tiles[1]->AddTile(ibox2(60, 0, 80, 20)); /* alien 1 */
+    m_tiles[1]->AddTile(ibox2(0, 20, 20, 40)); /* rocket */
+    m_tiles[1]->AddTile(ibox2(20, 20, 40, 40)); /* rocket */
 
     m_camera = new Camera();
     m_camera->SetView(mat4(1.f));
@@ -79,6 +85,9 @@ Game::Game()
 
     m_camera_pos = vec3(0.f, 0.f, 0.f);
 
+    m_power = 1;
+
+    m_time = 0.0;
     m_ready = false;
 }
 
@@ -90,6 +99,12 @@ Game::~Game()
     Ticker::Unref(m_hud);
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
+    for (int i = 0; i < m_explosions.Count(); ++i)
+        Ticker::Unref(m_powerups[i]);
+    for (int i = 0; i < m_powerups.Count(); ++i)
+        Ticker::Unref(m_powerups[i]);
+    for (int i = 0; i < m_rockets.Count(); ++i)
+        Ticker::Unref(m_rockets[i]);
     for (int i = 0; i < m_waves.Count(); ++i)
         Ticker::Unref(m_waves[i]);
 
@@ -100,6 +115,8 @@ Game::~Game()
 void Game::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
+
+    m_time += seconds;
 
 //    m_camera_pos += 0.02f * (m_ship->m_position - m_camera_pos);
 
@@ -114,6 +131,43 @@ void Game::TickGame(float seconds)
                                  -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
     m_ship->m_position.y = clamp(m_ship->m_position.y,
                                  -ARENA.y / 2 + 9.f, ARENA.y / 2 - 9.f);
+
+    /* Advance rockets */
+    for (int i = m_rockets.Count(); i--; )
+    {
+        m_rockets[i]->m_position.y += ROCKET_SPEED * seconds;
+
+        if (m_rockets[i]->m_position.y > ARENA.y + 15.f)
+        {
+            Ticker::Unref(m_rockets[i]);
+            m_rockets.Remove(i);
+        }
+    }
+
+    /* Advance explosions */
+    for (int i = m_explosions.Count(); i--; )
+    {
+        if (m_explosions[i]->m_time > 5.f)
+        {
+            Ticker::Unref(m_explosions[i]);
+            m_explosions.Remove(i);
+        }
+    }
+
+    /* Resolve fire */
+    if (m_power && m_controller->GetKey(KEY_FIRE).IsDown())
+    {
+        m_power = 0;
+        m_rockets.Push(new Thing(this, 1, 5));
+        m_rockets.Last()->m_position = m_ship->m_position;
+        Ticker::Ref(m_rockets.Last());
+    }
+
+    /* Advance powerups */
+    for (int i = 0; i < m_powerups.Count(); ++i)
+    {
+        m_powerups[i]->m_position.y -= SCROLL_SPEED * seconds;
+    }
 }
 
 void Game::TickDraw(float seconds)
@@ -131,7 +185,9 @@ void Game::KillPlayer()
 {
     if (!m_ship->m_dead)
     {
-        (new Explosion(this))->m_position = m_ship->m_position;
+        m_explosions.Push(new Explosion(this));
+        m_explosions.Last()->m_position = m_ship->m_position;
+        Ticker::Ref(m_explosions.Last());
     }
 
     m_ship->m_dead = true;

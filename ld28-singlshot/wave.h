@@ -18,6 +18,12 @@ public:
     virtual void TickDraw(float seconds);
 
 private:
+    void HandleCollisions(Thing *thing);
+
+public:
+    bool m_dead;
+
+private:
     Game *m_game;
     int m_type;
     Array<Thing *> m_things;

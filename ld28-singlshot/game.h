@@ -31,11 +31,17 @@ private:
     TileSet *m_tiles[2];
 
     class Starfield *m_starfield;
+    Array<class Explosion *> m_explosions;
     class Hud *m_hud;
     class Thing *m_ship;
+    Array<class Thing *> m_rockets;
+    Array<class Thing *> m_powerups;
     Array<class Wave *> m_waves;
 
     vec3 m_camera_pos;
+
+    int m_power;
+    double m_time;
 
     bool m_ready;
 };
