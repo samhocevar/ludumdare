@@ -19,6 +19,7 @@ using namespace lol;
 
 #include "ld28.h"
 #include "game.h"
+#include "thing.h"
 
 Game::Game()
 {
@@ -41,9 +42,12 @@ Game::Game()
     g_scene->PushCamera(m_camera);
     Ticker::Ref(m_camera);
 
-    m_ship_pos = vec2(200.f, 200.f);
+    /* Ship */
+    m_ship = new Thing(this, m_tiles2, 0);
+    m_ship->m_position = vec3(200.f, 200.f, 0.f);
+    Ticker::Ref(m_ship);
 
-    m_camera_pos = vec2::zero;
+    m_camera_pos = vec3::zero;
 
     m_ready = false;
 }
@@ -53,6 +57,8 @@ Game::~Game()
     Tiler::Deregister(m_tiles1);
     Tiler::Deregister(m_tiles2);
 
+    Ticker::Unref(m_ship);
+
     g_scene->PopCamera(m_camera);
     Ticker::Unref(m_camera);
 }
@@ -61,12 +67,12 @@ void Game::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
-    m_camera_pos += 0.1f * (m_ship_pos - m_camera_pos);
+    m_camera_pos += 0.1f * (m_ship->m_position - m_camera_pos);
 
     /* Resolve input */
     float speed = (m_controller->GetKey(KEY_RIGHT).IsDown() ? SPEED : 0.f)
                 - (m_controller->GetKey(KEY_LEFT).IsDown() ? SPEED : 0.f);
-    m_ship_pos += vec2(speed, 0.f) * seconds;
+    m_ship->m_position += vec3(speed, 0.f, 0.f) * seconds;
 }
 
 void Game::TickDraw(float seconds)
@@ -78,9 +84,5 @@ void Game::TickDraw(float seconds)
         g_renderer->SetClearColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
         m_ready = true;
     }
-
-    g_scene->AddTile(m_tiles2, 0,
-                     vec3(m_ship_pos, 0.f) - vec3(m_camera_pos, 0.f),
-                     0.f, vec2(1.f));
 }
 

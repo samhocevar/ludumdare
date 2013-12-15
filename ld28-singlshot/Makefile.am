@@ -5,7 +5,8 @@ bin_PROGRAMS = ld28
 
 ld28_SOURCES = \
     ld28.cpp ld28.h \
-    game.cpp game.h
+    game.cpp game.h \
+    thing.cpp thing.h
 
 ld28_CPPFLAGS = $(AM_CPPFLAGS)
 ld28_DEPENDENCIES = @LOL_DEPS@

@@ -10,6 +10,8 @@
 
 class Game : public WorldEntity
 {
+    friend class Thing;
+
 public:
     Game();
     ~Game();
@@ -22,9 +24,9 @@ private:
     Camera *m_camera;
     TileSet *m_tiles1, *m_tiles2;
 
-    vec2 m_ship_pos;
+    class Thing *m_ship;
 
-    vec2 m_camera_pos;
+    vec3 m_camera_pos;
 
     bool m_ready;
 };

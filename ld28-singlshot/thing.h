@@ -8,18 +8,18 @@
 //   http://www.wtfpl.net/ for more details.
 //
 
-#include "core.h"
-
-using namespace lol;
-
-ivec2 const RESOLUTION(640, 480);
-
-float const SPEED = 30.0f;
-
-enum
+class Thing : public WorldEntity
 {
-    KEY_LEFT,
-    KEY_RIGHT,
-    KEY_MAX,
+public:
+    Thing(Game *game, TileSet *tileset, int tileid);
+    ~Thing();
+
+    virtual void TickGame(float seconds);
+    virtual void TickDraw(float seconds);
+
+private:
+    Game *m_game;
+    TileSet *m_tileset;
+    int m_tileid;
 };
 
