@@ -39,6 +39,7 @@ public:
     class Hud *m_hud;
     class Thing *m_ship;
     Array<class Thing *> m_rockets;
+    Array<class Thing *> m_bullets;
     Array<class Thing *> m_powerups;
     Array<class Wave *> m_waves;
 

@@ -51,13 +51,18 @@ Game::Game()
 
     /* Second tileset */
     m_tiles[1] = Tiler::Register("data/tiles2.png");
-    m_tiles[1]->AddTile(ibox2(0, 0, 20, 20)); /* ship */
-    m_tiles[1]->AddTile(ibox2(20, 0, 40, 20)); /* ship */
-    m_tiles[1]->AddTile(ibox2(40, 0, 60, 20)); /* alien 1 */
-    m_tiles[1]->AddTile(ibox2(60, 0, 80, 20)); /* alien 1 */
-    m_tiles[1]->AddTile(ibox2(0, 20, 20, 40)); /* rocket */
-    m_tiles[1]->AddTile(ibox2(20, 20, 40, 40)); /* rocket */
-    m_tiles[1]->AddTile(ibox2(40, 20, 60, 40)); /* powerup */
+    m_tiles[1]->AddTile(ibox2(0, 0, 20, 20));     /* 0: ship */
+    m_tiles[1]->AddTile(ibox2(20, 0, 40, 20));    /* 1: ship */
+    m_tiles[1]->AddTile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
+    m_tiles[1]->AddTile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
+    m_tiles[1]->AddTile(ibox2(0, 20, 20, 40));    /* 4: rocket */
+    m_tiles[1]->AddTile(ibox2(20, 20, 40, 40));   /* 5: rocket */
+    m_tiles[1]->AddTile(ibox2(40, 20, 60, 40));   /* 6: powerup */
+    m_tiles[1]->AddTile(ibox2(60, 20, 80, 40));   /* 7: powerup */
+    m_tiles[1]->AddTile(ibox2(80, 20, 100, 40));  /* 8: bullet */
+    m_tiles[1]->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
+    m_tiles[1]->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
+    m_tiles[1]->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
 
     m_camera = new Camera();
     m_camera->SetView(mat4(1.f));
@@ -105,6 +110,8 @@ Game::~Game()
         Ticker::Unref(m_powerups[i]);
     for (int i = 0; i < m_rockets.Count(); ++i)
         Ticker::Unref(m_rockets[i]);
+    for (int i = 0; i < m_bullets.Count(); ++i)
+        Ticker::Unref(m_bullets[i]);
     for (int i = 0; i < m_waves.Count(); ++i)
         Ticker::Unref(m_waves[i]);
 
@@ -137,6 +144,9 @@ void Game::TickGame(float seconds)
                                      -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
         m_ship->m_position.y = clamp(m_ship->m_position.y,
                                      -ARENA.y / 2 + 9.f, ARENA.y / 2 - 9.f);
+
+        m_ship->m_tileid |= 1;
+        m_ship->m_tileid -= (length(velocity) == 0.0f);
     }
 
     /* Advance rockets */
@@ -156,6 +166,25 @@ void Game::TickGame(float seconds)
 
             /* Rocket is lost: reset combo to minimum */
             m_combo = 100;
+        }
+    }
+
+    /* Advance bullets */
+    for (int i = m_bullets.Count(); i--; )
+    {
+        m_bullets[i]->m_position += m_bullets[i]->m_velocity * seconds;
+
+        if (distance(m_ship->m_position.xy, m_bullets[i]->m_position.xy) < 8.f)
+        {
+            KillPlayer();
+        }
+        else if (m_bullets[i]->m_position.y > ARENA.y
+                  || m_bullets[i]->m_position.y < -ARENA.y
+                  || m_bullets[i]->m_position.x > ARENA.x
+                  || m_bullets[i]->m_position.x < -ARENA.x)
+        {
+            Ticker::Unref(m_bullets[i]);
+            m_bullets.Remove(i);
         }
     }
 
@@ -182,7 +211,7 @@ void Game::TickGame(float seconds)
     /* Advance powerups */
     for (int i = m_powerups.Count(); i--; )
     {
-        m_powerups[i]->m_position.y -= SCROLL_SPEED * seconds;
+        m_powerups[i]->m_position.y -= POWERUP_SPEED * seconds;
 
         if (distance(m_ship->m_position.xy,
                      m_powerups[i]->m_position.xy) < 12.f)
@@ -230,19 +259,21 @@ bool Game::HasPassed(double period, double phase)
 
 void Game::SpawnShit()
 {
-    /* Spawn a powerup every 8 seconds */
-    if (HasPassed(8.0))
+    /* Spawn a powerup every 3 seconds */
+    if (HasPassed(3.0, 2.0))
     {
         m_powerups.Push(new Thing(this, 1, 6));
         m_powerups.Last()->m_position = vec3(rand(-0.4f, 0.4f) * ARENA.x,
-                                             ARENA.y, 10.f);
+                                             ARENA.y * 0.5f + 10.f, 10.f);
         Ticker::Ref(m_powerups.Last());
     }
 
-    /* Spawn an enemy wave every 4 seconds, offset 1 second */
-    if (HasPassed(4.0, 1.0))
+    /* Spawn an enemy wave every 6 seconds */
+    if (HasPassed(6.0))
     {
-        m_waves.Push(new Wave(this, 0));
+        int type = HasPassed(12.0) ? 1 : 0;
+
+        m_waves.Push(new Wave(this, type));
         Ticker::Ref(m_waves.Last());
     }
 }

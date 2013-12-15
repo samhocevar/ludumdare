@@ -10,6 +10,9 @@
 
 class Thing : public WorldEntity
 {
+    friend class Game;
+    friend class Wave;
+
 public:
     Thing(Game *game, int tileset, int tileid);
     ~Thing();

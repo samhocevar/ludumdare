@@ -25,6 +25,7 @@ public:
 
 private:
     Game *m_game;
+    double m_time;
     int m_type;
     Array<Thing *> m_things;
 };

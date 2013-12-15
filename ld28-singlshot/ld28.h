@@ -19,8 +19,10 @@ ivec2 const RESOLUTION(640, 480);
 vec2 const ARENA(320.f, 240.f);
 
 float const SCROLL_SPEED = 50.f;
+float const POWERUP_SPEED = 80.0f;
 float const SHIP_SPEED = 180.0f;
 float const ROCKET_SPEED = 240.0f;
+float const BULLET_SPEED = 100.0f;
 
 enum
 {
