@@ -7,7 +7,9 @@ ld28_SOURCES = \
     ld28.cpp ld28.h \
     game.cpp game.h \
     thing.cpp thing.h \
-    starfield.h starfield.lolfx
+    wave.cpp wave.h \
+    starfield.h starfield.lolfx \
+    explosion.h explosion.lolfx
 
 ld28_CPPFLAGS = $(AM_CPPFLAGS)
 ld28_LDFLAGS = $(AM_LDFLAGS) -O0

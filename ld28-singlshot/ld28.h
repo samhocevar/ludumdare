@@ -18,7 +18,8 @@ ivec2 const RESOLUTION(640, 480);
 /* The arena size */
 vec2 const ARENA(320.f, 240.f);
 
-float const SPEED = 180.0f;
+float const SCROLL_SPEED = 50.f;
+float const SHIP_SPEED = 180.0f;
 
 enum
 {

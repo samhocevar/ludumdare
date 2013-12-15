@@ -8,21 +8,18 @@
 //   http://www.wtfpl.net/ for more details.
 //
 
-class Thing : public WorldEntity
+class Wave : public WorldEntity
 {
 public:
-    Thing(Game *game, int tileset, int tileid);
-    ~Thing();
+    Wave(Game *game, int type);
+    ~Wave();
 
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds);
 
-public:
-    bool m_dead;
-
 private:
     Game *m_game;
-    TileSet *m_tileset;
-    int m_tileid;
+    int m_type;
+    Array<Thing *> m_things;
 };
 
