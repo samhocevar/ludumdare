@@ -12,14 +12,20 @@
 
 using namespace lol;
 
+/* The screen resolution */
 ivec2 const RESOLUTION(640, 480);
 
-float const SPEED = 30.0f;
+/* The arena size */
+vec2 const ARENA(320.f, 240.f);
+
+float const SPEED = 120.0f;
 
 enum
 {
     KEY_LEFT,
     KEY_RIGHT,
+    KEY_UP,
+    KEY_DOWN,
     KEY_MAX,
 };
 

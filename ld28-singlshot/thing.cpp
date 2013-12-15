@@ -41,7 +41,9 @@ void Thing::TickDraw(float seconds)
 {
     WorldEntity::TickDraw(seconds);
 
+    /* 9.f : compensate for sprite size */
     g_scene->AddTile(m_tileset, m_tileid,
-                     m_position - m_game->m_camera_pos, 0.f, vec2(1.f));
+                     m_position - m_game->m_camera_pos - vec3(9.f, 9.f, 0.f),
+                     0.f, vec2(1.f));
 }
 

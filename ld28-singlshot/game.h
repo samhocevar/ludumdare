@@ -11,6 +11,7 @@
 class Game : public WorldEntity
 {
     friend class Thing;
+    friend class Starfield;
 
 public:
     Game();
@@ -24,6 +25,7 @@ private:
     Camera *m_camera;
     TileSet *m_tiles1, *m_tiles2;
 
+    class Starfield *m_starfield;
     class Thing *m_ship;
 
     vec3 m_camera_pos;
