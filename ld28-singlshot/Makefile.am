@@ -10,5 +10,9 @@ ld28_SOURCES = \
     starfield.h starfield.lolfx
 
 ld28_CPPFLAGS = $(AM_CPPFLAGS)
+ld28_LDFLAGS = $(AM_LDFLAGS) -O0
+if USE_EMSCRIPTEN
+ld28_LDFLAGS += --preload-file data
+endif
 ld28_DEPENDENCIES = @LOL_DEPS@
 

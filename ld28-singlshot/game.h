@@ -26,6 +26,7 @@ private:
     TileSet *m_tiles1, *m_tiles2;
 
     class Starfield *m_starfield;
+    class Hud *m_hud;
     class Thing *m_ship;
 
     vec3 m_camera_pos;

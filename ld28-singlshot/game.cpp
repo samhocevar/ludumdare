@@ -21,14 +21,23 @@ using namespace lol;
 #include "game.h"
 #include "thing.h"
 #include "starfield.h"
+#include "hud.h"
 
 Game::Game()
 {
     m_controller = new Controller("Default", KEY_MAX /* keys */, 0 /* axes */);
+    /* up/down/left/right */
     m_controller->GetKey(KEY_LEFT).Bind("Keyboard", "Left");
     m_controller->GetKey(KEY_RIGHT).Bind("Keyboard", "Right");
     m_controller->GetKey(KEY_UP).Bind("Keyboard", "Up");
     m_controller->GetKey(KEY_DOWN).Bind("Keyboard", "Down");
+    /* WASD */
+    m_controller->GetKey(KEY_LEFT).Bind("Keyboard", "A");
+    m_controller->GetKey(KEY_LEFT).Bind("Keyboard", "Q");
+    m_controller->GetKey(KEY_RIGHT).Bind("Keyboard", "D");
+    m_controller->GetKey(KEY_UP).Bind("Keyboard", "W");
+    m_controller->GetKey(KEY_UP).Bind("Keyboard", "Z");
+    m_controller->GetKey(KEY_DOWN).Bind("Keyboard", "S");
 
     /* First tileset */
     m_tiles1 = Tiler::Register("data/tiles1.png");
@@ -49,6 +58,10 @@ Game::Game()
     m_starfield = new Starfield(this);
     Ticker::Ref(m_starfield);
 
+    /* HUD */
+    m_hud = new Hud(this);
+    Ticker::Ref(m_hud);
+
     /* Ship */
     m_ship = new Thing(this, m_tiles2, 0);
     m_ship->m_position = vec3(0.f, -ARENA.y * 0.4f, 0.f);
@@ -64,6 +77,7 @@ Game::~Game()
     Tiler::Deregister(m_tiles1);
     Tiler::Deregister(m_tiles2);
 
+    Ticker::Unref(m_hud);
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
 
@@ -79,11 +93,15 @@ void Game::TickGame(float seconds)
 
     /* Resolve input */
     vec3 velocity(0.f);
-    velocity.x = (m_controller->GetKey(KEY_RIGHT).IsDown() ? 1.f : 0.f)
-               - (m_controller->GetKey(KEY_LEFT).IsDown() ? 1.f : 0.f);
-    velocity.y = (m_controller->GetKey(KEY_UP).IsDown() ? 1.f : 0.f)
-               - (m_controller->GetKey(KEY_DOWN).IsDown() ? 1.f : 0.f);
+    velocity.x = (int)m_controller->GetKey(KEY_RIGHT).IsDown()
+               - (int)m_controller->GetKey(KEY_LEFT).IsDown();
+    velocity.y = (int)m_controller->GetKey(KEY_UP).IsDown()
+               - (int)m_controller->GetKey(KEY_DOWN).IsDown();
     m_ship->m_position += normalize(velocity) * SPEED * seconds;
+    m_ship->m_position.x = clamp(m_ship->m_position.x,
+                                 -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
+    m_ship->m_position.y = clamp(m_ship->m_position.y,
+                                 -ARENA.y / 2 + 9.f, ARENA.y / 2 - 9.f);
 }
 
 void Game::TickDraw(float seconds)
