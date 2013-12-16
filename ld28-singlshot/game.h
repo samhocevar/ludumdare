@@ -39,6 +39,7 @@ public:
     Array<class Thing *> m_bullets;
     Array<class Thing *> m_powerups;
     Array<class Wave *> m_waves;
+    Array<Text *> m_texts;
 
     vec3 m_camera_pos;
 

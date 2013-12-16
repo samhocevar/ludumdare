@@ -48,12 +48,16 @@ public:
         m_menu[1]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[2]->SetPos(vec3(0.f, -90.f, 50.f));
+        m_menu[2]->SetPos(vec3(0.f, -20.f, 50.f));
         m_menu[2]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[3]->SetPos(vec3(0.f, -110.f, 50.f));
+        m_menu[3]->SetPos(vec3(0.f, -90.f, 50.f));
         m_menu[3]->SetAlign(Text::ALIGN_CENTER);
+
+        m_menu.Push(new Text("", "data/font.png"));
+        m_menu[4]->SetPos(vec3(0.f, -110.f, 50.f));
+        m_menu[4]->SetAlign(Text::ALIGN_CENTER);
 
         for (int i = 0; i < m_menu.Count(); ++i)
             Ticker::Ref(m_menu[i]);
@@ -91,8 +95,9 @@ public:
         {
             m_menu[0]->SetText("SINGLSHOT");
             m_menu[1]->SetText("a game by Sam Hocevar");
-            m_menu[2]->SetText("press fire to play");
-            m_menu[3]->SetText("move: W A S D   fire: Space");
+            m_menu[2]->SetText("for Ludum Dare 28");
+            m_menu[3]->SetText("press fire to play");
+            m_menu[4]->SetText("move: W A S D   fire: Space");
 
             m_state = 0;
         }
@@ -108,12 +113,18 @@ public:
         }
         else if (m_state == 1 && m_game->m_ship->m_dead)
         {
+            m_gameover.Get();
             m_menu[1]->SetText("GAME OVER");
-            m_menu[2]->SetText("press fire");
 
             m_state = 2;
         }
-        else if (m_state == 2 && m_controller->GetKey(KEY_FIRE).IsPressed())
+        else if (m_state == 2 && m_gameover.Poll() > 1.0)
+        {
+            m_menu[3]->SetText("press fire");
+
+            m_state = 3;
+        }
+        else if (m_state == 3 && m_controller->GetKey(KEY_FIRE).IsPressed())
         {
             Ticker::Unref(m_game);
             m_game = nullptr;
@@ -144,6 +155,7 @@ private:
     Game *m_game;
     Array<Text *> m_menu;
     Array<Text *> m_score;
+    Timer m_gameover;
 
     int m_hiscore;
 

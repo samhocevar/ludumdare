@@ -27,7 +27,6 @@ Wave::Wave(Game *game, int type)
   : m_dead(false),
     m_game(game),
     m_time(0.0),
-    m_fire_time(0.0),
     m_type(type)
 {
     switch(type)
@@ -38,6 +37,8 @@ Wave::Wave(Game *game, int type)
             m_things.Push(new Thing(game, 1, 2));
             Ticker::Ref(m_things.Last());
 
+            m_fire_time.Push(rand(20.0));
+
             float d = i - 4.f;
             m_things.Last()->m_position = vec3(d * 30.f, ARENA.y * 0.8f + lol::abs(d) * 15.f, 10.f);
         }
@@ -47,6 +48,8 @@ Wave::Wave(Game *game, int type)
         {
             m_things.Push(new Thing(game, 1, 10));
             Ticker::Ref(m_things.Last());
+
+            m_fire_time.Push(rand(20.0));
 
             m_things.Last()->m_position = vec3(0.f, ARENA.y * 0.6f + i * 30.f, 10.f);
         }
@@ -65,13 +68,14 @@ void Wave::TickGame(float seconds)
     WorldEntity::TickGame(seconds);
 
     m_time += seconds;
-    m_fire_time += seconds;
 
-    double fire_threshold = lol::clamp(1.0 - 2.0 * m_game->m_time / 60.0,
-                                       0.1, 1.0);
+    double fire_threshold = lol::clamp(10.0 - 2.0 * m_game->m_time / 60.0,
+                                       1.0, 10.0);
 
     for (int i = 0; i < m_things.Count(); ++i)
     {
+        m_fire_time[i] += seconds;
+
         /* Scroll down */
         m_things[i]->m_position += vec3(0.f, -SCROLL_SPEED, 0.f) * seconds;
 
@@ -81,13 +85,12 @@ void Wave::TickGame(float seconds)
 
         /* Fire? Only if we’re not dead and the player isn’t either */
         if (!m_things[i]->m_dead && !m_game->m_ship->m_dead
-             && m_fire_time > fire_threshold
+             && m_fire_time[i] > fire_threshold
              && m_things[i]->m_position.y < ARENA.y * 0.5f
-             && m_things[i]->m_position.y > -ARENA.y * 0.5f
-             && lol::rand(10) == 0)
+             && m_things[i]->m_position.y > -ARENA.y * 0.5f)
         {
             /* Reset to zero in case we accumulated too much */
-            m_fire_time = 0.0;
+            m_fire_time[i] = 0.0;
 
             m_game->m_bullets.Push(new Thing(m_game, 1, 8));
             m_game->m_bullets.Last()->m_position = m_things[i]->m_position;
@@ -157,6 +160,11 @@ void Wave::HandleCollisions(Thing *thing)
             m_game->m_powerups.Last()->m_position = thing->m_position;
             m_game->m_powerups.Last()->m_position.z = 0.f;
             Ticker::Ref(m_game->m_powerups.Last());
+
+            m_game->m_texts.Push(new Text(String::Printf("%d", m_game->m_combo), "data/font.png"));
+            m_game->m_texts.Last()->SetAlign(Text::ALIGN_CENTER);
+            m_game->m_texts.Last()->SetPos(vec3(thing->m_position.xy, 50.f));
+            Ticker::Ref(m_game->m_texts.Last());
 
             thing->m_dead = true;
             m_game->m_rockets[i]->m_dead = true;

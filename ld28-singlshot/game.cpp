@@ -112,6 +112,8 @@ Game::~Game()
         Ticker::Unref(m_bullets[i]);
     for (int i = 0; i < m_waves.Count(); ++i)
         Ticker::Unref(m_waves[i]);
+    for (int i = 0; i < m_texts.Count(); ++i)
+        Ticker::Unref(m_texts[i]);
 
     Ticker::Unref(m_controller);
 }
@@ -221,7 +223,18 @@ void Game::TickGame(float seconds)
         if (distance(m_ship->m_position.xy,
                      m_powerups[i]->m_position.xy) < 12.f)
         {
+            if (m_power)
+            {
+                m_texts.Push(new Text("1000", "data/font.png"));
+                m_texts.Last()->SetAlign(Text::ALIGN_CENTER);
+                m_texts.Last()->SetPos(vec3(m_powerups[i]->m_position.xy, 50.f));
+                Ticker::Ref(m_texts.Last());
+
+                m_score += 1000;
+            }
+
             ++m_power;
+
             Ticker::Unref(m_powerups[i]);
             m_powerups.Remove(i);
         }
@@ -229,6 +242,20 @@ void Game::TickGame(float seconds)
         {
             Ticker::Unref(m_powerups[i]);
             m_powerups.Remove(i);
+        }
+    }
+
+    /* Advance text */
+    for (int i = m_texts.Count(); i--; )
+    {
+        vec3 pos = m_texts[i]->GetPos();
+        pos.y += POWERUP_SPEED * seconds;
+        m_texts[i]->SetPos(pos);
+
+        if (pos.y > ARENA.y)
+        {
+            Ticker::Unref(m_texts[i]);
+            m_texts.Remove(i);
         }
     }
 }
