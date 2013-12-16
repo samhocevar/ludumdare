@@ -40,7 +40,7 @@ public:
 
         /* Default text */
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[0]->SetPos(vec3(0.f, 20.f, 50.f));
+        m_menu[0]->SetPos(vec3(0.f, 30.f, 50.f));
         m_menu[0]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
@@ -52,12 +52,16 @@ public:
         m_menu[2]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[3]->SetPos(vec3(0.f, -90.f, 50.f));
+        m_menu[3]->SetPos(vec3(0.f, -70.f, 50.f));
         m_menu[3]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[4]->SetPos(vec3(0.f, -110.f, 50.f));
+        m_menu[4]->SetPos(vec3(0.f, -90.f, 50.f));
         m_menu[4]->SetAlign(Text::ALIGN_CENTER);
+
+        m_menu.Push(new Text("", "data/font.png"));
+        m_menu[5]->SetPos(vec3(0.f, -110.f, 50.f));
+        m_menu[5]->SetAlign(Text::ALIGN_CENTER);
 
         for (int i = 0; i < m_menu.Count(); ++i)
             Ticker::Ref(m_menu[i]);
@@ -96,8 +100,9 @@ public:
             m_menu[0]->SetText("SINGLSHOT");
             m_menu[1]->SetText("a game by Sam Hocevar");
             m_menu[2]->SetText("for Ludum Dare 28");
-            m_menu[3]->SetText("press fire to play");
-            m_menu[4]->SetText("move: W A S D   fire: Space");
+            m_menu[3]->SetText("you only get one shot! () to reload");
+            m_menu[4]->SetText("press fire to play");
+            m_menu[5]->SetText("move: W A S D   fire: Space");
 
             m_state = 0;
         }
