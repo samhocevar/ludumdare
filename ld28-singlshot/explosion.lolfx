@@ -39,20 +39,19 @@ float rand(vec2 co)
 
 void main(void)
 {
-    float part_per_rad = 500.0 / 6.28318530718;
+    float part_per_rad = 32.0; //500.0 / 6.28318530718;
 
     vec2 pos = pass_pos - u_center;
-    float real_angle = floor(part_per_rad * atan(pos.y, pos.x)) / part_per_rad;
+    float base_angle = floor(part_per_rad * atan(pos.y, pos.x)) / part_per_rad;
 
     float red = 0.0, green = 0.0, alpha = 0.0;
 
     if (length(pos) > 50.0)
         discard;
 
+    float angle = base_angle - 16.0 / part_per_rad;
     for (int i = -16; i <= 16; ++i)
     {
-        float angle = real_angle + float(i) / part_per_rad;
-
         float speed = mix(30.0, 120.0, rand(vec2(angle, 0.0)));
         float travel = speed * u_time;
         vec2 real_pos = travel * vec2(cos(angle), sin(angle));
@@ -60,20 +59,18 @@ void main(void)
         float dist = max(abs(pos.x - real_pos.x), abs(pos.y - real_pos.y));
         if (dist <= 2.0)
         {
-            alpha = 1.0 / (1.0 + u_time * (2.0 + rand(vec2(angle, 1.0))));
-            red = max(red, mix(0.8, 1.0, rand(vec2(angle, 2.0))));
-            green = max(green, mix(0.4, red, rand(vec2(angle, 3.0))));
+            float new_alpha = 1.0 / (1.0 + u_time * (2.0 + rand(vec2(angle, 1.0))));
+            if (new_alpha > alpha)
+            {
+                alpha = new_alpha;
+                red = mix(0.8, 1.0, rand(vec2(angle, 2.0)));
+                green = mix(0.5, 0.8, rand(vec2(angle, 3.0)));
+            }
         }
 
-        if (dist <= 1.0)
-        {
-            red *= 2.0;
-            green *= 2.0;
-        }
+        angle += 1.0 / part_per_rad;
     }
 
-    red *= alpha;
-    green *= alpha;
     alpha = alpha > 0.5 ? 1.0 : 0.0;
 
     gl_FragColor = vec4(red, green, 0.0, alpha);

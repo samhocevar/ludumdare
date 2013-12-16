@@ -48,20 +48,24 @@ public:
         m_menu[1]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[2]->SetPos(vec3(0.f, -20.f, 50.f));
+        m_menu[2]->SetPos(vec3(0.f, -23.5f, 50.f));
         m_menu[2]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[3]->SetPos(vec3(0.f, -70.f, 50.f));
+        m_menu[3]->SetPos(vec3(0.f, -46.5f, 50.f));
         m_menu[3]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[4]->SetPos(vec3(0.f, -90.f, 50.f));
+        m_menu[4]->SetPos(vec3(0.f, -70.f, 50.f));
         m_menu[4]->SetAlign(Text::ALIGN_CENTER);
 
         m_menu.Push(new Text("", "data/font.png"));
-        m_menu[5]->SetPos(vec3(0.f, -110.f, 50.f));
+        m_menu[5]->SetPos(vec3(0.f, -90.f, 50.f));
         m_menu[5]->SetAlign(Text::ALIGN_CENTER);
+
+        m_menu.Push(new Text("", "data/font.png"));
+        m_menu[6]->SetPos(vec3(0.f, -110.f, 50.f));
+        m_menu[6]->SetAlign(Text::ALIGN_CENTER);
 
         for (int i = 0; i < m_menu.Count(); ++i)
             Ticker::Ref(m_menu[i]);
@@ -100,9 +104,9 @@ public:
             m_menu[0]->SetText("SINGLSHOT");
             m_menu[1]->SetText("a game by Sam Hocevar");
             m_menu[2]->SetText("for Ludum Dare 28");
-            m_menu[3]->SetText("you only get one shot! () to reload");
-            m_menu[4]->SetText("press fire to play");
-            m_menu[5]->SetText("move: W A S D   fire: Space");
+            m_menu[4]->SetText("you only get one shot! () to reload");
+            m_menu[5]->SetText("press fire to play");
+            m_menu[6]->SetText("move: W A S D   fire: Space");
 
             m_state = 0;
         }
@@ -125,11 +129,23 @@ public:
         }
         else if (m_state == 2 && m_gameover.Poll() > 1.0)
         {
-            m_menu[3]->SetText("press fire");
+            m_menu[4]->SetText("press fire");
 
+#if 0
             m_state = 3;
         }
         else if (m_state == 3 && m_controller->GetKey(KEY_FIRE).IsPressed())
+        {
+            m_menu[0]->SetText("WORLD LEADERBOARDS");
+            m_menu[1]->SetText(" 1. Sam              00068290");
+            m_menu[2]->SetText(" 2. Sam              00058900");
+            m_menu[3]->SetText(" 3. Sam              00037830");
+            m_menu[4]->SetText(" 4. Nobody           00000000");
+#endif
+
+            m_state = 4;
+        }
+        else if (m_state == 4 && m_controller->GetKey(KEY_FIRE).IsPressed())
         {
             Ticker::Unref(m_game);
             m_game = nullptr;
