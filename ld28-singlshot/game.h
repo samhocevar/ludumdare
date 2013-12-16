@@ -14,7 +14,6 @@ class Game : public WorldEntity
     friend class Wave;
     friend class Starfield;
     friend class Explosion;
-    friend class Hud;
 
 public:
     Game();
@@ -31,12 +30,10 @@ private:
 
 public:
     Controller *m_controller;
-    Camera *m_camera;
     TileSet *m_tiles[2];
 
     class Starfield *m_starfield;
     Array<class Explosion *> m_explosions;
-    class Hud *m_hud;
     class Thing *m_ship;
     Array<class Thing *> m_rockets;
     Array<class Thing *> m_bullets;

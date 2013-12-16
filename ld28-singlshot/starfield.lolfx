@@ -35,7 +35,7 @@ float rand(vec2 co)
 
 vec2 pos_to_pixel(vec2 pos, float speed)
 {
-    vec2 screen = vec2(320.0, 240.0);
+    vec2 screen = vec2(160.0, 120.0);
 
     vec2 pixels = floor(screen * pos * 0.5 + vec2(0, u_time) * speed);
     return mod(pixels, 2048.0);
@@ -61,9 +61,11 @@ void main(void)
 {
     vec2 pos = pass_pos - u_camera;
 
-    vec4 color = pos_to_color(pos, 100.0, 0.998);
-    color = max(color, pos_to_color(pos + vec2(0.3), 200.0, 0.998));
-    color = max(color, pos_to_color(pos + vec2(0.7), 300.0, 0.998));
+    vec4 color = pos_to_color(pos, 50.0, 0.998);
+    color = max(color, pos_to_color(pos + vec2(0.3), 100.0, 0.998));
+    color = max(color, pos_to_color(pos + vec2(0.7), 150.0, 0.998));
+
+    color.rgb *= 0.6;
 
     gl_FragColor = color;
 }

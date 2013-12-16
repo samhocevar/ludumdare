@@ -46,7 +46,7 @@ void main(void)
 
     float red = 0.0, green = 0.0, alpha = 0.0;
 
-    for (int i = -8; i <= 8; ++i)
+    for (int i = -16; i <= 16; ++i)
     {
         float angle = real_angle + float(i) / part_per_rad;
 
@@ -55,14 +55,14 @@ void main(void)
         vec2 real_pos = travel * vec2(cos(angle), sin(angle));
 
         float dist = max(abs(pos.x - real_pos.x), abs(pos.y - real_pos.y));
-        if (dist <= 1.0)
+        if (dist <= 2.0)
         {
             alpha = 1.0 / (1.0 + u_time * (2.0 + rand(vec2(angle, 1.0))));
             red = max(red, mix(0.8, 1.0, rand(vec2(angle, 2.0))));
             green = max(green, mix(0.4, red, rand(vec2(angle, 3.0))));
         }
 
-        if (dist <= 0.5)
+        if (dist <= 1.0)
         {
             red *= 2.0;
             green *= 2.0;

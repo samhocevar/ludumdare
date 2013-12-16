@@ -43,8 +43,17 @@ Game::Game()
     m_controller->GetKey(KEY_UP).Bind("Keyboard", "W");
     m_controller->GetKey(KEY_UP).Bind("Keyboard", "Z");
     m_controller->GetKey(KEY_DOWN).Bind("Keyboard", "S");
+    /* IJKL */
+    m_controller->GetKey(KEY_LEFT).Bind("Keyboard", "J");
+    m_controller->GetKey(KEY_RIGHT).Bind("Keyboard", "L");
+    m_controller->GetKey(KEY_UP).Bind("Keyboard", "I");
+    m_controller->GetKey(KEY_DOWN).Bind("Keyboard", "K");
     /* Fire */
     m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Space");
+    m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Return");
+    m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Tab");
+
+    Ticker::Ref(m_controller);
 
     /* First tileset */
     m_tiles[0] = Tiler::Register("data/tiles1.png");
@@ -63,22 +72,12 @@ Game::Game()
     m_tiles[1]->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
     m_tiles[1]->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
     m_tiles[1]->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
-
-    m_camera = new Camera();
-    m_camera->SetView(mat4(1.f));
-    m_camera->SetProjection(mat4::ortho(-ARENA.x * 0.5f, ARENA.x * 0.5f,
-                                        -ARENA.y * 0.5f, ARENA.y * 0.5f,
-                                        -100.f, 100.f));
-    g_scene->PushCamera(m_camera);
-    Ticker::Ref(m_camera);
+    m_tiles[1]->AddTile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
+    m_tiles[1]->AddTile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
 
     /* Starfield */
     m_starfield = new Starfield(this);
     Ticker::Ref(m_starfield);
-
-    /* HUD */
-    m_hud = new Hud(this);
-    Ticker::Ref(m_hud);
 
     /* Ship */
     m_ship = new Thing(this, 1, 0);
@@ -87,7 +86,7 @@ Game::Game()
 
     m_camera_pos = vec3(0.f, 0.f, 0.f);
 
-    m_power = 1;
+    m_power = 0;
 
     m_score = 0;
     m_combo = 100;
@@ -98,14 +97,13 @@ Game::Game()
 
 Game::~Game()
 {
-    Tiler::Deregister(m_tiles[0]);
-    Tiler::Deregister(m_tiles[1]);
+    //Tiler::Deregister(m_tiles[0]);
+    //Tiler::Deregister(m_tiles[1]);
 
-    Ticker::Unref(m_hud);
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
     for (int i = 0; i < m_explosions.Count(); ++i)
-        Ticker::Unref(m_powerups[i]);
+        Ticker::Unref(m_explosions[i]);
     for (int i = 0; i < m_powerups.Count(); ++i)
         Ticker::Unref(m_powerups[i]);
     for (int i = 0; i < m_rockets.Count(); ++i)
@@ -115,8 +113,7 @@ Game::~Game()
     for (int i = 0; i < m_waves.Count(); ++i)
         Ticker::Unref(m_waves[i]);
 
-    g_scene->PopCamera(m_camera);
-    Ticker::Unref(m_camera);
+    Ticker::Unref(m_controller);
 }
 
 void Game::TickGame(float seconds)
@@ -144,6 +141,8 @@ void Game::TickGame(float seconds)
                                      -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
         m_ship->m_position.y = clamp(m_ship->m_position.y,
                                      -ARENA.y / 2 + 9.f, ARENA.y / 2 - 9.f);
+
+        m_ship->m_tileid = m_power ? 12 : 0;
 
         m_ship->m_tileid |= 1;
         m_ship->m_tileid -= (length(velocity) == 0.0f);
@@ -177,6 +176,9 @@ void Game::TickGame(float seconds)
         if (distance(m_ship->m_position.xy, m_bullets[i]->m_position.xy) < 8.f)
         {
             KillPlayer();
+
+            Ticker::Unref(m_bullets[i]);
+            m_bullets.Remove(i);
         }
         else if (m_bullets[i]->m_position.y > ARENA.y
                   || m_bullets[i]->m_position.y < -ARENA.y
@@ -213,6 +215,9 @@ void Game::TickGame(float seconds)
     {
         m_powerups[i]->m_position.y -= POWERUP_SPEED * seconds;
 
+        m_powerups[i]->m_tileid |= 1;
+        m_powerups[i]->m_tileid -= (lol::sin(15.0 * m_time) > 0.0);
+
         if (distance(m_ship->m_position.xy,
                      m_powerups[i]->m_position.xy) < 12.f)
         {
@@ -231,12 +236,6 @@ void Game::TickGame(float seconds)
 void Game::TickDraw(float seconds)
 {
     WorldEntity::TickDraw(seconds);
-
-    if (!m_ready)
-    {
-        g_renderer->SetClearColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
-        m_ready = true;
-    }
 }
 
 void Game::KillPlayer()
@@ -253,25 +252,29 @@ void Game::KillPlayer()
 
 bool Game::HasPassed(double period, double phase)
 {
-    return (m_prev_time + phase) / period
-             <= lol::floor((m_time + phase) / period);
+    return (m_prev_time - phase) / period
+             <= lol::floor((m_time - phase) / period);
 }
 
 void Game::SpawnShit()
 {
-    /* Spawn a powerup every 3 seconds */
-    if (HasPassed(3.0, 2.0))
+    /* Don’t spawn anything if we’re dead */
+    if (m_ship->m_dead)
+        return;
+
+    /* Spawn a powerup every 8 seconds */
+    if (HasPassed(8.0, 2.0))
     {
         m_powerups.Push(new Thing(this, 1, 6));
         m_powerups.Last()->m_position = vec3(rand(-0.4f, 0.4f) * ARENA.x,
-                                             ARENA.y * 0.5f + 10.f, 10.f);
+                                             ARENA.y * 0.5f + 10.f, 0.f);
         Ticker::Ref(m_powerups.Last());
     }
 
-    /* Spawn an enemy wave every 6 seconds */
-    if (HasPassed(6.0))
+    /* Spawn an enemy wave every 16 seconds */
+    if (HasPassed(16.0))
     {
-        int type = HasPassed(12.0) ? 1 : 0;
+        int type = HasPassed(32.0) ? 0 : 1;
 
         m_waves.Push(new Wave(this, type));
         Ticker::Ref(m_waves.Last());

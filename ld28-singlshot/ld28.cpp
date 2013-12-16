@@ -20,12 +20,20 @@ using namespace lol;
 #include "ld28.h"
 #include "game.h"
 
+#include "thing.h"
+#include "wave.h"
+
+#include "starfield.h"
+#include "explosion.h"
+
+#include "hud.h"
+
 class LD28 : public WorldEntity
 {
 public:
     LD28()
     {
-        new Game();
+        new Hud();
     }
 
     ~LD28()
