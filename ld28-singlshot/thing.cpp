@@ -21,10 +21,9 @@ using namespace lol;
 #include "game.h"
 #include "thing.h"
 
-Thing::Thing(Game *game, int tileset, int tileid)
+Thing::Thing(Game *game, int tileid)
   : m_dead(false),
     m_game(game),
-    m_tileset(game->m_tiles[tileset]),
     m_tileid(tileid)
 {
 }
@@ -45,7 +44,7 @@ void Thing::TickDraw(float seconds)
     /* 9.f : compensate for sprite size */
     if (!m_dead)
     {
-        g_scene->AddTile(m_tileset, m_tileid,
+        g_scene->AddTile(m_game->m_tiles, m_tileid,
                          m_position - m_game->m_camera_pos - vec3(9.f, 9.f, 0.f),
                          0.f, vec2(1.f));
     }

@@ -55,32 +55,29 @@ Game::Game()
 
     Ticker::Ref(m_controller);
 
-    /* First tileset */
-    m_tiles[0] = Tiler::Register("data/tiles1.png");
-
-    /* Second tileset */
-    m_tiles[1] = Tiler::Register("data/tiles2.png");
-    m_tiles[1]->AddTile(ibox2(0, 0, 20, 20));     /* 0: ship */
-    m_tiles[1]->AddTile(ibox2(20, 0, 40, 20));    /* 1: ship */
-    m_tiles[1]->AddTile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
-    m_tiles[1]->AddTile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
-    m_tiles[1]->AddTile(ibox2(0, 20, 20, 40));    /* 4: rocket */
-    m_tiles[1]->AddTile(ibox2(20, 20, 40, 40));   /* 5: rocket */
-    m_tiles[1]->AddTile(ibox2(40, 20, 60, 40));   /* 6: powerup */
-    m_tiles[1]->AddTile(ibox2(60, 20, 80, 40));   /* 7: powerup */
-    m_tiles[1]->AddTile(ibox2(80, 20, 100, 40));  /* 8: bullet */
-    m_tiles[1]->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
-    m_tiles[1]->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
-    m_tiles[1]->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
-    m_tiles[1]->AddTile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
-    m_tiles[1]->AddTile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
+    /* Tileset */
+    m_tiles = Tiler::Register("data/tiles.png");
+    m_tiles->AddTile(ibox2(0, 0, 20, 20));     /* 0: ship */
+    m_tiles->AddTile(ibox2(20, 0, 40, 20));    /* ship */
+    m_tiles->AddTile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
+    m_tiles->AddTile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
+    m_tiles->AddTile(ibox2(0, 20, 20, 40));    /* 4: rocket */
+    m_tiles->AddTile(ibox2(20, 20, 40, 40));   /* 5: rocket */
+    m_tiles->AddTile(ibox2(40, 20, 60, 40));   /* 6: powerup */
+    m_tiles->AddTile(ibox2(60, 20, 80, 40));   /* 7: powerup */
+    m_tiles->AddTile(ibox2(80, 20, 100, 40));  /* 8: bullet */
+    m_tiles->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
+    m_tiles->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
+    m_tiles->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
+    m_tiles->AddTile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
+    m_tiles->AddTile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
 
     /* Starfield */
     m_starfield = new Starfield(this);
     Ticker::Ref(m_starfield);
 
     /* Ship */
-    m_ship = new Thing(this, 1, 0);
+    m_ship = new Thing(this, 0);
     m_ship->m_position = vec3(0.f, -ARENA.y * 0.4f, 20.f);
     Ticker::Ref(m_ship);
 
@@ -97,8 +94,7 @@ Game::Game()
 
 Game::~Game()
 {
-    //Tiler::Deregister(m_tiles[0]);
-    //Tiler::Deregister(m_tiles[1]);
+    //Tiler::Deregister(m_tiles);
 
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
@@ -205,7 +201,7 @@ void Game::TickGame(float seconds)
     /* Resolve fire */
     if (!m_ship->m_dead && m_power && m_controller->GetKey(KEY_FIRE).IsDown())
     {
-        m_rockets.Push(new Thing(this, 1, 5));
+        m_rockets.Push(new Thing(this, 5));
         m_rockets.Last()->m_position = m_ship->m_position;
         Ticker::Ref(m_rockets.Last());
 
@@ -292,7 +288,7 @@ void Game::SpawnShit()
     /* Spawn a powerup every 8 seconds */
     if (HasPassed(8.0, 2.0))
     {
-        m_powerups.Push(new Thing(this, 1, 6));
+        m_powerups.Push(new Thing(this, 6));
         m_powerups.Last()->m_position = vec3(rand(-0.4f, 0.4f) * ARENA.x,
                                              ARENA.y * 0.5f + 10.f, 0.f);
         Ticker::Ref(m_powerups.Last());

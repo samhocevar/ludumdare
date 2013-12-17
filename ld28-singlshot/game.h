@@ -30,7 +30,7 @@ private:
 
 public:
     Controller *m_controller;
-    TileSet *m_tiles[2];
+    TileSet *m_tiles;
 
     class Starfield *m_starfield;
     Array<class Explosion *> m_explosions;

@@ -34,7 +34,7 @@ Wave::Wave(Game *game, int type)
     case 0:
         for (int i = 0; i < 9; ++i)
         {
-            m_things.Push(new Thing(game, 1, 2));
+            m_things.Push(new Thing(game, 2));
             Ticker::Ref(m_things.Last());
 
             m_fire_time.Push(rand(20.0));
@@ -46,7 +46,7 @@ Wave::Wave(Game *game, int type)
     case 1:
         for (int i = 0; i < 9; ++i)
         {
-            m_things.Push(new Thing(game, 1, 10));
+            m_things.Push(new Thing(game, 10));
             Ticker::Ref(m_things.Last());
 
             m_fire_time.Push(rand(20.0));
@@ -92,7 +92,7 @@ void Wave::TickGame(float seconds)
             /* Reset to zero in case we accumulated too much */
             m_fire_time[i] = 0.0;
 
-            m_game->m_bullets.Push(new Thing(m_game, 1, 8));
+            m_game->m_bullets.Push(new Thing(m_game, 8));
             m_game->m_bullets.Last()->m_position = m_things[i]->m_position;
             m_game->m_bullets.Last()->m_position.z = 0.0f;
             float angle = -F_PI / 2.0f + rand(-3, 4) / 5.0f;
@@ -156,7 +156,7 @@ void Wave::HandleCollisions(Thing *thing)
             m_game->m_explosions.Last()->m_position.z = 40.f;
             Ticker::Ref(m_game->m_explosions.Last());
 
-            m_game->m_powerups.Push(new Thing(m_game, 1, 6));
+            m_game->m_powerups.Push(new Thing(m_game, 6));
             m_game->m_powerups.Last()->m_position = thing->m_position;
             m_game->m_powerups.Last()->m_position.z = 0.f;
             Ticker::Ref(m_game->m_powerups.Last());

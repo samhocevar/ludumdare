@@ -14,7 +14,7 @@ class Thing : public WorldEntity
     friend class Wave;
 
 public:
-    Thing(Game *game, int tileset, int tileid);
+    Thing(Game *game, int tileid);
     ~Thing();
 
     virtual void TickGame(float seconds);
@@ -25,7 +25,6 @@ public:
 
 private:
     Game *m_game;
-    TileSet *m_tileset;
     int m_tileid;
 };
 
