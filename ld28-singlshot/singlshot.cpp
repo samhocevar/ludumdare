@@ -17,7 +17,7 @@
 using namespace std;
 using namespace lol;
 
-#include "ld28.h"
+#include "singlshot.h"
 #include "game.h"
 
 #include "thing.h"
@@ -28,15 +28,15 @@ using namespace lol;
 
 #include "hud.h"
 
-class LD28 : public WorldEntity
+class SinglShot : public WorldEntity
 {
 public:
-    LD28()
+    SinglShot()
     {
         new Hud();
     }
 
-    ~LD28()
+    ~SinglShot()
     {
     }
 
@@ -57,8 +57,8 @@ int main(int argc, char **argv)
 {
     System::Init(argc, argv);
 
-    Application app("LD28: you only get one", RESOLUTION, 60.0f);
-    new LD28();
+    Application app("SinglShot", RESOLUTION, 60.0f);
+    new SinglShot();
     app.Run();
 
     return EXIT_SUCCESS;

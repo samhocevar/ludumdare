@@ -13,7 +13,7 @@
 using namespace lol;
 
 /* The screen resolution */
-ivec2 const RESOLUTION(960, 720);
+ivec2 const RESOLUTION(320, 240);
 
 /* The arena size */
 vec2 const ARENA(320.f, 240.f);

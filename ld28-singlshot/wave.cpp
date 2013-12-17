@@ -17,7 +17,7 @@
 using namespace std;
 using namespace lol;
 
-#include "ld28.h"
+#include "singlshot.h"
 #include "game.h"
 #include "thing.h"
 #include "wave.h"

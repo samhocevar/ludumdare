@@ -123,12 +123,12 @@ public:
         else if (m_state == 1 && m_game->m_ship->m_dead)
         {
             m_gameover.Get();
-            m_menu[1]->SetText("GAME OVER");
 
             m_state = 2;
         }
         else if (m_state == 2 && m_gameover.Poll() > 1.0)
         {
+            m_menu[1]->SetText("GAME OVER");
             m_menu[4]->SetText("press fire");
 
 #if 0
