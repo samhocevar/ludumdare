@@ -14,7 +14,6 @@
 
 #include "core.h"
 
-using namespace std;
 using namespace lol;
 
 #include "singlshot.h"
@@ -171,7 +170,7 @@ void Game::TickGame(float seconds)
     {
         m_bullets[i]->m_position += m_bullets[i]->m_velocity * seconds;
 
-        if (distance(m_ship->m_position.xy, m_bullets[i]->m_position.xy) < 8.f)
+        if (lol::distance(m_ship->m_position.xy, m_bullets[i]->m_position.xy) < 8.f)
         {
             KillPlayer();
 
@@ -216,7 +215,7 @@ void Game::TickGame(float seconds)
         m_powerups[i]->m_tileid |= 1;
         m_powerups[i]->m_tileid -= (lol::sin(15.0 * m_time) > 0.0);
 
-        if (distance(m_ship->m_position.xy,
+        if (lol::distance(m_ship->m_position.xy,
                      m_powerups[i]->m_position.xy) < 12.f)
         {
             if (m_power)

@@ -14,7 +14,6 @@
 
 #include "core.h"
 
-using namespace std;
 using namespace lol;
 
 #include "singlshot.h"
@@ -130,7 +129,7 @@ void Wave::HandleCollisions(Thing *thing)
 
     /* Check collisions with player */
     if (!m_game->m_ship->m_dead &&
-        distance(m_game->m_ship->m_position.xy, thing->m_position.xy) < 12.f)
+        lol::distance(m_game->m_ship->m_position.xy, thing->m_position.xy) < 12.f)
     {
         m_game->m_explosions.Push(new Explosion(m_game));
         m_game->m_explosions.Last()->m_position = thing->m_position;
@@ -148,8 +147,8 @@ void Wave::HandleCollisions(Thing *thing)
         if (m_game->m_rockets[i]->m_dead)
             continue;
 
-        if (distance(m_game->m_rockets[i]->m_position.xy,
-                     thing->m_position.xy) < 12.f)
+        if (lol::distance(m_game->m_rockets[i]->m_position.xy,
+                          thing->m_position.xy) < 12.f)
         {
             m_game->m_explosions.Push(new Explosion(m_game));
             m_game->m_explosions.Last()->m_position = thing->m_position;

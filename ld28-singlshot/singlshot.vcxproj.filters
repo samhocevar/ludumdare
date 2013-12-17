@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="wave.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="game.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="singlshot.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="thing.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="explosion.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="game.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="hud.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="singlshot.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="starfield.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="thing.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="wave.h">
+      <Filter>source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <LolFxCompile Include="explosion.lolfx">
+      <Filter>shaders</Filter>
+    </LolFxCompile>
+    <LolFxCompile Include="starfield.lolfx">
+      <Filter>shaders</Filter>
+    </LolFxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{1e7478c8-7da2-4bac-8189-9f673c38706a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{d9a74571-f15c-4402-ac08-48d753b45c3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{c8486c1f-d7d5-4311-99e0-2d61743a0468}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\font.png">
+      <Filter>data</Filter>
+    </None>
+    <None Include="data\tiles.png">
+      <Filter>data</Filter>
+    </None>
+  </ItemGroup>
+</Project>
