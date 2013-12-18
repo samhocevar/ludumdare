@@ -56,20 +56,6 @@ Game::Game()
 
     /* Tileset */
     m_tiles = Tiler::Register("data/tiles.png");
-    m_tiles->AddTile(ibox2(0, 0, 20, 20));     /* 0: ship */
-    m_tiles->AddTile(ibox2(20, 0, 40, 20));    /* ship */
-    m_tiles->AddTile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
-    m_tiles->AddTile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
-    m_tiles->AddTile(ibox2(0, 20, 20, 40));    /* 4: rocket */
-    m_tiles->AddTile(ibox2(20, 20, 40, 40));   /* 5: rocket */
-    m_tiles->AddTile(ibox2(40, 20, 60, 40));   /* 6: powerup */
-    m_tiles->AddTile(ibox2(60, 20, 80, 40));   /* 7: powerup */
-    m_tiles->AddTile(ibox2(80, 20, 100, 40));  /* 8: bullet */
-    m_tiles->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
-    m_tiles->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
-    m_tiles->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
-    m_tiles->AddTile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
-    m_tiles->AddTile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
 
     /* Starfield */
     m_starfield = new Starfield(this);
@@ -93,7 +79,7 @@ Game::Game()
 
 Game::~Game()
 {
-    //Tiler::Deregister(m_tiles);
+    Tiler::Deregister(m_tiles);
 
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
@@ -169,6 +155,9 @@ void Game::TickGame(float seconds)
     for (int i = m_bullets.Count(); i--; )
     {
         m_bullets[i]->m_position += m_bullets[i]->m_velocity * seconds;
+
+        m_bullets[i]->m_tileid |= 1;
+        m_bullets[i]->m_tileid -= lol::sin(15.f * m_time) > 0.0f;
 
         if (lol::distance(m_ship->m_position.xy, m_bullets[i]->m_position.xy) < 8.f)
         {

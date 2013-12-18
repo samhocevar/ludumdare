@@ -23,7 +23,7 @@ public:
     Hud()
       : m_game(nullptr),
         m_hiscore(0),
-        m_state(-1)
+        m_state(BlankScreen)
     {
         m_controller = new Controller("Menu", KEY_MAX /* keys */, 0 /* axes */);
         m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Space");
@@ -37,6 +37,24 @@ public:
                                             -100.f, 100.f));
         g_scene->PushCamera(m_camera);
         Ticker::Ref(m_camera);
+
+        /* TileSet */
+        m_tiles = Tiler::Register("data/tiles.png");
+        m_tiles->AddTile(ibox2(0, 0, 20, 20));     /* 0: ship */
+        m_tiles->AddTile(ibox2(20, 0, 40, 20));    /* ship */
+        m_tiles->AddTile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
+        m_tiles->AddTile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
+        m_tiles->AddTile(ibox2(0, 20, 20, 40));    /* 4: rocket */
+        m_tiles->AddTile(ibox2(20, 20, 40, 40));   /* 5: rocket */
+        m_tiles->AddTile(ibox2(40, 20, 60, 40));   /* 6: powerup */
+        m_tiles->AddTile(ibox2(60, 20, 80, 40));   /* 7: powerup */
+        m_tiles->AddTile(ibox2(80, 20, 100, 40));  /* 8: bullet */
+        m_tiles->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
+        m_tiles->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
+        m_tiles->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
+        m_tiles->AddTile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
+        m_tiles->AddTile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
+        m_tiles->AddTile(ibox2(0, 80, 100, 100));  /* 14: title screen */
 
         /* Default text */
         m_menu.Push(new Text("", "data/font.png"));
@@ -94,73 +112,16 @@ public:
 
         g_scene->PopCamera(m_camera);
         Ticker::Unref(m_camera);
+
+        //Tiler::Deregister(m_tiles);
     }
 
     virtual void TickGame(float seconds)
     {
-        /* Handle state changes */
-        if (m_state == -1)
-        {
-            m_menu[0]->SetText("SINGLSHOT");
-            m_menu[1]->SetText("a game by Sam Hocevar");
-            m_menu[2]->SetText("for Ludum Dare 28");
-            m_menu[4]->SetText("you only get one shot! () to reload");
-            m_menu[5]->SetText("press fire to play");
-            m_menu[6]->SetText("move: W A S D   fire: Space");
-
-            m_state = 0;
-        }
-        else if (m_state == 0 && m_controller->GetKey(KEY_FIRE).IsPressed())
-        {
-            for (int i = 0; i < m_menu.Count(); ++i)
-                m_menu[i]->SetText("");
-
-            m_game = new Game();
-            Ticker::Ref(m_game);
-
-            m_state = 1;
-        }
-        else if (m_state == 1 && m_game->m_ship->m_dead)
-        {
-            m_gameover.Get();
-
-            m_state = 2;
-        }
-        else if (m_state == 2 && m_gameover.Poll() > 1.0)
-        {
-            m_menu[1]->SetText("GAME OVER");
-            m_menu[4]->SetText("press fire");
-
-#if 0
-            m_state = 3;
-        }
-        else if (m_state == 3 && m_controller->GetKey(KEY_FIRE).IsPressed())
-        {
-            m_menu[0]->SetText("WORLD LEADERBOARDS");
-            m_menu[1]->SetText(" 1. Sam              00068290");
-            m_menu[2]->SetText(" 2. Sam              00058900");
-            m_menu[3]->SetText(" 3. Sam              00037830");
-            m_menu[4]->SetText(" 4. Nobody           00000000");
-#endif
-
-            m_state = 4;
-        }
-        else if (m_state == 4 && m_controller->GetKey(KEY_FIRE).IsPressed())
-        {
-            Ticker::Unref(m_game);
-            m_game = nullptr;
-
-            m_state = -1;
-        }
-
-        /* Handle states */
-        if (m_game && m_game->m_score > m_hiscore)
-            m_hiscore = m_game->m_score;
-
-        m_score[0]->SetText(String::Printf("SCORE %08d", m_game ? m_game->m_score : 0));
-        m_score[1]->SetText(String::Printf("HIGH %08d", m_hiscore));
-
         WorldEntity::TickGame(seconds);
+
+        HandleStateChanges(seconds);
+        HandleStates(seconds);
     }
 
     virtual void TickDraw(float seconds)
@@ -168,18 +129,122 @@ public:
         WorldEntity::TickDraw(seconds);
 
         g_renderer->SetClearColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+        switch (m_state)
+        {
+        case TitleScreen:
+            g_scene->AddTile(m_tiles, 14, vec3(-50.0f, 10.0f, 0.0f),
+                             0.f, vec2(1.f));
+            break;
+        default:
+            break;
+        }
+    }
+
+private:
+    void HandleStateChanges(float seconds)
+    {
+        /* Handle state changes */
+        switch (m_state)
+        {
+        case BlankScreen:
+            m_menu[4]->SetText("you only get one shot! () to reload");
+            m_menu[5]->SetText("press fire to play");
+            m_menu[6]->SetText("move: W A S D   fire: Space");
+
+            m_state = TitleScreen;
+            break;
+
+        case TitleScreen:
+            if (m_controller->GetKey(KEY_FIRE).IsPressed())
+            {
+                for (int i = 0; i < m_menu.Count(); ++i)
+                    m_menu[i]->SetText("");
+
+                m_game = new Game();
+                Ticker::Ref(m_game);
+
+                m_state = InGame;
+            }
+            break;
+
+        case InGame:
+            if (m_game->m_ship->m_dead)
+            {
+                m_gameover.Get();
+
+                m_state = JustDied;
+            }
+            break;
+
+        case JustDied:
+            if (m_gameover.Poll() > 1.0)
+            {
+                m_menu[1]->SetText("GAME OVER");
+                m_menu[4]->SetText("press fire");
+
+#if 0
+                m_state = XXX;
+            }
+            break;
+
+        case XXX:
+            if (m_controller->GetKey(KEY_FIRE).IsPressed())
+            {
+                m_menu[0]->SetText("WORLD LEADERBOARDS");
+                m_menu[1]->SetText(" 1. Sam              00068290");
+                m_menu[2]->SetText(" 2. Sam              00058900");
+                m_menu[3]->SetText(" 3. Sam              00037830");
+                m_menu[4]->SetText(" 4. Nobody           00000000");
+#endif
+
+                m_state = GameOver;
+            }
+            break;
+
+        case GameOver:
+            if (m_controller->GetKey(KEY_FIRE).IsPressed())
+            {
+                Ticker::Unref(m_game);
+                m_game = nullptr;
+
+                m_state = BlankScreen;
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    void HandleStates(float seconds)
+    {
+        if (m_game && m_game->m_score > m_hiscore)
+            m_hiscore = m_game->m_score;
+
+        m_score[0]->SetText(String::Printf("SCORE %08d", m_game ? m_game->m_score : 0));
+        m_score[1]->SetText(String::Printf("HIGH %08d", m_hiscore));
     }
 
 private:
     Controller *m_controller;
     Camera *m_camera;
     Game *m_game;
+    TileSet *m_tiles;
     Array<Text *> m_menu;
     Array<Text *> m_score;
     Timer m_gameover;
 
     int m_hiscore;
 
-    int m_state;
+    enum HudState
+    {
+        BlankScreen = 0,
+        TitleScreen,
+        InGame,
+        JustDied,
+        GameOver,
+    }
+    m_state;
 };
 
