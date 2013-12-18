@@ -148,6 +148,10 @@ private:
         switch (m_state)
         {
         case BlankScreen:
+            m_menu[0]->SetText("");
+            m_menu[1]->SetText("");
+            m_menu[2]->SetText("");
+            m_menu[3]->SetText("");
             m_menu[4]->SetText("you only get one shot! () to reload");
             m_menu[5]->SetText("press fire to play");
             m_menu[6]->SetText("move: W A S D   fire: Space");

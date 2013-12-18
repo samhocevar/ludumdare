@@ -91,6 +91,8 @@ void Wave::TickGame(float seconds)
             /* Reset to zero in case we accumulated too much */
             m_fire_time[i] = 0.0;
 
+            Sampler::PlaySample(m_game->m_snd_bullet);
+
             m_game->m_bullets.Push(new Thing(m_game, 8));
             m_game->m_bullets.Last()->m_position = m_things[i]->m_position;
             m_game->m_bullets.Last()->m_position.z = 0.0f;

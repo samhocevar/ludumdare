@@ -54,6 +54,10 @@ Game::Game()
 
     Ticker::Ref(m_controller);
 
+    /* SFX */
+    m_snd_missile = Sampler::Register("data/missile.wav");
+    m_snd_bullet = Sampler::Register("data/bullet.wav");
+
     /* Tileset */
     m_tiles = Tiler::Register("data/tiles.png");
 
@@ -80,6 +84,9 @@ Game::Game()
 Game::~Game()
 {
     Tiler::Deregister(m_tiles);
+
+    Sampler::Deregister(m_snd_missile);
+    Sampler::Deregister(m_snd_bullet);
 
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
@@ -189,6 +196,8 @@ void Game::TickGame(float seconds)
     /* Resolve fire */
     if (!m_ship->m_dead && m_power && m_controller->GetKey(KEY_FIRE).IsDown())
     {
+        Sampler::PlaySample(m_snd_missile);
+
         m_rockets.Push(new Thing(this, 5));
         m_rockets.Last()->m_position = m_ship->m_position;
         Ticker::Ref(m_rockets.Last());

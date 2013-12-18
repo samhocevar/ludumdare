@@ -31,6 +31,7 @@ private:
 public:
     Controller *m_controller;
     TileSet *m_tiles;
+    int m_snd_missile, m_snd_bullet;
 
     class Starfield *m_starfield;
     Array<class Explosion *> m_explosions;
