@@ -232,12 +232,6 @@ void Game::TickGame(float seconds)
         {
             Sampler::PlaySample(m_snd_powerup);
 
-            if (m_hint_text)
-            {
-                Ticker::Unref(m_hint_text);
-                m_hint_text = nullptr;
-            }
-
             if (m_power)
             {
                 m_score_texts.Push(new Text("1000", "data/font.png"));
@@ -250,11 +244,23 @@ void Game::TickGame(float seconds)
 
             ++m_power;
 
+            if (m_hint_text)
+            {
+                Ticker::Unref(m_hint_text);
+                m_hint_text = nullptr;
+            }
+
             Ticker::Unref(m_powerups[i]);
             m_powerups.Remove(i);
         }
         else if (m_powerups[i]->m_position.y < -ARENA.y * 0.5f - 15.f)
         {
+            if (m_hint_text)
+            {
+                Ticker::Unref(m_hint_text);
+                m_hint_text = nullptr;
+            }
+
             Ticker::Unref(m_powerups[i]);
             m_powerups.Remove(i);
         }
