@@ -31,7 +31,7 @@ private:
 public:
     Controller *m_controller;
     TileSet *m_tiles;
-    int m_snd_missile, m_snd_bullet;
+    int m_snd_missile, m_snd_bullet, m_snd_explosion, m_snd_powerup;
 
     class Starfield *m_starfield;
     Array<class Explosion *> m_explosions;
@@ -40,11 +40,12 @@ public:
     Array<class Thing *> m_bullets;
     Array<class Thing *> m_powerups;
     Array<class Wave *> m_waves;
-    Array<Text *> m_texts;
+    Array<Text *> m_score_texts;
+    Text *m_hint_text;
 
     vec3 m_camera_pos;
 
-    int m_power;
+    int m_power, m_hint;
     int m_score, m_combo;
     double m_prev_time, m_time;
 

@@ -133,7 +133,7 @@ public:
         switch (m_state)
         {
         case TitleScreen:
-            g_scene->AddTile(m_tiles, 14, vec3(-50.0f, 10.0f, 0.0f),
+            g_scene->AddTile(m_tiles, 14, vec3(-50.0f, 0.0f, 0.0f),
                              0.f, vec2(1.f));
             break;
         default:
@@ -152,7 +152,7 @@ private:
             m_menu[1]->SetText("");
             m_menu[2]->SetText("");
             m_menu[3]->SetText("");
-            m_menu[4]->SetText("you only get one shot! () to reload");
+            m_menu[4]->SetText("");
             m_menu[5]->SetText("press fire to play");
             m_menu[6]->SetText("move: W A S D   fire: Space");
 

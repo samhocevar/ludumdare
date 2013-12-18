@@ -162,16 +162,19 @@ void Wave::HandleCollisions(Thing *thing)
             m_game->m_powerups.Last()->m_position.z = 0.f;
             Ticker::Ref(m_game->m_powerups.Last());
 
-            m_game->m_texts.Push(new Text(String::Printf("%d", m_game->m_combo), "data/font.png"));
-            m_game->m_texts.Last()->SetAlign(Text::ALIGN_CENTER);
-            m_game->m_texts.Last()->SetPos(vec3(thing->m_position.xy, 50.f));
-            Ticker::Ref(m_game->m_texts.Last());
+            m_game->m_score_texts.Push(new Text(String::Printf("%d", m_game->m_combo), "data/font.png"));
+            m_game->m_score_texts.Last()->SetAlign(Text::ALIGN_CENTER);
+            m_game->m_score_texts.Last()->SetPos(vec3(thing->m_position.xy, 50.f));
+            Ticker::Ref(m_game->m_score_texts.Last());
 
             thing->m_dead = true;
             m_game->m_rockets[i]->m_dead = true;
 
             m_game->m_score += m_game->m_combo;
             m_game->m_combo += 100;
+
+            /* Stop missile sound */
+            Sampler::StopSample(m_game->m_snd_missile);
         }
     }
 }

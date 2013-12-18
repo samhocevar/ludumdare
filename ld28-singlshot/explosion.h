@@ -27,6 +27,8 @@ public:
         m_game(game),
         m_ready(false)
     {
+        Sampler::PlaySample(m_game->m_snd_explosion);
+
         m_vertices << vec2(-1.0,  1.0);
         m_vertices << vec2(-1.0, -1.0);
         m_vertices << vec2( 1.0, -1.0);
