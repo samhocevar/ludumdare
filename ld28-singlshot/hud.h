@@ -134,7 +134,7 @@ public:
         {
         case TitleScreen:
             g_scene->AddTile(m_tiles, 14, vec3(-50.0f, 0.0f, 0.0f),
-                             0.f, vec2(1.f));
+                             0.f, vec2(1.f), 0.f);
             break;
         default:
             break;

@@ -46,7 +46,7 @@ void Thing::TickDraw(float seconds)
     {
         g_scene->AddTile(m_game->m_tiles, m_tileid,
                          m_position - m_game->m_camera_pos - vec3(9.f, 9.f, 0.f),
-                         0.f, vec2(1.f));
+                         0.f, vec2(1.f), 0.f);
     }
 }
 
