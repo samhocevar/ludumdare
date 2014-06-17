@@ -15,7 +15,7 @@ public:
     ~Wave();
 
     virtual void TickGame(float seconds);
-    virtual void TickDraw(float seconds);
+    virtual void TickDraw(float seconds, Scene &scene);
 
 private:
     void HandleCollisions(Thing *thing);

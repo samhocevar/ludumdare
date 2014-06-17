@@ -45,9 +45,9 @@ public:
         WorldEntity::TickGame(seconds);
     }
 
-    virtual void TickDraw(float seconds)
+    virtual void TickDraw(float seconds, Scene &scene)
     {
-        WorldEntity::TickDraw(seconds);
+        WorldEntity::TickDraw(seconds, scene);
     }
 
 private:

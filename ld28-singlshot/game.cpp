@@ -281,9 +281,9 @@ void Game::TickGame(float seconds)
     }
 }
 
-void Game::TickDraw(float seconds)
+void Game::TickDraw(float seconds, Scene &scene)
 {
-    WorldEntity::TickDraw(seconds);
+    WorldEntity::TickDraw(seconds, scene);
 }
 
 void Game::KillPlayer()

@@ -119,9 +119,9 @@ void Wave::TickGame(float seconds)
     }
 }
 
-void Wave::TickDraw(float seconds)
+void Wave::TickDraw(float seconds, Scene &scene)
 {
-    WorldEntity::TickDraw(seconds);
+    WorldEntity::TickDraw(seconds, scene);
 }
 
 void Wave::HandleCollisions(Thing *thing)

@@ -37,16 +37,16 @@ void Thing::TickGame(float seconds)
     WorldEntity::TickGame(seconds);
 }
 
-void Thing::TickDraw(float seconds)
+void Thing::TickDraw(float seconds, Scene &scene)
 {
-    WorldEntity::TickDraw(seconds);
+    WorldEntity::TickDraw(seconds, scene);
 
     /* 9.f : compensate for sprite size */
     if (!m_dead)
     {
-        g_scene->AddTile(m_game->m_tiles, m_tileid,
-                         m_position - m_game->m_camera_pos - vec3(9.f, 9.f, 0.f),
-                         0.f, vec2(1.f), 0.f);
+        scene.AddTile(m_game->m_tiles, m_tileid,
+                      m_position - m_game->m_camera_pos - vec3(9.f, 9.f, 0.f),
+                      0.f, vec2(1.f), 0.f);
     }
 }
 

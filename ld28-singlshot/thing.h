@@ -18,7 +18,7 @@ public:
     ~Thing();
 
     virtual void TickGame(float seconds);
-    virtual void TickDraw(float seconds);
+    virtual void TickDraw(float seconds, Scene &scene);
 
 public:
     bool m_dead;

@@ -124,17 +124,17 @@ public:
         HandleStates(seconds);
     }
 
-    virtual void TickDraw(float seconds)
+    virtual void TickDraw(float seconds, Scene &scene)
     {
-        WorldEntity::TickDraw(seconds);
+        WorldEntity::TickDraw(seconds, scene);
 
         g_renderer->SetClearColor(vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
         switch (m_state)
         {
         case TitleScreen:
-            g_scene->AddTile(m_tiles, 14, vec3(-50.0f, 0.0f, 0.0f),
-                             0.f, vec2(1.f), 0.f);
+            scene.AddTile(m_tiles, 14, vec3(-50.0f, 0.0f, 0.0f),
+                          0.f, vec2(1.f), 0.f);
             break;
         default:
             break;

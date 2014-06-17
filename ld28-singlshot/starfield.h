@@ -35,9 +35,9 @@ public:
         m_vertices << vec2( 1.0,  1.0);
     }
 
-    virtual void TickDraw(float seconds)
+    virtual void TickDraw(float seconds, Scene &scene)
     {
-        WorldEntity::TickDraw(seconds);
+        WorldEntity::TickDraw(seconds, scene);
 
         m_time += seconds;
 
