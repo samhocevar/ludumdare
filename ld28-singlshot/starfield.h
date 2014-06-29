@@ -72,7 +72,7 @@ public:
 private:
     Game *m_game;
 
-    Array<vec2> m_vertices;
+    array<vec2> m_vertices;
     Shader *m_shader;
     ShaderAttrib m_coord;
     ShaderUniform m_time_uni, m_camera_uni;

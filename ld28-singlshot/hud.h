@@ -235,8 +235,8 @@ private:
     Camera *m_camera;
     Game *m_game;
     TileSet *m_tiles;
-    Array<Text *> m_menu;
-    Array<Text *> m_score;
+    array<Text *> m_menu;
+    array<Text *> m_score;
     Timer m_gameover;
 
     int m_hiscore;

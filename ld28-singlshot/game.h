@@ -34,13 +34,13 @@ public:
     int m_snd_missile, m_snd_bullet, m_snd_explosion, m_snd_powerup;
 
     class Starfield *m_starfield;
-    Array<class Explosion *> m_explosions;
+    array<class Explosion *> m_explosions;
     class Thing *m_ship;
-    Array<class Thing *> m_rockets;
-    Array<class Thing *> m_bullets;
-    Array<class Thing *> m_powerups;
-    Array<class Wave *> m_waves;
-    Array<Text *> m_score_texts;
+    array<class Thing *> m_rockets;
+    array<class Thing *> m_bullets;
+    array<class Thing *> m_powerups;
+    array<class Wave *> m_waves;
+    array<Text *> m_score_texts;
     Text *m_hint_text;
 
     vec3 m_camera_pos;
