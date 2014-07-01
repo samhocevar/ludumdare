@@ -8,7 +8,7 @@
 //   http://www.wtfpl.net/ for more details.
 //
 
-#include "core.h"
+#include <lol/main.h>
 
 using namespace lol;
 
