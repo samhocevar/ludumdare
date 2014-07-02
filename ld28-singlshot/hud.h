@@ -14,7 +14,6 @@
 
 #include <lol/main.h>
 
-using namespace std;
 using namespace lol;
 
 class Hud : public WorldEntity
