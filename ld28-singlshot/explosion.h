@@ -12,7 +12,7 @@
 #   include "config.h"
 #endif
 
-#include <lol/main.h>
+#include <lol/engine.h>
 
 using namespace lol;
 
