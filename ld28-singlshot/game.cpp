@@ -133,10 +133,10 @@ void Game::TickGame(float seconds)
     if (!m_ship->m_dead)
     {
         vec3 velocity(0.f);
-        velocity.x = (int)m_controller->GetKey(KEY_RIGHT).IsDown()
-                   - (int)m_controller->GetKey(KEY_LEFT).IsDown();
-        velocity.y = (int)m_controller->GetKey(KEY_UP).IsDown()
-                   - (int)m_controller->GetKey(KEY_DOWN).IsDown();
+        velocity.x = (int)m_controller->GetKey(KEY_RIGHT).IsPressed()
+                   - (int)m_controller->GetKey(KEY_LEFT).IsPressed();
+        velocity.y = (int)m_controller->GetKey(KEY_UP).IsPressed()
+                   - (int)m_controller->GetKey(KEY_DOWN).IsPressed();
         m_ship->m_position += normalize(velocity) * SHIP_SPEED * seconds;
         m_ship->m_position.x = clamp(m_ship->m_position.x,
                                      -ARENA.x / 2 + 9.f, ARENA.x / 2 - 9.f);
@@ -205,7 +205,7 @@ void Game::TickGame(float seconds)
     }
 
     /* Resolve fire */
-    if (!m_ship->m_dead && m_power && m_controller->GetKey(KEY_FIRE).IsDown())
+    if (!m_ship->m_dead && m_power && m_controller->GetKey(KEY_FIRE).IsPressed())
     {
         Sampler::PlaySample(m_snd_missile);
 
