@@ -24,7 +24,8 @@ public:
         m_hiscore(0),
         m_state(BlankScreen)
     {
-        m_controller = new Controller("Menu", KEY_MAX /* keys */, 0 /* axes */);
+        m_controller = new Controller("Menu");
+        m_controller->SetInputCount(KEY_MAX /* keys */, 0 /* axes */);
         m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Space");
         m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Return");
         m_controller->GetKey(KEY_FIRE).Bind("Keyboard", "Tab");

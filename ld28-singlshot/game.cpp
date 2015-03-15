@@ -29,7 +29,8 @@ using namespace lol;
 
 Game::Game()
 {
-    m_controller = new Controller("Default", KEY_MAX /* keys */, 0 /* axes */);
+    m_controller = new Controller("Default");
+    m_controller->SetInputCount(KEY_MAX /* keys */, 0 /* axes */);
     /* up/down/left/right */
     m_controller->GetKey(KEY_LEFT).Bind("Keyboard", "Left");
     m_controller->GetKey(KEY_RIGHT).Bind("Keyboard", "Right");
