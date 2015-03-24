@@ -160,7 +160,7 @@ private:
             break;
 
         case TitleScreen:
-            if (m_controller->WasKeyPressed(KEY_FIRE))
+            if (m_controller->WasKeyPressedThisFrame(KEY_FIRE))
             {
                 for (int i = 0; i < m_menu.Count(); ++i)
                     m_menu[i]->SetText("");
@@ -193,7 +193,7 @@ private:
             break;
 
         case XXX:
-            if (m_controller->WasKeyPressed(KEY_FIRE))
+            if (m_controller->WasKeyPressedThisFrame(KEY_FIRE))
             {
                 m_menu[0]->SetText("WORLD LEADERBOARDS");
                 m_menu[1]->SetText(" 1. Sam              00068290");
@@ -207,7 +207,7 @@ private:
             break;
 
         case GameOver:
-            if (m_controller->WasKeyPressed(KEY_FIRE))
+            if (m_controller->WasKeyPressedThisFrame(KEY_FIRE))
             {
                 Ticker::Unref(m_game);
                 m_game = nullptr;
