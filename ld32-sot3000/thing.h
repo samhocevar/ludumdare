@@ -10,24 +10,20 @@
 
 enum class thing_type : int
 {
-    player       = 0,
-    ground       = 1,
-    ground_left  = 2,
-    ground_right = 3,
-    enemy        = 4,
-};
-
-enum class thing_state : int
-{
-    small = 0,
-    large = 1,
+    none     = -1,
+    player   =  0,
+    ground   =  1,
+    platform =  2,
+    rock     =  3,
+    enemy    =  4,
 };
 
 class thing : public WorldEntity
 {
 public:
-    thing(thing_type t)
-      : m_type(t)
+    thing(thing_type t, ivec2 size)
+      : m_type(t),
+	    m_size(size)
     {
     }
 
@@ -50,11 +46,11 @@ public:
         switch (m_type)
         {
         case thing_type::player:
+        case thing_type::platform:
+        case thing_type::rock:
         case thing_type::enemy:
             return true;
         case thing_type::ground:
-        case thing_type::ground_left:
-        case thing_type::ground_right:
             return false;
         }
     }
@@ -65,8 +61,8 @@ public:
         {
         case thing_type::player:
         case thing_type::ground:
-        case thing_type::ground_left:
-        case thing_type::ground_right:
+        case thing_type::platform:
+        case thing_type::rock:
             return false;
         case thing_type::enemy:
             return true;
@@ -75,5 +71,6 @@ public:
 
 private:
     thing_type m_type;
+	ivec2 m_size;
 };
 
