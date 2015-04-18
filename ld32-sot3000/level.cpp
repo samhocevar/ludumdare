@@ -36,32 +36,21 @@ void level_instance::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
-    // Check collisions between player and things
-    float player_impulse_time = seconds;
-
-    for (thing *t : m_things)
-    {
-        if (t == m_player)
-            continue;
-
-        float collision_time = collide(m_player, vec3(m_player_impulse), t, vec3(0), 0.f, player_impulse_time);
-        if (collision_time < seconds)
-        {
-            // There will be a collision, but we might also be encroached in a current
-            // collision. Check again with a different start time to check whether we
-            // might be unencroaching.
-            float new_start_time = 0.1f * player_impulse_time;
-            float new_collision_time = collide(m_player, vec3(m_player_impulse), t, vec3(0), new_start_time, player_impulse_time);
-            if (new_collision_time > new_start_time)
-                collision_time = new_collision_time;
-
-            player_impulse_time = collision_time;
-        }
-    }
-
-    // Handle the player
-    m_player->m_position += m_player_impulse * player_impulse_time;
+    // Check how long we can apply player impulse before we hit something
+    float impulse_time = collide_player(m_player_impulse, seconds);
+    m_player->m_position += m_player_impulse * impulse_time;
     m_player_impulse = vec3(0.0f);
+
+    // We have gravity (most of the time)
+    m_player->m_velocity.y -= GRAVITY * seconds;
+
+    // Apply as much velocity from forces as possible
+    float force_time = collide_player(m_player->m_velocity, seconds);
+    force_time = collide_player(m_player->m_velocity, seconds);
+    m_player->m_position += m_player->m_velocity * force_time;
+
+    if (force_time == 0.0f)
+        m_player->m_velocity = vec3(0.0f);
 }
 
 void level_instance::TickDraw(float seconds, Scene &scene)
@@ -138,7 +127,37 @@ void level_instance::build()
     Ticker::Ref(m_player);
 }
 
+float level_instance::collide_player(vec3 velocity, float seconds)
+{
+    for (thing *t : m_things)
+    {
+        if (t == m_player)
+            continue;
+
+        float collision_time = collide(m_player, velocity, t, vec3(0), 0.f, seconds);
+        if (collision_time < seconds)
+        {
+            // There will be a collision, but we might also be encroached in a current
+            // collision. Check again with a different start time to check whether we
+            // might be unencroaching.
+            float new_collision_time = collide(m_player, velocity, t, vec3(0), 0.1f * seconds, seconds);
+            if (new_collision_time > 0.2f * seconds)
+                collision_time = new_collision_time;
+
+            seconds = collision_time;
+        }
+    }
+
+    return seconds;
+}
+
 void level_instance::impulse_x(float impulse)
 {
     m_player_impulse += vec3(impulse, 0.f, 0.f);
+}
+
+void level_instance::jump_y(float velocity)
+{
+    if (lol::abs(m_player->m_velocity.y) < 1.0f)
+        m_player->m_velocity.y += velocity;
 }

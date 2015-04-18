@@ -43,7 +43,5 @@ private:
 
     ld32_map *m_map;
     level_instance *m_level;
-
-    float m_timer;
 };
 

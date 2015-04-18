@@ -18,6 +18,8 @@ static int TILE_SIZE = 64;
 
 /* Player goes at 8 tiles per second */
 static float PLAYER_SPEED = TILE_SIZE * 8.f;
+static float PLAYER_JUMP_SPEED = TILE_SIZE * 28.f;
+static float GRAVITY = TILE_SIZE * 80.f;
 
 /* The size of the viewport, in world coordinates */
 static int VIEWPORT_SIZE_X = TILE_SIZE * 48;

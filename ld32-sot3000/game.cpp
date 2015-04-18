@@ -20,7 +20,6 @@ using namespace lol;
 #include "game.h"
 
 ld32_game::ld32_game()
-  : m_timer(0.0)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->AddTile(ivec2(16, 16));
@@ -92,6 +91,9 @@ void ld32_game::TickGame(float seconds)
         m_level->impulse_x(-PLAYER_SPEED);
     else if (m_controller->IsKeyPressed(input::go_right))
         m_level->impulse_x(PLAYER_SPEED);
+
+    if (m_controller->IsKeyPressed(input::jump))
+        m_level->jump_y(PLAYER_JUMP_SPEED);
 }
 
 void ld32_game::TickDraw(float seconds, Scene &scene)
@@ -99,8 +101,5 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
     Entity::TickDraw(seconds, scene);
 
     g_renderer->SetClearColor(vec4(1.f));
-
-    mat2 rot = mat2::rotate(degrees(m_timer));
-    scene.AddTile(m_tiles, 0, vec3(rot * vec2(0.3f * VIEWPORT_SIZE_Y), 0.f), 0, vec2(1.f), 0.f);
 }
 

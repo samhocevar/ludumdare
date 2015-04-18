@@ -79,7 +79,7 @@ float collide(thing const *t1, vec3 v1,
     vec3 start = t1->m_position + (v1 - v2) * min_time;
     vec3 end = t1->m_position + (v1 - v2) * max_time;
 
-    float const epsilon = 1e-5f * distance(aa, bb);
+    float const epsilon = 1e-5f * distance(start, end);
 
     // If the AABBs were already colliding, return 0.0f because collision
     // happens immediately.

@@ -97,7 +97,9 @@ public:
     void clear();
     void build();
 
+    float collide_player(vec3 velocity, float seconds);
     void impulse_x(float impulse);
+    void jump_y(float velocity);
 
 private:
     // The level description
