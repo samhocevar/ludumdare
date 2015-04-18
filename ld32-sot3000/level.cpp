@@ -36,6 +36,13 @@ void level_instance::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
+    // If there is an impulse, fix player orientation (TODO: animation states)
+    // Otherwise, don’t touch the sprite.
+    if (m_player_impulse.x < 0)
+        m_player->m_tile_index = 1;
+    if (m_player_impulse.x > 0)
+        m_player->m_tile_index = 0;
+
     // Check how long we can apply player impulse before we hit something
     float impulse_time = collide_player(m_player_impulse, seconds);
     m_player->m_position += m_player_impulse * impulse_time;
@@ -46,11 +53,31 @@ void level_instance::TickGame(float seconds)
 
     // Apply as much velocity from forces as possible
     float force_time = collide_player(m_player->m_velocity, seconds);
-    force_time = collide_player(m_player->m_velocity, seconds);
     m_player->m_position += m_player->m_velocity * force_time;
 
-    if (force_time == 0.0f)
-        m_player->m_velocity = vec3(0.0f);
+    // If not all forces were applied, try to slide horizontally or vertically
+    if (force_time < seconds)
+    {
+        float remaining_time = seconds - force_time;
+        vec3 x_velocity(m_player->m_velocity.x, 0.f, 0.f);
+        vec3 y_velocity(0.f, m_player->m_velocity.y, 0.f);
+        float x_force_time = collide_player(x_velocity, remaining_time);
+        float y_force_time = collide_player(y_velocity, remaining_time);
+
+        // If gravity isn’t strong enough to move us downwards, we’re grounded
+        if (m_player->m_velocity.y < 0.f && y_force_time == 0.f)
+            m_player->m_grounded = true;
+
+        if (x_force_time > 0)
+            m_player->m_position += x_velocity * x_force_time;
+        else
+            m_player->m_velocity.x = 0.f;
+
+        if (y_force_time > 0)
+            m_player->m_position += y_velocity * y_force_time;
+        else
+            m_player->m_velocity.y = 0.f;
+    }
 }
 
 void level_instance::TickDraw(float seconds, Scene &scene)
@@ -96,9 +123,15 @@ void level_instance::build()
             continue;
 
         thing *t = new thing(m_map->m_layout[i][j]);
-        t->m_position = vec3(i, j, 0) * TILE_SIZE;
+        t->m_position = vec3(i, j, 0) * float(TILE_SIZE);
         t->m_bbox[0] = vec3(0);
-        t->m_bbox[1] = vec3(TILE_SIZE);
+        t->m_bbox[1] = vec3(float(TILE_SIZE));
+
+        // Slightly tweak platform positions
+        t->m_bbox[0].x += TILE_SIZE * 0.1f;
+        t->m_bbox[0].y += TILE_SIZE * 0.3f;
+        t->m_bbox[1].x -= TILE_SIZE * 0.1f;
+        t->m_bbox[1].y -= TILE_SIZE * 0.1f;
 
         switch (m_map->m_layout[i][j])
         {
@@ -119,9 +152,9 @@ void level_instance::build()
 
     // Now the moving parts
     m_player = new thing(thing_type::player);
-    m_player->m_position = vec3(vec2(m_map->m_start), 0.f) * TILE_SIZE;
-    m_player->m_bbox[0] = vec3(0);
-    m_player->m_bbox[1] = vec3(TILE_SIZE);
+    m_player->m_position = vec3(vec2(m_map->m_start), 0.f) * float(TILE_SIZE);
+    m_player->m_bbox[0] = vec3(0.f);
+    m_player->m_bbox[1] = vec3(float(TILE_SIZE));
     m_player->m_tile_index = 0;
     m_things.push(m_player);
     Ticker::Ref(m_player);
@@ -140,8 +173,8 @@ float level_instance::collide_player(vec3 velocity, float seconds)
             // There will be a collision, but we might also be encroached in a current
             // collision. Check again with a different start time to check whether we
             // might be unencroaching.
-            float new_collision_time = collide(m_player, velocity, t, vec3(0), 0.1f * seconds, seconds);
-            if (new_collision_time > 0.2f * seconds)
+            float new_collision_time = collide(m_player, velocity, t, vec3(0), 0.4f * seconds, seconds);
+            if (new_collision_time > 0.6f * seconds)
                 collision_time = new_collision_time;
 
             seconds = collision_time;
@@ -153,11 +186,17 @@ float level_instance::collide_player(vec3 velocity, float seconds)
 
 void level_instance::impulse_x(float impulse)
 {
+    // FIXME: left/right commands should affect velocity directly so
+    // that we can do more appealing air control.
     m_player_impulse += vec3(impulse, 0.f, 0.f);
+    //m_player->m_velocity.x += impulse;
 }
 
 void level_instance::jump_y(float velocity)
 {
-    if (lol::abs(m_player->m_velocity.y) < 1.0f)
-        m_player->m_velocity.y += velocity;
+    if (m_player->m_grounded)
+    {
+        m_player->m_velocity.y = velocity;
+        m_player->m_grounded = false;
+    }
 }

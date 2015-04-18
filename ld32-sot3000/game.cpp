@@ -35,17 +35,21 @@ ld32_game::ld32_game()
     m_input << InputProfile::Keyboard(input::go_right, "Right");
     m_input << InputProfile::Keyboard(input::jump, "Up");
     m_input << InputProfile::Keyboard(input::fire, "Space");
+    m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
+    m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
+    m_input << InputProfile::JoystickKey(1, input::jump, "Y");
+    m_input << InputProfile::JoystickKey(1, input::fire, "X");
     m_controller->Init(m_input);
 
     // Some debug 
-    char const *debug_info[] = { "Hello World!", "This is my hand-made font", "This game is shit in a can" };
+    char const *debug_info[] = { "Hello Folks!", "Let's have fun", "PLEASE HAVE FUN!!" };
     float debug_y = VIEWPORT_SIZE_Y * 0.5f;
     for (auto t : debug_info)
     {
         m_debug_text.push(new Text(t, "data/font.png"));
         m_debug_text.last()->SetPos(vec3(VIEWPORT_SIZE_X * 0.5f, debug_y, 50.f));
         m_debug_text.last()->SetAlign(TextAlign::Center);
-        m_debug_text.last()->SetScale(vec2(0.8f));
+        m_debug_text.last()->SetScale(vec2(0.6f));
         m_debug_text.last()->SetSpacing(-0.0f);
         Ticker::Ref(m_debug_text.last());
         debug_y -= 1.5f * TILE_SIZE;
@@ -92,7 +96,7 @@ void ld32_game::TickGame(float seconds)
     else if (m_controller->IsKeyPressed(input::go_right))
         m_level->impulse_x(PLAYER_SPEED);
 
-    if (m_controller->IsKeyPressed(input::jump))
+    if (m_controller->WasKeyPressedThisFrame(input::jump))
         m_level->jump_y(PLAYER_JUMP_SPEED);
 }
 

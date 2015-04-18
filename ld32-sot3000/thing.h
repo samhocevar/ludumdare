@@ -33,8 +33,9 @@ public:
     bool can_kill();
 
 public:
-	vec2 m_size;
+    vec2 m_size;
     int m_tile_index;
+    bool m_grounded;
 
 private:
     thing_type m_type;

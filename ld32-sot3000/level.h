@@ -55,21 +55,21 @@ public:
         m_layout.SetSize(ivec2(WIDTH, HEIGHT));
         clear();
 
-        /* Start platform */
-        m_start = ivec2(10, HEIGHT - 4);
-        for (int i = 5; i < 15; ++i)
-            m_layout[i][HEIGHT - 5] = thing_type::ground;
-
         /* Spawn some random platforms */
-        for (int n = 0; n < 20; ++n)
+        for (int n = 0; n < 50; ++n)
         {
-            int i = lol::rand(WIDTH);
-            int i2 = lol::min(i + lol::rand(3, 6), WIDTH);
             int j = lol::rand(HEIGHT);
+            int i = lol::rand(WIDTH - 4);
+            int i2 = lol::min(i + lol::rand(2, 4), WIDTH);
 
             while (i < i2)
                 m_layout[i++][j] = thing_type::ground;
         }
+
+        /* Start platform */
+        m_start = ivec2(10, 2);
+        m_layout[10][2] = thing_type::none;
+        m_layout[10][3] = thing_type::none;
 
         /* End platform == ground */
         m_exit = ivec2(WIDTH - 1 - 2, 1);

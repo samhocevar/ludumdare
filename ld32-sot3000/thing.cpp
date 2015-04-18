@@ -22,7 +22,8 @@ using namespace lol;
 #pragma once
 
 thing::thing(thing_type t)
-  : m_type(t)
+  : m_type(t),
+    m_grounded(false)
 {
 }
 
