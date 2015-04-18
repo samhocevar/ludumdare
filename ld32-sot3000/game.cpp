@@ -40,23 +40,23 @@ ld32_game::ld32_game()
 
     // Some debug 
     char const *debug_info[] = { "Hello World!", "This is my hand-made font", "This game is shit in a can" };
-    float debug_y = 100.f;
+    float debug_y = VIEWPORT_SIZE_Y * 0.5f;
     for (auto t : debug_info)
     {
         m_debug_text.push(new Text(t, "data/font.png"));
-        m_debug_text.last()->SetPos(vec3(0.f, debug_y, 50.f));
+        m_debug_text.last()->SetPos(vec3(VIEWPORT_SIZE_X * 0.5f, debug_y, 50.f));
         m_debug_text.last()->SetAlign(TextAlign::Center);
-        m_debug_text.last()->SetScale(vec2(0.2f));
+        m_debug_text.last()->SetScale(vec2(0.8f));
         m_debug_text.last()->SetSpacing(-0.0f);
         Ticker::Ref(m_debug_text.last());
-        debug_y -= 40.f;
+        debug_y -= 1.5f * TILE_SIZE;
     }
 
     // “Load” a test map
     m_map = new test_map();
 
     // Create a new level
-    m_level = new ld32_level();
+    m_level = new level_instance();
     m_level->load_map(m_map);
     Ticker::Ref(m_level);
 }
@@ -87,11 +87,11 @@ void ld32_game::TickGame(float seconds)
     mat4 view = mat4::translate(vec3(vec2(m_level->size()), 0.f) * (-0.5f * TILE_SIZE));
     m_camera->SetView(view);
 
-    // Input debug stuff
+    // Input stuff
     if (m_controller->IsKeyPressed(input::go_left))
-        m_timer += seconds;
+        m_level->move_x(-seconds);
     else if (m_controller->IsKeyPressed(input::go_right))
-        m_timer -= seconds;
+        m_level->move_x(seconds);
 }
 
 void ld32_game::TickDraw(float seconds, Scene &scene)

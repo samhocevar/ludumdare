@@ -16,6 +16,9 @@ static int WINDOW_SIZE_Y = 600;
 
 static int TILE_SIZE = 64;
 
+/* Player goes at 8 tiles per second */
+static float PLAYER_SPEED = TILE_SIZE * 8.f;
+
 /* The size of the viewport, in world coordinates */
-static int VIEWPORT_SIZE_X = TILE_SIZE * 32;
-static int VIEWPORT_SIZE_Y = TILE_SIZE * 24;
+static int VIEWPORT_SIZE_X = TILE_SIZE * 48;
+static int VIEWPORT_SIZE_Y = TILE_SIZE * 36;

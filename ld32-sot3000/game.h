@@ -42,7 +42,7 @@ private:
     array<Text *> m_debug_text;
 
     ld32_map *m_map;
-    ld32_level *m_level;
+    level_instance *m_level;
 
     float m_timer;
 };

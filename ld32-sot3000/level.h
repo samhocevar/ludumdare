@@ -14,7 +14,7 @@
 
 class ld32_map
 {
-    friend class ld32_level;
+    friend class level_instance;
 
 public:
     ld32_map()
@@ -55,14 +55,24 @@ public:
         m_layout.SetSize(ivec2(WIDTH, HEIGHT));
         clear();
 
-        m_start = ivec2(2, 2);
-        m_exit = ivec2(WIDTH - 1 - 2, 2);
+        /* Start platform */
+        m_start = ivec2(10, HEIGHT - 4);
+        for (int i = 5; i < 15; ++i)
+            m_layout[i][HEIGHT - 5] = thing_type::ground;
 
-        for (int i = 0; i < WIDTH; ++i)
-            for (int j = 0; j < HEIGHT; ++j)
-                if (lol::rand(16) == 0)
-                    m_layout[i][j] = thing_type::rock;
+        /* Spawn some random platforms */
+        for (int n = 0; n < 20; ++n)
+        {
+            int i = lol::rand(WIDTH);
+            int i2 = lol::min(i + lol::rand(3, 6), WIDTH);
+            int j = lol::rand(HEIGHT);
 
+            while (i < i2)
+                m_layout[i++][j] = thing_type::ground;
+        }
+
+        /* End platform == ground */
+        m_exit = ivec2(WIDTH - 1 - 2, 1);
         for (int i = 0; i < WIDTH; ++i)
             m_layout[i][0] = thing_type::ground;
     }
@@ -73,11 +83,11 @@ private:
 };
 
 /* The level is a world representation of a map */
-class ld32_level : public WorldEntity
+class level_instance : public WorldEntity
 {
 public:
-    ld32_level();
-    ~ld32_level();
+    level_instance();
+    ~level_instance();
 
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
@@ -87,11 +97,15 @@ public:
     void clear();
     void build();
 
+    void move_x(float seconds);
+
 private:
     // The level description
     ld32_map *m_map;
 
     // Instanced things (to be moved somewhere else; split level description / level instance)
     array<thing *> m_things;
-};
+    thing *m_player;
 
+    float m_player_impulse;
+};
