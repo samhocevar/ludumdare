@@ -38,6 +38,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="ld32.cpp" />
     <ClCompile Include="level.cpp" />
+    <ClCompile Include="thing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)\..\src\lolcore.vcxproj">

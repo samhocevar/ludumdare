@@ -23,57 +23,22 @@ enum class thing_type : int
 class thing : public WorldEntity
 {
 public:
-    thing(thing_type t)
-      : m_type(t)
-    {
-    }
+    thing(thing_type t);
+    ~thing();
 
-    ~thing()
-    {
-    }
+    virtual void TickGame(float seconds);
+    virtual void TickDraw(float seconds, Scene &scene);
 
-    virtual void TickGame(float seconds)
-    {
-        WorldEntity::TickGame(seconds);
-    }
-
-    virtual void TickDraw(float seconds, Scene &scene)
-    {
-        WorldEntity::TickDraw(seconds, scene);
-    }
-
-    bool can_fall()
-    {
-        switch (m_type)
-        {
-        case thing_type::player:
-        case thing_type::platform:
-        case thing_type::rock:
-        case thing_type::enemy:
-            return true;
-        case thing_type::ground:
-            return false;
-        }
-    }
-
-    bool can_kill()
-    {
-        switch (m_type)
-        {
-        case thing_type::player:
-        case thing_type::ground:
-        case thing_type::platform:
-        case thing_type::rock:
-            return false;
-        case thing_type::enemy:
-            return true;
-        }
-    }
+    bool can_fall();
+    bool can_kill();
 
 public:
+	vec2 m_size;
     int m_tile_index;
 
 private:
     thing_type m_type;
 };
 
+extern float collide(thing const *t1, vec3 v1,
+                     thing const *t2, vec3 v2, float start, float stop);

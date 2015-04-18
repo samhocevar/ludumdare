@@ -4,6 +4,7 @@
     <ClCompile Include="ld32.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="level.cpp" />
+    <ClCompile Include="thing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />

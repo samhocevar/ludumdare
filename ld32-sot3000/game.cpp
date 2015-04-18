@@ -89,9 +89,9 @@ void ld32_game::TickGame(float seconds)
 
     // Input stuff
     if (m_controller->IsKeyPressed(input::go_left))
-        m_level->move_x(-seconds);
+        m_level->impulse_x(-PLAYER_SPEED);
     else if (m_controller->IsKeyPressed(input::go_right))
-        m_level->move_x(seconds);
+        m_level->impulse_x(PLAYER_SPEED);
 }
 
 void ld32_game::TickDraw(float seconds, Scene &scene)

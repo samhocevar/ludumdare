@@ -97,7 +97,7 @@ public:
     void clear();
     void build();
 
-    void move_x(float seconds);
+    void impulse_x(float impulse);
 
 private:
     // The level description
@@ -107,5 +107,5 @@ private:
     array<thing *> m_things;
     thing *m_player;
 
-    float m_player_impulse;
+    vec3 m_player_impulse;
 };
