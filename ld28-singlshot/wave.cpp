@@ -163,7 +163,7 @@ void Wave::HandleCollisions(Thing *thing)
             Ticker::Ref(m_game->m_powerups.Last());
 
             m_game->m_score_texts.Push(new Text(String::Printf("%d", m_game->m_combo), "data/font.png"));
-            m_game->m_score_texts.Last()->SetAlign(Text::ALIGN_CENTER);
+            m_game->m_score_texts.Last()->SetAlign(TextAlign::Center);
             m_game->m_score_texts.Last()->SetPos(vec3(thing->m_position.xy, 50.f));
             Ticker::Ref(m_game->m_score_texts.Last());
 

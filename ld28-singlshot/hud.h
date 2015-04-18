@@ -59,31 +59,31 @@ public:
         /* Default text */
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[0]->SetPos(vec3(0.f, 30.f, 50.f));
-        m_menu[0]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[0]->SetAlign(TextAlign::Center);
 
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[1]->SetPos(vec3(0.f, 0.f, 50.f));
-        m_menu[1]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[1]->SetAlign(TextAlign::Center);
 
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[2]->SetPos(vec3(0.f, -23.5f, 50.f));
-        m_menu[2]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[2]->SetAlign(TextAlign::Center);
 
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[3]->SetPos(vec3(0.f, -46.5f, 50.f));
-        m_menu[3]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[3]->SetAlign(TextAlign::Center);
 
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[4]->SetPos(vec3(0.f, -70.f, 50.f));
-        m_menu[4]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[4]->SetAlign(TextAlign::Center);
 
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[5]->SetPos(vec3(0.f, -90.f, 50.f));
-        m_menu[5]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[5]->SetAlign(TextAlign::Center);
 
         m_menu.Push(new Text("", "data/font.png"));
         m_menu[6]->SetPos(vec3(0.f, -110.f, 50.f));
-        m_menu[6]->SetAlign(Text::ALIGN_CENTER);
+        m_menu[6]->SetAlign(TextAlign::Center);
 
         for (int i = 0; i < m_menu.Count(); ++i)
             Ticker::Ref(m_menu[i]);
@@ -94,7 +94,7 @@ public:
 
         m_score.Push(new Text("", "data/font.png"));
         m_score[1]->SetPos(vec3(ARENA.x / 2 - 5.f, ARENA.y / 2 - 20.f, 50.f));
-        m_score[1]->SetAlign(Text::ALIGN_RIGHT);
+        m_score[1]->SetAlign(TextAlign::Right);
 
         for (int i = 0; i < m_score.Count(); ++i)
             Ticker::Ref(m_score[i]);

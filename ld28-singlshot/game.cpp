@@ -236,7 +236,7 @@ void Game::TickGame(float seconds)
             if (m_power)
             {
                 m_score_texts.Push(new Text("1000", "data/font.png"));
-                m_score_texts.Last()->SetAlign(Text::ALIGN_CENTER);
+                m_score_texts.Last()->SetAlign(TextAlign::Center);
                 m_score_texts.Last()->SetPos(vec3(m_powerups[i]->m_position.xy, 50.f));
                 Ticker::Ref(m_score_texts.Last());
 
@@ -323,7 +323,7 @@ void Game::SpawnShit()
         {
             m_hint = 1;
             m_hint_text = new Text("Pick Me Up!!", "data/font.png");
-            m_hint_text->SetAlign(Text::ALIGN_CENTER);
+            m_hint_text->SetAlign(TextAlign::Center);
             m_hint_text->SetPos(m_powerups.Last()->m_position
                                  + vec3(0.f, 20.f, 0.f));
             Ticker::Ref(m_hint_text);
