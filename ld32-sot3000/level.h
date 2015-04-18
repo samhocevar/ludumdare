@@ -8,40 +8,30 @@
 //   http://www.wtfpl.net/ for more details.
 //
 
-class level : public WorldEntity
+#pragma once
+
+#include "thing.h"
+
+class ld32_map
 {
+    friend class ld32_level;
+
 public:
-    level()
+    ld32_map()
     {
     }
 
-    ~level()
+    virtual ~ld32_map()
     {
     }
 
-    virtual void TickGame(float seconds)
+    void load(char const *name)
     {
-        WorldEntity::TickGame(seconds);
-    }
-
-    virtual void TickDraw(float seconds, Scene &scene)
-    {
-        WorldEntity::TickDraw(seconds, scene);
-    }
-
-    ivec2 size()
-    {
-        return (ivec2)m_layout.GetSize();
+        ASSERT(false, "Implement map loading for %s", name);
     }
 
     void clear()
     {
-        for (thing *t : m_things)
-        {
-            Ticker::Unref(t);
-        }
-        m_things.empty();
-
         for (int i = 0; i < m_layout.GetSize().x; ++i)
         for (int j = 0; j < m_layout.GetSize().y; ++j)
         {
@@ -49,35 +39,18 @@ public:
         }
     }
 
-    void build()
-    {
-        for (int i = 0; i < m_layout.GetSize().x; ++i)
-        for (int j = 0; j < m_layout.GetSize().y; ++j)
-        {
-            if (m_layout[i][j] != thing_type::none)
-            {
-                m_things.push(new thing(m_layout[i][j], ivec2(1)));
-                Ticker::Ref(m_things.last());
-            }
-        }
-    }
-
 protected:
-    // The level description
     array2d<thing_type> m_layout;
     ivec2 m_start, m_exit;
-
-    // Instanced things (to be moved somewhere else; split level description / level instance)
-    array<thing *> m_things;
 };
 
 //
 // Debug class to test the game before we have actual level design
 //
-class test_level : public level
+class test_map : public ld32_map
 {
 public:
-    test_level()
+    test_map()
     {
         m_layout.SetSize(ivec2(WIDTH, HEIGHT));
         clear();
@@ -86,18 +59,39 @@ public:
         m_exit = ivec2(WIDTH - 1 - 2, 2);
 
         for (int i = 0; i < WIDTH; ++i)
-        {
+            for (int j = 0; j < HEIGHT; ++j)
+                if (lol::rand(16) == 0)
+                    m_layout[i][j] = thing_type::rock;
+
+        for (int i = 0; i < WIDTH; ++i)
             m_layout[i][0] = thing_type::ground;
-        }
-
-        build();
-    }
-
-    ~test_level()
-    {
     }
 
 private:
     static int const WIDTH = 40;
     static int const HEIGHT = 30;
 };
+
+/* The level is a world representation of a map */
+class ld32_level : public WorldEntity
+{
+public:
+    ld32_level();
+    ~ld32_level();
+
+    virtual void TickGame(float seconds);
+    virtual void TickDraw(float seconds, Scene &scene);
+
+    ivec2 size();
+    void load_map(ld32_map *map);
+    void clear();
+    void build();
+
+private:
+    // The level description
+    ld32_map *m_map;
+
+    // Instanced things (to be moved somewhere else; split level description / level instance)
+    array<thing *> m_things;
+};
+

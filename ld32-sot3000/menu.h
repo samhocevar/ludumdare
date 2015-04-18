@@ -8,6 +8,8 @@
 //   http://www.wtfpl.net/ for more details.
 //
 
+#pragma once
+
 class ld32_menu : public Entity
 {
 

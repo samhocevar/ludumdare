@@ -8,6 +8,8 @@
 //   http://www.wtfpl.net/ for more details.
 //
 
+#pragma once
+
 enum class thing_type : int
 {
     none     = -1,
@@ -21,9 +23,8 @@ enum class thing_type : int
 class thing : public WorldEntity
 {
 public:
-    thing(thing_type t, ivec2 size)
-      : m_type(t),
-	    m_size(size)
+    thing(thing_type t)
+      : m_type(t)
     {
     }
 
@@ -69,8 +70,10 @@ public:
         }
     }
 
+public:
+    int m_tile_index;
+
 private:
     thing_type m_type;
-	ivec2 m_size;
 };
 

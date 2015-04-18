@@ -17,21 +17,22 @@
 using namespace lol;
 
 #include "constants.h"
+#include "game.h"
 
 #include "menu.h"
-
 #include "thing.h"
 #include "level.h"
-#include "game.h"
+
+ld32_game *g_game;
 
 int main(int argc, char **argv)
 {
     System::Init(argc, argv);
 
-    Application app("Ludum Dare 32", ivec2(SIZE_X, SIZE_Y), 60.0f);
+    Application app("Ludum Dare 32", ivec2(WINDOW_SIZE_X, WINDOW_SIZE_Y), 60.0f);
 
     //new ld32_menu();
-    new ld32_game();
+    g_game = new ld32_game();
     app.Run();
 
     return EXIT_SUCCESS;

@@ -2,5 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="ld32.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="level.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="level.h" />
+    <ClInclude Include="menu.h" />
+    <ClInclude Include="thing.h" />
   </ItemGroup>
 </Project>

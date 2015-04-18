@@ -5,7 +5,9 @@ bin_PROGRAMS = ld32
 
 ld32_SOURCES = \
     ld32.cpp \
-    constants.h game.h menu.h thing.h level.h
+    game.cpp game.h \
+    level.cpp level.h \
+    constants.h menu.h thing.h
 
 ld32_CPPFLAGS = $(AM_CPPFLAGS)
 ld32_DEPENDENCIES = @LOL_DEPS@
