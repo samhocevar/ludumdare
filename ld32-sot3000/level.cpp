@@ -36,13 +36,16 @@ void level_instance::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
-    tick_player(seconds);
-    for (thing *t : m_projectiles)
-        tick_projectile(t, seconds);
-    for (thing *t : m_items)
-        tick_living(t, seconds);
-    for (thing *t : m_enemies)
-        tick_living(t, seconds);
+    if (!g_game->is_paused())
+    {
+        tick_player(seconds);
+        for (thing *t : m_projectiles)
+            tick_projectile(t, seconds);
+        for (thing *t : m_items)
+            tick_living(t, seconds);
+        for (thing *t : m_enemies)
+            tick_living(t, seconds);
+    }
 }
 
 void level_instance::tick_player(float seconds)

@@ -20,7 +20,8 @@ enum input
     go_right = 1,
     jump = 2,
     fire = 3,
-    escape = 4,
+    pause = 4,
+    escape = 5,
 };
 
 class ld32_game : public Entity
@@ -31,6 +32,8 @@ public:
 
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
+
+    inline bool is_paused() const { return m_paused; }
 
 private:
     void tick_camera(float seconds);
@@ -44,7 +47,8 @@ private:
     Controller *m_controller;
     InputProfile m_input;
 
-    array<Text *> m_debug_text;
+    Text *m_pause_text;
+    bool m_paused;
 
     ld32_map *m_map;
     level_instance *m_level;
