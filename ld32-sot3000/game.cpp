@@ -15,7 +15,7 @@
 #include <lol/engine.h>
 
 // XXX: use this alternate set of maps for debugging purposes
-#define USE_DEBUG_MAPS 1
+#define USE_DEBUG_MAPS 0
 
 using namespace lol;
 
@@ -48,6 +48,8 @@ ld32_game::ld32_game()
     m_input << InputProfile::Keyboard(input::fire, "Space");
     m_input << InputProfile::Keyboard(input::pause, "P");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
+
+    m_input << InputProfile::Keyboard(input::next_level, "X");
 
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
@@ -207,6 +209,20 @@ void ld32_game::tick_events(float seconds)
             // Escape restarts the level when not paused
             Ticker::Unref(m_level);
             m_level = new level_instance();
+            m_level->load_map(&m_map);
+            Ticker::Ref(m_level);
+        }
+    }
+
+    // XXX: debug code
+    if (m_controller->WasKeyPressedThisFrame(input::next_level))
+    {
+        if (m_state == game_state::in_game
+             && m_current_progress + 1 < g_map_count)
+        {
+            Ticker::Unref(m_level);
+            m_level = new level_instance();
+            m_map.load_data(g_maps[++m_current_progress]);
             m_level->load_map(&m_map);
             Ticker::Ref(m_level);
         }

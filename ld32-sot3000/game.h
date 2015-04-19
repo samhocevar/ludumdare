@@ -23,6 +23,9 @@ enum input
     fire,
     escape,
     //start, // FIXME: apparently I can’t register the same key to several IDs
+
+    // For debugging purposes
+    next_level,
 };
 
 enum class game_state
