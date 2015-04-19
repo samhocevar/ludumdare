@@ -22,9 +22,9 @@ static int MIN_VIEWPORT_Y = TILE_SIZE * 12;
 static int MAX_VIEWPORT_X = TILE_SIZE * 40;
 static int MAX_VIEWPORT_Y = TILE_SIZE * 30;
 
-/* Player runs at 12 tiles per second, enemies are slower */
+/* Player runs at 12 tiles per second, monsters are slower */
 static float PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
-static float ENEMY_RUN_SPEED = TILE_SIZE * 8.f;
+static float MONSTER_RUN_SPEED = TILE_SIZE * 8.f;
 
 /* 30 / 120 are good values to prevent player from jumping
  * on 4-block platforms. For 3-block platforms, use 24 / 100. */
@@ -57,8 +57,8 @@ enum Tiles
     Button = 23,
     Laser = 24,
 
-    SittingEnemy = 32,
-    WalkingEnemy = 33,
+    SittingMonster = 32,
+    WalkingMonster = 33,
     FlyingGoRight = 48,
     FlyingGoLeft = 49,
 

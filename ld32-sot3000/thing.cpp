@@ -62,12 +62,12 @@ bool thing::can_fall()
     case thing_type::player:
     case thing_type::platform:
     case thing_type::blocker:
-    case thing_type::enemy_blocker:
+    case thing_type::monster_blocker:
     case thing_type::item_scaler:
     case thing_type::pink_gun:
     case thing_type::blue_gun:
-    case thing_type::walking_enemy:
-    case thing_type::sitting_enemy:
+    case thing_type::walking_monster:
+    case thing_type::sitting_monster:
         return true;
     case thing_type::ground:
     case thing_type::door:
@@ -75,7 +75,7 @@ bool thing::can_fall()
     case thing_type::button:
     case thing_type::pink_projectile:
     case thing_type::blue_projectile:
-    case thing_type::flying_enemy:
+    case thing_type::flying_monster:
     case thing_type::laser:
         return false;
     }
@@ -92,7 +92,7 @@ bool thing::can_kill()
     case thing_type::door:
     case thing_type::platform:
     case thing_type::blocker:
-    case thing_type::enemy_blocker:
+    case thing_type::monster_blocker:
     case thing_type::item_scaler:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
@@ -101,9 +101,9 @@ bool thing::can_kill()
     case thing_type::button:
         return false;
     case thing_type::spikes:
-    case thing_type::walking_enemy:
-    case thing_type::sitting_enemy:
-    case thing_type::flying_enemy:
+    case thing_type::walking_monster:
+    case thing_type::sitting_monster:
+    case thing_type::flying_monster:
     case thing_type::laser:
         return !m_hidden;
     }
@@ -123,11 +123,11 @@ bool thing::can_block()
     case thing_type::blue_gun:
     case thing_type::button:
     case thing_type::laser:
-    case thing_type::enemy_blocker:
+    case thing_type::monster_blocker:
     case thing_type::item_scaler:
-    case thing_type::walking_enemy:
-    case thing_type::sitting_enemy:
-    case thing_type::flying_enemy:
+    case thing_type::walking_monster:
+    case thing_type::sitting_monster:
+    case thing_type::flying_monster:
         return false;
     case thing_type::player:
     case thing_type::platform:
@@ -137,7 +137,7 @@ bool thing::can_block()
     }
 }
 
-bool thing::can_block_enemy()
+bool thing::can_block_monster()
 {
     switch (m_type)
     {
@@ -152,14 +152,14 @@ bool thing::can_block_enemy()
     case thing_type::item_scaler:
     case thing_type::button:
     case thing_type::laser:
-    case thing_type::walking_enemy:
-    case thing_type::sitting_enemy:
-    case thing_type::flying_enemy:
+    case thing_type::walking_monster:
+    case thing_type::sitting_monster:
+    case thing_type::flying_monster:
         return false;
     case thing_type::platform:
     case thing_type::ground:
     case thing_type::blocker:
-    case thing_type::enemy_blocker:
+    case thing_type::monster_blocker:
     case thing_type::spikes:
         return true;
     }
@@ -175,7 +175,7 @@ bool thing::can_scale()
     case thing_type::ground:
     case thing_type::door:
     case thing_type::spikes:
-    case thing_type::enemy_blocker:
+    case thing_type::monster_blocker:
     case thing_type::item_scaler:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
@@ -186,9 +186,9 @@ bool thing::can_scale()
     case thing_type::player:
     case thing_type::blocker:
     case thing_type::button:
-    case thing_type::walking_enemy:
-    case thing_type::sitting_enemy:
-    case thing_type::flying_enemy:
+    case thing_type::walking_monster:
+    case thing_type::sitting_monster:
+    case thing_type::flying_monster:
         return true;
     }
 }

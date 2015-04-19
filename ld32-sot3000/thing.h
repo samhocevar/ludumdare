@@ -15,9 +15,9 @@ enum class thing_type : int
     none = -1,
     /* Living things */
     player,
-    sitting_enemy,
-    walking_enemy,
-    flying_enemy,
+    sitting_monster,
+    walking_monster,
+    flying_monster,
     pink_projectile,
     blue_projectile,
     /* Items */
@@ -29,7 +29,7 @@ enum class thing_type : int
     door,
     platform,
     blocker,
-    enemy_blocker,
+    monster_blocker,
     item_scaler,
     spikes,
     laser,
@@ -47,7 +47,7 @@ public:
     bool can_fall();
     bool can_kill();
     bool can_block();
-    bool can_block_enemy();
+    bool can_block_monster();
     bool can_scale();
 
     inline thing_type get_type() const { return m_type; }

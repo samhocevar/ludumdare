@@ -47,7 +47,7 @@ void level_instance::TickGame(float seconds)
             tick_projectile(t, seconds);
         for (thing *t : m_items)
             tick_living(t, seconds);
-        for (thing *t : m_enemies)
+        for (thing *t : m_monsters)
             tick_living(t, seconds);
     }
 }
@@ -200,13 +200,13 @@ void level_instance::tick_living(thing *t, float seconds)
 
     switch (t->get_type())
     {
-    case thing_type::flying_enemy:
+    case thing_type::flying_monster:
         t->m_tile_index = t->m_facing_left ? Tiles::FlyingGoLeft : Tiles::FlyingGoRight;
-        impulse.x = t->m_facing_left ? -ENEMY_RUN_SPEED : ENEMY_RUN_SPEED;
+        impulse.x = t->m_facing_left ? -MONSTER_RUN_SPEED : MONSTER_RUN_SPEED;
         break;
-    case thing_type::walking_enemy:
+    case thing_type::walking_monster:
         can_push_button = true;
-        impulse.x = t->m_facing_left ? -ENEMY_RUN_SPEED : ENEMY_RUN_SPEED;
+        impulse.x = t->m_facing_left ? -MONSTER_RUN_SPEED : MONSTER_RUN_SPEED;
         break;
     }
 
@@ -299,7 +299,7 @@ void level_instance::tick_projectile(thing *t, float seconds)
 
         for (thing *t2 : m_items)
             check(t2);
-        for (thing *t2 : m_enemies)
+        for (thing *t2 : m_monsters)
             check(t2);
     }
 }
@@ -347,7 +347,7 @@ void level_instance::clear()
     m_things.empty();
 
     m_projectiles.empty();
-    m_enemies.empty();
+    m_monsters.empty();
     m_items.empty();
 }
 
@@ -388,7 +388,7 @@ void level_instance::build()
             t->m_tile_index = Tiles::Blocker;
             m_items.push(t);
             break;
-        case thing_type::enemy_blocker:
+        case thing_type::monster_blocker:
             t->m_tile_index = Tiles::Blocker;
             t->m_hidden = true;
             break;
@@ -422,17 +422,17 @@ void level_instance::build()
             t->m_tile_index = Tiles::BlueGun;
             m_items.push(t);
             break;
-        case thing_type::sitting_enemy:
-            t->m_tile_index = Tiles::SittingEnemy;
-            m_enemies.push(t);
+        case thing_type::sitting_monster:
+            t->m_tile_index = Tiles::SittingMonster;
+            m_monsters.push(t);
             break;
-        case thing_type::walking_enemy:
-            t->m_tile_index = Tiles::WalkingEnemy;
-            m_enemies.push(t);
+        case thing_type::walking_monster:
+            t->m_tile_index = Tiles::WalkingMonster;
+            m_monsters.push(t);
             break;
-        case thing_type::flying_enemy:
+        case thing_type::flying_monster:
             t->m_tile_index = Tiles::FlyingGoLeft;
-            m_enemies.push(t);
+            m_monsters.push(t);
             break;
         default:
             t->m_tile_index = Tiles::Blocker; // FIXME: what to do here?
@@ -489,18 +489,18 @@ vec3 level_instance::get_poi() const
 
 float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)
 {
-    bool is_moving_enemy = t->get_type() == thing_type::walking_enemy
-                        || t->get_type() == thing_type::flying_enemy;
+    bool is_moving_monster = t->get_type() == thing_type::walking_monster
+                        || t->get_type() == thing_type::flying_monster;
 
     for (thing *t2 : m_things)
     {
         if (t2 == t)
             continue;
 
-        if (is_moving_enemy && !t2->can_block_enemy())
+        if (is_moving_monster && !t2->can_block_monster())
             continue;
 
-        if (!is_moving_enemy && !t2->can_block())
+        if (!is_moving_monster && !t2->can_block())
             continue;
 
         float collision_time = collide(t, velocity, t2, vec3(0), 0.f, seconds);

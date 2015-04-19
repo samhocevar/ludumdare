@@ -54,7 +54,7 @@ public:
                 m_layout[i][j] = thing_type::blocker;
                 break;
             case '-':
-                m_layout[i][j] = thing_type::enemy_blocker;
+                m_layout[i][j] = thing_type::monster_blocker;
                 break;
             case '+':
                 m_layout[i][j] = thing_type::item_scaler;
@@ -75,13 +75,13 @@ public:
                 m_layout[i][j] = thing_type::blue_gun;
                 break;
             case '#':
-                m_layout[i][j] = thing_type::sitting_enemy;
+                m_layout[i][j] = thing_type::sitting_monster;
                 break;
             case '@':
-                m_layout[i][j] = thing_type::walking_enemy;
+                m_layout[i][j] = thing_type::walking_monster;
                 break;
             case '*':
-                m_layout[i][j] = thing_type::flying_enemy;
+                m_layout[i][j] = thing_type::flying_monster;
                 break;
             }
         }
@@ -140,7 +140,7 @@ private:
     // Instanced things (to be moved somewhere else; split level description / level instance)
     array<thing *> m_things;
     thing *m_player;
-    array<thing *> m_enemies;
+    array<thing *> m_monsters;
     array<thing *> m_projectiles;
     array<thing *> m_items;
 
