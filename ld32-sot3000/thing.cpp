@@ -23,7 +23,9 @@ using namespace lol;
 
 thing::thing(thing_type t)
   : m_type(t),
-    m_grounded(false)
+    m_grounded(false),
+    m_can_impulse(false),
+    m_jump_time(0.0f)
 {
 }
 

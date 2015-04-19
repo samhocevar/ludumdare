@@ -11,15 +11,25 @@
 #pragma once
 
 /* The size of the window we create */
-static int WINDOW_SIZE_X = 800;
-static int WINDOW_SIZE_Y = 600;
+static int WINDOW_SIZE_X = 1024;
+static int WINDOW_SIZE_Y = 720;
 
 static int TILE_SIZE = 64;
 
-/* Player goes at 8 tiles per second */
-static float PLAYER_SPEED = TILE_SIZE * 12.f;
-static float PLAYER_JUMP_SPEED = TILE_SIZE * 35.f;
+/* Player runs at 12 tiles per second */
+static float PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
+
+/* 30 / 120 are good values to prevent player from jumping
+ * on 4-block platforms. For 3-block platforms, use 24 / 100. */
+static float PLAYER_JUMP_SPEED = TILE_SIZE * 30.f;
 static float GRAVITY = TILE_SIZE * 120.f;
+
+/* Number of seconds during which pressing the jump button has
+ * an effect. This allows for short and long jumps. */
+static float PLAYER_JUMP_TIME = 0.100f;
+
+/* Maximum player speed, including in free fall. */
+static float PLAYER_MAX_SPEED = TILE_SIZE * 35.f;
 
 /* The size of the viewport, in world coordinates */
 static int VIEWPORT_SIZE_X = TILE_SIZE * 40;

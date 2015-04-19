@@ -51,6 +51,12 @@ void level_instance::TickGame(float seconds)
     // We have gravity (most of the time)
     m_player->m_velocity.y -= GRAVITY * seconds;
 
+    // But we also have air friction which prevents our speed to reach
+    // dangerous values… make this naive for now
+    float speed = length(m_player->m_velocity);
+    if (speed > PLAYER_MAX_SPEED)
+        m_player->m_velocity *= (PLAYER_MAX_SPEED / speed);
+
     // Apply as much velocity from forces as possible
     float force_time = collide_player(m_player->m_velocity, seconds);
     m_player->m_position += m_player->m_velocity * force_time;
@@ -192,11 +198,30 @@ void level_instance::impulse_x(float impulse)
     //m_player->m_velocity.x += impulse;
 }
 
-void level_instance::jump_y(float velocity)
+void level_instance::jump()
 {
     if (m_player->m_grounded)
     {
-        m_player->m_velocity.y = velocity;
         m_player->m_grounded = false;
+        m_player->m_can_impulse = true;
+        m_player->m_jump_time = PLAYER_JUMP_TIME;
+    }
+}
+
+void level_instance::continue_jump(float velocity, float seconds)
+{
+    if (m_player->m_can_impulse)
+    {
+        if (m_player->m_jump_time == PLAYER_JUMP_TIME)
+            m_player->m_velocity.y = velocity;
+
+        m_player->m_jump_time -= seconds;
+        if (m_player->m_jump_time < 0.0f)
+            m_player->m_can_impulse = false;
+
+#if 0
+        // FIXME: does not work well; I’m cancelling the short/long jump feature
+        m_player->m_velocity.y += 1.0f * velocity * seconds / PLAYER_JUMP_TIME;
+#endif
     }
 }

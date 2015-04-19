@@ -92,12 +92,14 @@ void ld32_game::TickGame(float seconds)
 
     // Input stuff
     if (m_controller->IsKeyPressed(input::go_left))
-        m_level->impulse_x(-PLAYER_SPEED);
+        m_level->impulse_x(-PLAYER_RUN_SPEED);
     else if (m_controller->IsKeyPressed(input::go_right))
-        m_level->impulse_x(PLAYER_SPEED);
+        m_level->impulse_x(PLAYER_RUN_SPEED);
 
     if (m_controller->WasKeyPressedThisFrame(input::jump))
-        m_level->jump_y(PLAYER_JUMP_SPEED);
+        m_level->jump();
+    if (m_controller->IsKeyPressed(input::jump))
+        m_level->continue_jump(PLAYER_JUMP_SPEED, seconds);
 }
 
 void ld32_game::TickDraw(float seconds, Scene &scene)

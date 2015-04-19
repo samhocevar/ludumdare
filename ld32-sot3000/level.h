@@ -25,9 +25,31 @@ public:
     {
     }
 
-    void load(char const *name)
+    void load_data(char const *data)
     {
-        ASSERT(false, "Implement map loading for %s", name);
+        int const width = ::strchr(data, '\n') - data;
+        int const height = ::strlen(data) / (width + 1);
+
+        m_layout.SetSize(ivec2(width, height));
+        clear();
+
+        for (int i = 0; i < width; ++i)
+        for (int j = 0; j < height; ++j)
+        {
+            char ch = data[(height - 1 - j) * (width + 1) + i];
+            switch (ch)
+            {
+            case 'S':
+                m_start = ivec2(i, j);
+                break;
+            case 'E':
+                m_exit = ivec2(i, j);
+                break;
+            case '%':
+                m_layout[i][j] = thing_type::ground;
+                break;
+            }
+        }
     }
 
     void clear()
@@ -52,34 +74,27 @@ class test_map : public ld32_map
 public:
     test_map()
     {
-        m_layout.SetSize(ivec2(WIDTH, HEIGHT));
-        clear();
+        char const *data =
+        "%                            %\n"
+        "%                            %\n"
+        "%      %%%%                  %\n"
+        "%               %%%%%%%%     %\n"
+        "%                           %%\n"
+        "%                            %\n"
+        "%%%                          %\n"
+        "%                           %%\n"
+        "%                            %\n"
+        "%                            %\n"
+        "%                           %%\n"
+        "%                       E    %\n"
+        "%                     %%%    %\n"
+        "%              %%%          %%\n"
+        "%       %%%                  %\n"
+        "%  S                         %\n"
+        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
 
-        /* Spawn some random platforms */
-        for (int n = 0; n < 50; ++n)
-        {
-            int j = lol::rand(HEIGHT);
-            int i = lol::rand(WIDTH - 4);
-            int i2 = lol::min(i + lol::rand(2, 4), WIDTH);
-
-            while (i < i2)
-                m_layout[i++][j] = thing_type::ground;
-        }
-
-        /* Start platform */
-        m_start = ivec2(10, 2);
-        m_layout[10][2] = thing_type::none;
-        m_layout[10][3] = thing_type::none;
-
-        /* End platform == ground */
-        m_exit = ivec2(WIDTH - 1 - 2, 1);
-        for (int i = 0; i < WIDTH; ++i)
-            m_layout[i][0] = thing_type::ground;
+        load_data(data);
     }
-
-private:
-    static int const WIDTH = 40;
-    static int const HEIGHT = 30;
 };
 
 /* The level is a world representation of a map */
@@ -99,7 +114,8 @@ public:
 
     float collide_player(vec3 velocity, float seconds);
     void impulse_x(float impulse);
-    void jump_y(float velocity);
+    void jump();
+    void continue_jump(float velocity, float seconds);
 
 private:
     // The level description

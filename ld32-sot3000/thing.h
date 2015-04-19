@@ -33,9 +33,13 @@ public:
     bool can_kill();
 
 public:
+    /* Generic */
     vec2 m_size;
     int m_tile_index;
-    bool m_grounded;
+
+    /* Player-specific (for now) */
+    bool m_grounded, m_can_impulse;
+    float m_jump_time;
 
 private:
     thing_type m_type;
