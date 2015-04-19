@@ -24,7 +24,7 @@ using namespace lol;
 level_instance::level_instance()
   : m_player(nullptr),
     m_player_impulse(0.f),
-    m_active_gun(thing_type::blue_gun)
+    m_active_gun(thing_type::none)
 {
 }
 
@@ -99,6 +99,33 @@ void level_instance::tick_player(float seconds)
         else
             m_player->m_velocity.y = 0.f;
     }
+
+    // Check whether we can pick up an item
+    for (thing *t : m_items)
+    {
+        if (t->m_hidden || m_active_gun == t->get_type())
+            continue;
+
+        bool is_pink = t->get_type() == thing_type::pink_gun;
+        bool is_blue = t->get_type() == thing_type::blue_gun;
+
+        if ((is_pink || is_blue) &&
+            collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) < seconds)
+        {
+            m_active_gun = t->get_type();
+            t->m_hidden = true;
+
+            // If we picked the blue gun, show all hidden pink guns, and vice-versa
+            for (thing *t2 : m_items)
+            {
+                bool other_is_pink = t2->get_type() == thing_type::pink_gun;
+                bool other_is_blue = t2->get_type() == thing_type::blue_gun;
+
+                if (t2->m_hidden && ((is_pink && other_is_blue) || (is_blue && other_is_pink)))
+                    t2->m_hidden = false;
+            }
+        }
+    }
 }
 
 void level_instance::tick_living(thing *t, float seconds)
@@ -150,10 +177,20 @@ void level_instance::tick_projectile(thing *t, float seconds)
     {
         t->m_position += t->m_velocity * seconds;
 
-        // Horizontal killbox until we get proper collisions
-        if (t->m_position.x + TILE_SIZE * 2 < 0.f
-             || t->m_position.x - TILE_SIZE * 2 > world_size().x)
-            t->m_hidden = true;
+        auto check = [&](thing *t2)
+        {
+            if (t2->can_scale() &&
+                 collide(t, vec3(0), t2, vec3(0), 0.f, seconds) < seconds)
+            {
+                t->m_hidden = true;
+                t2->m_target_scale = (t->get_type() == thing_type::blue_projectile) ? 2.f : 1.f;
+            }
+        };
+
+        for (thing *t2 : m_items)
+            check(t2);
+        for (thing *t2 : m_enemies)
+            check(t2);
     }
 }
 
@@ -243,6 +280,7 @@ void level_instance::build()
             break;
         case thing_type::spikes:
             t->m_tile_index = Tiles::Spikes;
+            t->m_original_aabb.B.y -= TILE_SIZE * 0.5f;
             break;
         case thing_type::key:
             t->m_tile_index = Tiles::Key;
@@ -289,8 +327,8 @@ void level_instance::build()
         thing *t = new thing(type);
         m_projectiles.push(t);
         t->m_hidden = true;
-        t->m_original_aabb.A = vec3(TILE_SIZE * 0.3f);
-        t->m_original_aabb.B = vec3(TILE_SIZE * 0.7f);
+        t->m_original_aabb.A = vec3(TILE_SIZE * 0.4f);
+        t->m_original_aabb.B = vec3(TILE_SIZE * 0.6f);
         switch (type)
         {
             case thing_type::pink_projectile:

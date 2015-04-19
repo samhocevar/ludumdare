@@ -44,6 +44,7 @@ public:
     bool can_fall();
     bool can_kill();
     bool can_block();
+    bool can_scale();
 
     inline thing_type get_type() const { return m_type; }
 
@@ -51,7 +52,7 @@ public:
     /* Generic */
     vec2 m_size;
     box3 m_original_aabb;
-    float m_scale;
+    float m_target_scale, m_scale;
     int m_tile_index;
     bool m_hidden;
 

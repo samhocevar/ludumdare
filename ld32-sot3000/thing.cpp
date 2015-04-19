@@ -24,6 +24,7 @@ using namespace lol;
 thing::thing(thing_type t)
   : m_type(t),
     m_scale(1.f),
+    m_target_scale(1.f),
     m_hidden(false),
     m_grounded(false),
     m_can_impulse(false),
@@ -42,6 +43,9 @@ void thing::TickGame(float seconds)
 
     m_bbox[0] = m_original_aabb.A * m_scale;
     m_bbox[1] = m_original_aabb.B * m_scale;
+
+    // FIXME
+    m_scale = lerp(m_target_scale, m_scale, seconds * 0.5f);
 }
 
 void thing::TickDraw(float seconds, Scene &scene)
@@ -53,6 +57,8 @@ bool thing::can_fall()
 {
     switch (m_type)
     {
+    case thing_type::none:
+        return false;
     case thing_type::player:
     case thing_type::platform:
     case thing_type::blocker:
@@ -76,6 +82,8 @@ bool thing::can_kill()
 {
     switch (m_type)
     {
+    case thing_type::none:
+        return false;
     case thing_type::player:
     case thing_type::ground:
     case thing_type::door:
@@ -99,6 +107,8 @@ bool thing::can_block()
 {
     switch (m_type)
     {
+    case thing_type::none:
+        return false;
     case thing_type::door:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
@@ -111,6 +121,31 @@ bool thing::can_block()
     case thing_type::ground:
     case thing_type::blocker:
     case thing_type::spikes:
+    case thing_type::walking_enemy:
+    case thing_type::sitting_enemy:
+    case thing_type::flying_enemy:
+        return true;
+    }
+}
+
+bool thing::can_scale()
+{
+    switch (m_type)
+    {
+    case thing_type::none:
+        return false;
+    case thing_type::platform:
+    case thing_type::ground:
+    case thing_type::door:
+    case thing_type::spikes:
+    case thing_type::pink_projectile:
+    case thing_type::pink_gun:
+    case thing_type::blue_projectile:
+    case thing_type::blue_gun:
+    case thing_type::key:
+        return false;
+    case thing_type::player:
+    case thing_type::blocker:
     case thing_type::walking_enemy:
     case thing_type::sitting_enemy:
     case thing_type::flying_enemy:

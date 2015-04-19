@@ -201,6 +201,27 @@ static char const * const test_maps[] =
     "%                                                                                                   %\n"
     "% S                                                                                                 %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %\n",
+
+    /* Level 6 */
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                            % %\n"
+    "                                              %\n"
+    "                                              %\n"
+    "% %                                     E     %\n"
+    "%                                             %\n"
+    "%                                             %\n"
+    "%   S       b             X          p        %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
+
 };
 
 class test_map : public ld32_map
@@ -210,7 +231,7 @@ public:
     {
         //int count = sizeof(test_maps) / sizeof(*test_maps);
         //load_data(test_maps[lol::rand(count)]);
-        load_data(test_maps[2]);
+        load_data(test_maps[0]);
     }
 };
 
