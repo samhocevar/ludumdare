@@ -23,7 +23,8 @@ using namespace lol;
 
 level_instance::level_instance()
   : m_player(nullptr),
-    m_player_impulse(0.f)
+    m_player_impulse(0.f),
+    m_active_gun(thing_type::blue_gun)
 {
 }
 
@@ -378,12 +379,24 @@ void level_instance::continue_jump(float velocity, float seconds)
 
 void level_instance::fire()
 {
-    thing *fire = m_projectiles.last();
+    thing *fire;
 
-    if (!fire->m_hidden)
+    switch (m_active_gun)
+    {
+    case thing_type::none:
         return;
+    case thing_type::pink_gun:
+        fire = m_projectiles[0];
+        break;
+    case thing_type::blue_gun:
+        fire = m_projectiles[1];
+        break;
+    }
+
+    vec3 dir = (m_player->m_facing_left ? -1.f : 1.f) * vec3(1.0f, 0.f, 0.f);
 
     fire->m_hidden = false;
-    fire->m_position = m_player->m_position;
-    fire->m_velocity = (m_player->m_facing_left ? -1.f : 1.f) * vec3(PROJECTILE_MAX_SPEED, 0.f, 0.f);
+    fire->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
+    fire->m_velocity = PROJECTILE_MAX_SPEED * dir;
 }
+

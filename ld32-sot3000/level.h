@@ -254,4 +254,6 @@ private:
     array<thing *> m_items;
 
     vec3 m_player_impulse;
+    thing_type m_active_gun;
 };
+
