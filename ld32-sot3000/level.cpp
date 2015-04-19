@@ -360,8 +360,15 @@ void level_instance::build()
             t->m_tile_index = Tiles::Spikes;
             t->m_original_aabb.B.y -= TILE_SIZE * 0.5f;
             break;
-        case thing_type::key:
-            t->m_tile_index = Tiles::Key;
+        case thing_type::button:
+            t->m_tile_index = Tiles::Button;
+            t->m_original_aabb.B.y -= TILE_SIZE * 0.7f;
+            m_items.push(t);
+            break;
+        case thing_type::laser:
+            t->m_tile_index = Tiles::Laser;
+            t->m_original_aabb.A.x += TILE_SIZE * 0.4f;
+            t->m_original_aabb.B.x -= TILE_SIZE * 0.4f;
             m_items.push(t);
             break;
         case thing_type::pink_gun:

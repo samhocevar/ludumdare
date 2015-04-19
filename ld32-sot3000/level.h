@@ -59,6 +59,12 @@ public:
             case '+':
                 m_layout[i][j] = thing_type::item_scaler;
                 break;
+            case '_':
+                m_layout[i][j] = thing_type::button;
+                break;
+            case '|':
+                m_layout[i][j] = thing_type::laser;
+                break;
             case 'W':
                 m_layout[i][j] = thing_type::spikes;
                 break;
@@ -67,9 +73,6 @@ public:
                 break;
             case 'b':
                 m_layout[i][j] = thing_type::blue_gun;
-                break;
-            case 'K':
-                m_layout[i][j] = thing_type::key;
                 break;
             case '#':
                 m_layout[i][j] = thing_type::sitting_enemy;

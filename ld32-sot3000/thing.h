@@ -21,7 +21,7 @@ enum class thing_type : int
     pink_projectile,
     blue_projectile,
     /* Items */
-    key,
+    button,
     pink_gun,
     blue_gun,
     /* Environment */
@@ -32,6 +32,7 @@ enum class thing_type : int
     enemy_blocker,
     item_scaler,
     spikes,
+    laser,
 };
 
 class thing : public WorldEntity

@@ -34,8 +34,8 @@ static char const * const g_maps[] =
 
     /* Level 1 */
     "%                                                       b %\n"
-    "%                                 K                       %\n"
-    "%  K                                                      %\n"
+    "%                                                         %\n"
+    "%                                                         %\n"
     "%           % % % % %                                     %\n"
     "%                                     #                 % %\n"
     "%                               % % % % % % %             %\n"

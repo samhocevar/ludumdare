@@ -54,6 +54,8 @@ enum Tiles
     Spikes = 20,
     Door = 21,
     SawBlade = 22,
+    Button = 23,
+    Laser = 24,
 
     SittingEnemy = 32,
     WalkingEnemy = 33,
@@ -64,7 +66,7 @@ enum Tiles
     PinkGun = 65,
     BlueProjectile = 66,
     BlueGun = 67,
-    Key = 68,
+    Key = 68, /* UNUSED */
 
     TitleScreen = 256,
     YouWinScreen = 257,
