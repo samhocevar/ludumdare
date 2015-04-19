@@ -8,6 +8,7 @@ ld32_SOURCES = \
     game.cpp game.h \
     level.cpp level.h \
     thing.cpp thing.h \
+    test_maps.h final_maps.h \
     constants.h menu.h
 
 ld32_CPPFLAGS = $(AM_CPPFLAGS)

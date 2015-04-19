@@ -53,9 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />
+    <ClInclude Include="final_maps.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="level.h" />
     <ClInclude Include="menu.h" />
+    <ClInclude Include="test_maps.h" />
     <ClInclude Include="thing.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

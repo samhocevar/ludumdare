@@ -62,7 +62,8 @@ private:
     Text *m_start_text;
     Text *m_pause_text;
 
-    ld32_map *m_map;
+    ld32_map m_map;
+    int m_current_progress;
     level_instance *m_level;
 };
 

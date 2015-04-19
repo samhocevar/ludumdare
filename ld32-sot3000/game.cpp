@@ -14,13 +14,22 @@
 
 #include <lol/engine.h>
 
+// XXX: use this alternate set of maps for debugging purposes
+//#define USE_DEBUG_MAPS 1
+
 using namespace lol;
 
 #include "constants.h"
 #include "game.h"
+#if USE_DEBUG_MAPS
+#   include "test_maps.h"
+#else
+#   include "final_maps.h"
+#endif
 
 ld32_game::ld32_game()
-  : m_state(game_state::title_screen)
+  : m_state(game_state::title_screen),
+    m_current_progress(0)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->AddTile(ivec2(16, 16));
@@ -67,9 +76,6 @@ ld32_game::~ld32_game()
         // Destroy the current level
         m_level->clear();
         Ticker::Unref(m_level);
-
-        // Destroy the test map
-        delete m_map;
     }
 
     // Clean up after ourselves
@@ -174,7 +180,7 @@ void ld32_game::tick_input(float seconds)
             // Escape restarts the level when not paused
             Ticker::Unref(m_level);
             m_level = new level_instance();
-            m_level->load_map(m_map);
+            m_level->load_map(&m_map);
             Ticker::Ref(m_level);
         }
     }
@@ -184,12 +190,12 @@ void ld32_game::tick_input(float seconds)
     {
         if (m_state == game_state::title_screen)
         {
-            // “Load” a test map
-            m_map = new test_map();
+            m_current_progress = 0;
+            m_map.load_data(g_maps[m_current_progress]);
 
             // Create a new level
             m_level = new level_instance();
-            m_level->load_map(m_map);
+            m_level->load_map(&m_map);
             Ticker::Ref(m_level);
 
             m_state = game_state::in_game;

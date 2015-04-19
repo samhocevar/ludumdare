@@ -223,7 +223,10 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         if (t->m_hidden)
             continue;
 
-        scene.AddTile(g_game->m_tiles, t->m_tile_index, t->m_position, 0, vec2(t->m_scale), 0.f);
+        // Slight tweaking of the tile size so that we can use overlap for effects
+        vec3 pos = t->m_position - vec3(t->m_scale) * 0.5f;
+        vec2 scale = vec2(t->m_scale * 1.5f);
+        scene.AddTile(g_game->m_tiles, t->m_tile_index, pos, 0, scale, 0.f);
     }
 }
 
