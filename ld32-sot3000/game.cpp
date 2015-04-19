@@ -25,6 +25,7 @@ ld32_game::ld32_game()
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->AddTile(ivec2(16, 16));
     m_tiles->AddTile(ibox2(512, 640, 1024, 1024));
+    m_tiles->AddTile(ibox2(0, 640, 512, 1024));
 
     m_camera = new Camera();
     g_scene->PushCamera(m_camera);
@@ -97,19 +98,27 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
     g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
 
     /* We do not draw much; the level itself takes care of it. */
-    scene.AddTile(m_tiles, Tiles::TitleScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
+    if (m_state == game_state::title_screen)
+        scene.AddTile(m_tiles, Tiles::TitleScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
+
+    if (m_state == game_state::you_win)
+        scene.AddTile(m_tiles, Tiles::YouWinScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
 }
 
 void ld32_game::tick_camera(float seconds)
 {
-    if (m_state == game_state::title_screen)
+    if (m_state == game_state::title_screen
+         || m_state == game_state::you_win)
     {
         mat4 view = mat4::identity;
         m_camera->SetView(view);
 
         mat4 proj = mat4::ortho(512.f, 384.f, -100.f, 100.f);
         m_camera->SetProjection(proj);
+    }
 
+    if (m_state == game_state::title_screen)
+    {
         m_start_text->SetPos(vec3(0.f, 0.f, 50.f));
         m_start_text->SetText("Press start to start!!");
     }

@@ -66,4 +66,5 @@ enum Tiles
     Key = 68,
 
     TitleScreen = 256,
+    YouWinScreen = 257,
 };

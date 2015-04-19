@@ -30,6 +30,7 @@ enum class game_state
     title_screen,
     in_game,
     paused,
+    you_win,
 };
 
 class ld32_game : public Entity
