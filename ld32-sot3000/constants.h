@@ -48,16 +48,18 @@ enum Tiles
     GroundTopLeft = 18,
 
     Blocker = 19,
-    PinkProjectile = 20,
-    PinkGun = 21,
-    BlueProjectile = 22,
-    BlueGun = 23,
-    Key = 24,
-    Spikes = 25,
-    Door = 26,
+    Spikes = 20,
+    Door = 21,
+    SawBlade = 22,
 
     SittingEnemy = 32,
     WalkingEnemy = 33,
     FlyingGoRight = 48,
     FlyingGoLeft = 49,
+
+    PinkProjectile = 64,
+    PinkGun = 65,
+    BlueProjectile = 66,
+    BlueGun = 67,
+    Key = 68,
 };
