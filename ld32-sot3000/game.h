@@ -16,12 +16,20 @@ extern class ld32_game *g_game;
 
 enum input
 {
-    go_left = 0,
-    go_right = 1,
-    jump = 2,
-    fire = 3,
-    pause = 4,
-    escape = 5,
+    pause,
+    go_left,
+    go_right,
+    jump,
+    fire,
+    escape,
+    //start, // FIXME: apparently I can’t register the same key to several IDs
+};
+
+enum class game_state
+{
+    title_screen,
+    in_game,
+    paused,
 };
 
 class ld32_game : public Entity
@@ -33,7 +41,7 @@ public:
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
-    inline bool is_paused() const { return m_paused; }
+    inline bool is_paused() const { return m_state == game_state::paused; }
 
 private:
     void tick_camera(float seconds);
@@ -43,12 +51,15 @@ public:
     TileSet *m_tiles;
 
 private:
+    game_state m_state;
+
     Camera *m_camera;
     Controller *m_controller;
     InputProfile m_input;
+    float m_input_cooldown;
 
+    Text *m_start_text;
     Text *m_pause_text;
-    bool m_paused;
 
     ld32_map *m_map;
     level_instance *m_level;

@@ -64,4 +64,6 @@ enum Tiles
     BlueProjectile = 66,
     BlueGun = 67,
     Key = 68,
+
+    TitleScreen = 256,
 };
