@@ -48,8 +48,11 @@ enum Tiles
     GroundTopLeft = 18,
 
     Rock = 19,
-    Projectile = 20,
-    Key = 21,
+    PinkProjectile = 20,
+    PinkGun = 21,
+    BlueProjectile = 22,
+    BlueGun = 23,
+    Key = 24,
 
     SittingEnemy = 32,
     WalkingEnemy = 33,

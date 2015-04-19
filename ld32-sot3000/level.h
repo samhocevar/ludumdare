@@ -48,6 +48,12 @@ public:
             case '%':
                 m_layout[i][j] = thing_type::ground;
                 break;
+            case 'p':
+                m_layout[i][j] = thing_type::pink_gun;
+                break;
+            case 'b':
+                m_layout[i][j] = thing_type::blue_gun;
+                break;
             case 'K':
                 m_layout[i][j] = thing_type::key;
                 break;
@@ -84,14 +90,14 @@ public:
     test_map()
     {
         char const *data =
-        "%                                                         %\n"
-        "%   KKK                   K                               %\n"
-        "%                                                         %\n"
+        "%                                                       b %\n"
+        "%                                 K                       %\n"
+        "%  K                                                      %\n"
         "%           % % % % %                                     %\n"
         "%                                     #                 % %\n"
         "%                               % % % % % % %             %\n"
         "% % %                                                     %\n"
-        "%                                                       % %\n"
+        "%                       p                               % %\n"
         "%                                                         %\n"
         "%                                                         %\n"
         "%                                                       % %\n"
@@ -141,7 +147,7 @@ private:
     thing *m_player;
     array<thing *> m_enemies;
     array<thing *> m_projectiles;
-    array<thing *> m_keys;
+    array<thing *> m_items;
 
     vec3 m_player_impulse;
 };

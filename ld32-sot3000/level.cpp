@@ -39,7 +39,7 @@ void level_instance::TickGame(float seconds)
     tick_player(seconds);
     for (thing *t : m_projectiles)
         tick_projectile(t, seconds);
-    for (thing *t : m_keys)
+    for (thing *t : m_items)
         tick_living(t, seconds);
     for (thing *t : m_enemies)
         tick_living(t, seconds);
@@ -190,7 +190,7 @@ void level_instance::clear()
 
     m_projectiles.empty();
     m_enemies.empty();
-    m_keys.empty();
+    m_items.empty();
 }
 
 void level_instance::build()
@@ -228,7 +228,15 @@ void level_instance::build()
             break;
         case thing_type::key:
             t->m_tile_index = Tiles::Key;
-            m_keys.push(t);
+            m_items.push(t);
+            break;
+        case thing_type::pink_gun:
+            t->m_tile_index = Tiles::PinkGun;
+            m_items.push(t);
+            break;
+        case thing_type::blue_gun:
+            t->m_tile_index = Tiles::BlueGun;
+            m_items.push(t);
             break;
         case thing_type::sitting_enemy:
             t->m_tile_index = Tiles::SittingEnemy;
@@ -254,14 +262,25 @@ void level_instance::build()
     m_things.push(m_player);
     Ticker::Ref(m_player);
 
-    thing *fire = new thing(thing_type::projectile);
-    m_projectiles.push(fire);
-    fire->m_hidden = true;
-    fire->m_bbox[0] = vec3(TILE_SIZE * 0.3f);
-    fire->m_bbox[1] = vec3(TILE_SIZE * 0.7f);
-    fire->m_tile_index = Tiles::Projectile;
-    m_things.push(fire);
-    Ticker::Ref(fire);
+    for (thing_type type : { thing_type::pink_projectile, thing_type::blue_projectile})
+    {
+        thing *t = new thing(type);
+        m_projectiles.push(t);
+        t->m_hidden = true;
+        t->m_bbox[0] = vec3(TILE_SIZE * 0.3f);
+        t->m_bbox[1] = vec3(TILE_SIZE * 0.7f);
+        switch (type)
+        {
+            case thing_type::pink_projectile:
+                t->m_tile_index = Tiles::PinkProjectile;
+                break;
+            case thing_type::blue_projectile:
+                t->m_tile_index = Tiles::BlueProjectile;
+                break;
+        }
+        m_things.push(t);
+        Ticker::Ref(t);
+    }
 }
 
 float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)

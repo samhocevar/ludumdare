@@ -17,9 +17,12 @@ enum class thing_type : int
     player,
     sitting_enemy,
     walking_enemy,
-    projectile,
+    pink_projectile,
+    blue_projectile,
     /* Items */
     key,
+    pink_gun,
+    blue_gun,
     /* Environment */
     ground,
     platform,
@@ -38,6 +41,8 @@ public:
     bool can_fall();
     bool can_kill();
     bool can_block();
+
+    inline thing_type get_type() const { return m_type; }
 
 public:
     /* Generic */

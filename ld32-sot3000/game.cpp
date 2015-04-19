@@ -43,7 +43,7 @@ ld32_game::ld32_game()
 
     // Some debug
     char const *debug_info[] = { "Hi :-)", "\\o/", "$%!%^#@" };
-    float debug_y = VIEWPORT_SIZE_Y * 0.5f;
+    float debug_y = VIEWPORT_SIZE_Y * 0.65f;
     for (auto t : debug_info)
     {
         m_debug_text.push(new Text(t, "data/font.png"));
