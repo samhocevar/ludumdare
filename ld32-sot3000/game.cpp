@@ -216,9 +216,9 @@ void ld32_game::tick_input(float seconds)
     if (m_state == game_state::in_game)
     {
         if (m_controller->IsKeyPressed(input::go_left))
-            m_level->impulse_x(-PLAYER_RUN_SPEED);
+            m_level->impulse_x(-1.f);
         else if (m_controller->IsKeyPressed(input::go_right))
-            m_level->impulse_x(PLAYER_RUN_SPEED);
+            m_level->impulse_x(1.f);
 
         if (m_controller->WasKeyPressedThisFrame(input::jump))
             m_level->jump();

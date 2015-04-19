@@ -130,6 +130,26 @@ void level_instance::tick_player(float seconds)
 
 void level_instance::tick_living(thing *t, float seconds)
 {
+    // Handle horizontal movement
+    vec3 impulse(0.f);
+
+    switch (t->get_type())
+    {
+    case thing_type::flying_enemy:
+        t->m_tile_index = t->m_facing_left ? Tiles::FlyingGoLeft : Tiles::FlyingGoRight;
+        impulse.x = t->m_facing_left ? -ENEMY_RUN_SPEED : ENEMY_RUN_SPEED;
+        break;
+    case thing_type::walking_enemy:
+        impulse.x = t->m_facing_left ? -ENEMY_RUN_SPEED : ENEMY_RUN_SPEED;
+        break;
+    }
+
+    // Check how long we can apply impulse before we hit something
+    float impulse_time = collide_thing(t, impulse, seconds);
+    t->m_position += impulse * impulse_time;
+    if (impulse_time < seconds)
+        t->m_facing_left = !t->m_facing_left;
+
     // We have gravity (most of the time)
     if (t->can_fall())
     {
@@ -379,7 +399,7 @@ void level_instance::impulse_x(float impulse)
     // that we can do more appealing air control.
     // FIXME: decide whether we run faster when scaled up; I don’t think
     // it looks cool, but maybe it makes sense for the gameplay?
-    m_player_impulse += vec3(impulse, 0.f, 0.f);
+    m_player_impulse += vec3(impulse * PLAYER_RUN_SPEED, 0.f, 0.f);
     //m_player_impulse += vec3(impulse * m_player->m_scale, 0.f, 0.f);
     //m_player->m_velocity.x += impulse;
 

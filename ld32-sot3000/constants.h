@@ -22,8 +22,9 @@ static int MIN_VIEWPORT_Y = TILE_SIZE * 12;
 static int MAX_VIEWPORT_X = TILE_SIZE * 40;
 static int MAX_VIEWPORT_Y = TILE_SIZE * 30;
 
-/* Player runs at 12 tiles per second */
+/* Player runs at 12 tiles per second, enemies are slower */
 static float PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
+static float ENEMY_RUN_SPEED = TILE_SIZE * 8.f;
 
 /* 30 / 120 are good values to prevent player from jumping
  * on 4-block platforms. For 3-block platforms, use 24 / 100. */
