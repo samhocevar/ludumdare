@@ -32,6 +32,10 @@ public:
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
+private:
+    void tick_camera(float seconds);
+    void tick_input(float seconds);
+
 public:
     TileSet *m_tiles;
 

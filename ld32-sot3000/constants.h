@@ -16,9 +16,11 @@ static int TILE_SIZE = 64;
 static int WINDOW_SIZE_X = 1024;
 static int WINDOW_SIZE_Y = 720;
 
-/* The default size of the viewport, in world coordinates */
-static int VIEWPORT_SIZE_X = TILE_SIZE * 40;
-static int VIEWPORT_SIZE_Y = TILE_SIZE * 30;
+/* The minimum and maximum sizes of the playing area, in world coordinates */
+static int MIN_VIEWPORT_X = TILE_SIZE * 16;
+static int MIN_VIEWPORT_Y = TILE_SIZE * 12;
+static int MAX_VIEWPORT_X = TILE_SIZE * 40;
+static int MAX_VIEWPORT_Y = TILE_SIZE * 30;
 
 /* Player runs at 12 tiles per second */
 static float PLAYER_RUN_SPEED = TILE_SIZE * 12.f;

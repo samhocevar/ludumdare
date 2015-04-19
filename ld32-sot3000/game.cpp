@@ -25,8 +25,6 @@ ld32_game::ld32_game()
     m_tiles->AddTile(ivec2(16, 16));
 
     m_camera = new Camera();
-    m_camera->SetView(mat4(1.f));
-    m_camera->SetProjection(mat4::ortho((float)VIEWPORT_SIZE_X, (float)VIEWPORT_SIZE_Y, -100.f, 100.f));
     g_scene->PushCamera(m_camera);
     Ticker::Ref(m_camera);
 
@@ -46,11 +44,11 @@ ld32_game::ld32_game()
 
     // Some debug
     char const *debug_info[] = { "Hi :-)", "\\o/", "$%!%^#@" };
-    float debug_y = VIEWPORT_SIZE_Y * 0.65f;
+    float debug_y = TILE_SIZE * 10.f;
     for (auto t : debug_info)
     {
         m_debug_text.push(new Text(t, "data/font.png"));
-        m_debug_text.last()->SetPos(vec3(VIEWPORT_SIZE_X * 0.5f, debug_y, 50.f));
+        m_debug_text.last()->SetPos(vec3(TILE_SIZE * 15.f, debug_y, 50.f));
         m_debug_text.last()->SetAlign(TextAlign::Center);
         m_debug_text.last()->SetScale(vec2(0.6f));
         m_debug_text.last()->SetSpacing(-0.0f);
@@ -89,10 +87,42 @@ void ld32_game::TickGame(float seconds)
 {
     Entity::TickGame(seconds);
 
-    // Center the camera around the centre of the level for now
-    mat4 view = mat4::translate(vec3(vec2(- m_level->world_size()), 0.f) * 0.5f);
-    m_camera->SetView(view);
+    tick_input(seconds);
+    tick_camera(seconds);
+}
 
+void ld32_game::TickDraw(float seconds, Scene &scene)
+{
+    Entity::TickDraw(seconds, scene);
+
+    g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
+
+    /* We do not draw much; the level itself takes care of it. */
+}
+
+void ld32_game::tick_camera(float seconds)
+{
+    vec2 level_size = m_level->world_size();
+    vec2 viewport_size = level_size;
+    viewport_size *= min(1.f, MAX_VIEWPORT_X / viewport_size.x);
+    viewport_size *= min(1.f, MAX_VIEWPORT_Y / viewport_size.y);
+    viewport_size *= max(1.f, MIN_VIEWPORT_X / viewport_size.x);
+    viewport_size *= max(1.f, MIN_VIEWPORT_Y / viewport_size.y);
+    mat4 proj = mat4::ortho(viewport_size.x, viewport_size.y, -100.f, 100.f);
+
+    /* Try to center the camera around the player but don’t show stuff outside the
+     * level boundaries if possible. */
+    vec2 poi = m_level->get_poi().xy;
+    poi = max(poi, 0.5f * viewport_size);
+    poi = min(poi, level_size - 0.5f * viewport_size);
+    mat4 view = mat4::translate(-vec3(poi, 0.0f));
+
+    m_camera->SetView(view);
+    m_camera->SetProjection(proj);
+}
+
+void ld32_game::tick_input(float seconds)
+{
     // Escape restarts the level
     if (m_controller->WasKeyPressedThisFrame(input::escape))
     {
@@ -116,11 +146,3 @@ void ld32_game::TickGame(float seconds)
     if (m_controller->WasKeyPressedThisFrame(input::fire))
         m_level->fire();
 }
-
-void ld32_game::TickDraw(float seconds, Scene &scene)
-{
-    Entity::TickDraw(seconds, scene);
-
-    g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
-}
-

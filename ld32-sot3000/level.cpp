@@ -173,7 +173,8 @@ ivec2 level_instance::layout_size()
 
 vec2 level_instance::world_size()
 {
-    return (vec2)m_map->m_layout.GetSize() * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
+    // We add +1 in X because we account for the last column’s tile which is probably double-width
+    return (vec2(m_map->m_layout.GetSize()) + vec2(1.f, 0.f)) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
 }
 
 void level_instance::load_map(ld32_map *map)
@@ -298,6 +299,12 @@ void level_instance::build()
         m_things.push(t);
         Ticker::Ref(t);
     }
+}
+
+vec3 level_instance::get_poi() const
+{
+    // Get the level instance’s Point of Interest — for now, just the player
+    return m_player->m_position + 0.5f * (m_player->m_bbox[1] - m_player->m_bbox[0]);
 }
 
 float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)

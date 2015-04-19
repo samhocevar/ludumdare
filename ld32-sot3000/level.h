@@ -133,6 +133,74 @@ static char const * const test_maps[] =
     "%   S                   % % % % % % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
+
+    /* Level 3 */
+    "            X     X       X       X            \n"
+    "              X       X       X      X         \n"
+    "           X       X       X X    X            \n"
+    "          X   X       X X X        X           \n"
+    "                                               \n"
+    "                  X   X       X                \n"
+    "              X           X   X   X  X         \n"
+    "                                               \n"
+    "                        X                      \n"
+    "                          X          X      % %\n"
+    "             X       X                        %\n"
+    "                 X           X                %\n"
+    "% %         X                           E     %\n"
+    "%              X                              %\n"
+    "%                                             %\n"
+    "%   S                                         %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
+
+    /* Level 4 */
+    "% % % % % % %\n"
+    "%           %\n"
+    "%         E %\n"
+    "%         % %\n"
+    "%           %\n"
+    "% S         %\n"
+    "% % % % % % %\n",
+
+    /* Level 5 */
+    "% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 E %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                   %\n"
+    "%                                                                                                 % %\n"
+    "%                                                                                                   %\n"
+    "% S                                                                                                 %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %\n",
 };
 
 class test_map : public ld32_map
@@ -140,8 +208,9 @@ class test_map : public ld32_map
 public:
     test_map()
     {
-        int count = sizeof(test_maps) / sizeof(*test_maps);
-        load_data(test_maps[lol::rand(count)]);
+        //int count = sizeof(test_maps) / sizeof(*test_maps);
+        //load_data(test_maps[lol::rand(count)]);
+        load_data(test_maps[2]);
     }
 };
 
@@ -164,6 +233,8 @@ public:
     void load_map(ld32_map *map);
     void clear();
     void build();
+
+    vec3 get_poi() const;
 
     float collide_thing(thing const *t, vec3 velocity, float seconds);
     void impulse_x(float impulse);
