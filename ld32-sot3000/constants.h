@@ -32,10 +32,10 @@ static float GRAVITY = TILE_SIZE * 120.f;
  * an effect. This allows for short and long jumps. */
 static float PLAYER_JUMP_TIME = 0.100f;
 
-/* Maximum player speed, including in free fall. */
+/* Maximum speeds, including in free fall. */
 static float PLAYER_MAX_SPEED = TILE_SIZE * 35.f;
-
-static float PROJECTILE_SPEED = TILE_SIZE * 20.f;
+static float OBJECT_MAX_SPEED = TILE_SIZE * 20.f;
+static float PROJECTILE_MAX_SPEED = TILE_SIZE * 20.f;
 
 /* Tiles */
 enum Tiles
@@ -49,4 +49,8 @@ enum Tiles
 
     Rock = 19,
     Projectile = 20,
+    Key = 21,
+
+    SittingEnemy = 32,
+    WalkingEnemy = 33,
 };

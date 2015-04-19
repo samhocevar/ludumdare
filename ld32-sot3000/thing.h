@@ -15,12 +15,15 @@ enum class thing_type : int
     none = -1,
     /* Living things */
     player,
-    enemy,
+    sitting_enemy,
+    walking_enemy,
     projectile,
+    /* Items */
+    key,
     /* Environment */
     ground,
     platform,
-    rock,
+    blocker,
 };
 
 class thing : public WorldEntity

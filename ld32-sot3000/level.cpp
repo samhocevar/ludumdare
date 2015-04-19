@@ -23,7 +23,6 @@ using namespace lol;
 
 level_instance::level_instance()
   : m_player(nullptr),
-    m_fire(nullptr),
     m_player_impulse(0.f)
 {
 }
@@ -38,8 +37,12 @@ void level_instance::TickGame(float seconds)
     WorldEntity::TickGame(seconds);
 
     tick_player(seconds);
-    tick_projectiles(seconds);
-    tick_enemies(seconds);
+    for (thing *t : m_projectiles)
+        tick_projectile(t, seconds);
+    for (thing *t : m_keys)
+        tick_living(t, seconds);
+    for (thing *t : m_enemies)
+        tick_living(t, seconds);
 }
 
 void level_instance::tick_player(float seconds)
@@ -52,7 +55,7 @@ void level_instance::tick_player(float seconds)
         m_player->m_tile_index = Tiles::PlayerGoRight;
 
     // Check how long we can apply player impulse before we hit something
-    float impulse_time = collide_player(m_player_impulse, seconds);
+    float impulse_time = collide_thing(m_player, m_player_impulse, seconds);
     m_player->m_position += m_player_impulse * impulse_time;
     m_player_impulse = vec3(0.0f);
 
@@ -66,7 +69,7 @@ void level_instance::tick_player(float seconds)
         m_player->m_velocity *= (PLAYER_MAX_SPEED / speed);
 
     // Apply as much velocity from forces as possible
-    float force_time = collide_player(m_player->m_velocity, seconds);
+    float force_time = collide_thing(m_player, m_player->m_velocity, seconds);
     m_player->m_position += m_player->m_velocity * force_time;
 
     // If not all forces were applied, try to slide horizontally or vertically
@@ -75,8 +78,8 @@ void level_instance::tick_player(float seconds)
         float remaining_time = seconds - force_time;
         vec3 x_velocity(m_player->m_velocity.x, 0.f, 0.f);
         vec3 y_velocity(0.f, m_player->m_velocity.y, 0.f);
-        float x_force_time = collide_player(x_velocity, remaining_time);
-        float y_force_time = collide_player(y_velocity, remaining_time);
+        float x_force_time = collide_thing(m_player, x_velocity, remaining_time);
+        float y_force_time = collide_thing(m_player, y_velocity, remaining_time);
 
         // If gravity isn’t strong enough to move us downwards, we’re grounded
         if (m_player->m_velocity.y < 0.f && y_force_time == 0.f)
@@ -94,21 +97,57 @@ void level_instance::tick_player(float seconds)
     }
 }
 
-void level_instance::tick_projectiles(float seconds)
+void level_instance::tick_living(thing *t, float seconds)
 {
-    if (!m_fire->m_hidden)
-    {
-        m_fire->m_position += m_fire->m_velocity * seconds;
+    // We have gravity (most of the time)
+    t->m_velocity.y -= GRAVITY * seconds;
 
-        // Horizontal killbox until we get proper collisions
-        if (m_fire->m_position.x + TILE_SIZE * 2 < 0.f
-             || m_fire->m_position.x - TILE_SIZE * 2 > TILE_SIZE * m_map->m_layout.GetSize().x)
-            m_fire->m_hidden = true;
+    // But we also have air friction which prevents our speed to reach
+    // dangerous values… make this naive for now
+    float speed = length(t->m_velocity);
+    if (speed > OBJECT_MAX_SPEED)
+        t->m_velocity *= (OBJECT_MAX_SPEED / speed);
+
+    // Apply as much velocity from forces as possible
+    float force_time = collide_thing(t, t->m_velocity, seconds);
+    t->m_position += t->m_velocity * force_time;
+
+    // If not all forces were applied, try to slide horizontally or vertically
+    if (force_time < seconds)
+    {
+        float remaining_time = seconds - force_time;
+        vec3 x_velocity(t->m_velocity.x, 0.f, 0.f);
+        vec3 y_velocity(0.f, t->m_velocity.y, 0.f);
+        float x_force_time = collide_thing(t, x_velocity, remaining_time);
+        float y_force_time = collide_thing(t, y_velocity, remaining_time);
+
+        // If gravity isn’t strong enough to move us downwards, we’re grounded
+        if (t->m_velocity.y < 0.f && y_force_time == 0.f)
+            t->m_grounded = true;
+
+        if (x_force_time > 0)
+            t->m_position += x_velocity * x_force_time;
+        else
+            t->m_velocity.x = 0.f;
+
+        if (y_force_time > 0)
+            t->m_position += y_velocity * y_force_time;
+        else
+            t->m_velocity.y = 0.f;
     }
 }
 
-void level_instance::tick_enemies(float seconds)
+void level_instance::tick_projectile(thing *t, float seconds)
 {
+    if (!t->m_hidden)
+    {
+        t->m_position += t->m_velocity * seconds;
+
+        // Horizontal killbox until we get proper collisions
+        if (t->m_position.x + TILE_SIZE * 2 < 0.f
+             || t->m_position.x - TILE_SIZE * 2 > TILE_SIZE * m_map->m_layout.GetSize().x)
+            t->m_hidden = true;
+    }
 }
 
 void level_instance::TickDraw(float seconds, Scene &scene)
@@ -143,6 +182,10 @@ void level_instance::clear()
         Ticker::Unref(t);
     }
     m_things.empty();
+
+    m_projectiles.empty();
+    m_enemies.empty();
+    m_keys.empty();
 }
 
 void level_instance::build()
@@ -177,6 +220,10 @@ void level_instance::build()
             if (i == size.x - 1 || m_map->m_layout[i + 1][j] != thing_type::ground)
                 t->m_tile_index = Tiles::GroundTopLeft;
             break;
+        case thing_type::key:
+            t->m_tile_index = Tiles::Key;
+            m_keys.push(t);
+            break;
         default:
             t->m_tile_index = Tiles::Rock;
         }
@@ -193,29 +240,30 @@ void level_instance::build()
     m_things.push(m_player);
     Ticker::Ref(m_player);
 
-    m_fire = new thing(thing_type::projectile);
-    m_fire->m_hidden = true;
-    m_fire->m_bbox[0] = vec3(TILE_SIZE * 0.3f);
-    m_fire->m_bbox[1] = vec3(TILE_SIZE * 0.7f);
-    m_fire->m_tile_index = Tiles::Projectile;
-    m_things.push(m_fire);
-    Ticker::Ref(m_fire);
+    thing *fire = new thing(thing_type::projectile);
+    m_projectiles.push(fire);
+    fire->m_hidden = true;
+    fire->m_bbox[0] = vec3(TILE_SIZE * 0.3f);
+    fire->m_bbox[1] = vec3(TILE_SIZE * 0.7f);
+    fire->m_tile_index = Tiles::Projectile;
+    m_things.push(fire);
+    Ticker::Ref(fire);
 }
 
-float level_instance::collide_player(vec3 velocity, float seconds)
+float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)
 {
-    for (thing *t : m_things)
+    for (thing *t2 : m_things)
     {
-        if (t == m_player || t->m_hidden || !t->can_block())
+        if (t2 == t || t2->m_hidden || !t2->can_block())
             continue;
 
-        float collision_time = collide(m_player, velocity, t, vec3(0), 0.f, seconds);
+        float collision_time = collide(t, velocity, t2, vec3(0), 0.f, seconds);
         if (collision_time < seconds)
         {
             // There will be a collision, but we might also be encroached in a current
             // collision. Check again with a different start time to check whether we
             // might be unencroaching.
-            float new_collision_time = collide(m_player, velocity, t, vec3(0), 0.4f * seconds, seconds);
+            float new_collision_time = collide(t, velocity, t2, vec3(0), 0.4f * seconds, seconds);
             if (new_collision_time > 0.6f * seconds)
                 collision_time = new_collision_time;
 
@@ -266,10 +314,12 @@ void level_instance::continue_jump(float velocity, float seconds)
 
 void level_instance::fire()
 {
-    if (!m_fire->m_hidden)
+    thing *fire = m_projectiles.last();
+
+    if (!fire->m_hidden)
         return;
 
-    m_fire->m_hidden = false;
-    m_fire->m_position = m_player->m_position;
-    m_fire->m_velocity = (m_player->m_facing_left ? -1.f : 1.f) * vec3(PROJECTILE_SPEED, 0.f, 0.f);
+    fire->m_hidden = false;
+    fire->m_position = m_player->m_position;
+    fire->m_velocity = (m_player->m_facing_left ? -1.f : 1.f) * vec3(PROJECTILE_MAX_SPEED, 0.f, 0.f);
 }

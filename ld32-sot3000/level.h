@@ -48,6 +48,9 @@ public:
             case '%':
                 m_layout[i][j] = thing_type::ground;
                 break;
+            case 'K':
+                m_layout[i][j] = thing_type::key;
+                break;
             }
         }
     }
@@ -76,7 +79,7 @@ public:
     {
         char const *data =
         "%                            %\n"
-        "%                            %\n"
+        "% K          K               %\n"
         "%                            %\n"
         "%     %%%%%                  %\n"
         "%                           %%\n"
@@ -106,8 +109,8 @@ public:
 
     virtual void TickGame(float seconds);
     void tick_player(float seconds);
-    void tick_projectiles(float seconds);
-    void tick_enemies(float seconds);
+    void tick_projectile(thing *t, float seconds);
+    void tick_living(thing *t, float seconds);
 
     virtual void TickDraw(float seconds, Scene &scene);
 
@@ -116,7 +119,7 @@ public:
     void clear();
     void build();
 
-    float collide_player(vec3 velocity, float seconds);
+    float collide_thing(thing const *t, vec3 velocity, float seconds);
     void impulse_x(float impulse);
     void jump();
     void continue_jump(float velocity, float seconds);
@@ -129,7 +132,9 @@ private:
     // Instanced things (to be moved somewhere else; split level description / level instance)
     array<thing *> m_things;
     thing *m_player;
-    thing *m_fire;
+    array<thing *> m_enemies;
+    array<thing *> m_projectiles;
+    array<thing *> m_keys;
 
     vec3 m_player_impulse;
 };
