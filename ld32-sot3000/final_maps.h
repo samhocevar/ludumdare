@@ -36,11 +36,11 @@ static char const * const g_maps[] =
     "                                               \n"
     "                                               \n"
     "                                               \n"
-    "                                               \n"
-    "                                               \n"
-    "                                               \n"
-    "                                               \n"
-    "% %                                         % %\n"
+    "%                                              \n"
+    "%                                             %\n"
+    "%                                             %\n"
+    "%                                             %\n"
+    "%                                             %\n"
     "%                                             %\n"
     "%                                             %\n"
     "%    S                                  E     %\n"
@@ -161,6 +161,22 @@ static char const * const g_maps[] =
     "% % % W W W W W W W W W % % % % % % % % % % % %\n",
 
 
+    /* Wait for the button to be pressed */
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "%                                              \n"
+    "%                                             %\n"
+    "%                                             %\n"
+    "% S                      _                 @  %\n"
+    "% %                   % % % % % % % % % % % % %\n"
+    "%                        |                    %\n"
+    "%                        |                    %\n"
+    "%                        |              E     %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 };
 
 static int const g_map_count = (int)sizeof(g_maps) / (int)sizeof(*g_maps);

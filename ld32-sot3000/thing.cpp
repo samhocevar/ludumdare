@@ -105,7 +105,7 @@ bool thing::can_kill()
     case thing_type::sitting_enemy:
     case thing_type::flying_enemy:
     case thing_type::laser:
-        return true;
+        return !m_hidden;
     }
 }
 

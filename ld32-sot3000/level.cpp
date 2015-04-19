@@ -138,9 +138,15 @@ void level_instance::tick_player(float seconds)
 
         bool is_pink = t->get_type() == thing_type::pink_gun;
         bool is_blue = t->get_type() == thing_type::blue_gun;
+        bool is_button = t->get_type() == thing_type::button;
 
-        if ((is_pink || is_blue) &&
-            collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) < seconds)
+        if (!is_pink && !is_blue && !is_button)
+            continue;
+
+        if (collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) >= seconds)
+            continue;
+
+        if (is_pink || is_blue)
         {
             m_active_gun = t->get_type();
             t->m_hidden = true;
@@ -153,6 +159,16 @@ void level_instance::tick_player(float seconds)
 
                 if (t2->m_hidden && ((is_pink && other_is_blue) || (is_blue && other_is_pink)))
                     t2->m_hidden = false;
+            }
+        }
+
+        /* If we pressed a button not larger than us, switch off all lasers */
+        if (is_button && m_player->m_target_scale >= t->m_target_scale)
+        {
+            for (thing *t2 : m_items)
+            {
+                if (t2->get_type() == thing_type::laser)
+                    t2->m_hidden = true;
             }
         }
     }
@@ -177,6 +193,8 @@ void level_instance::tick_player(float seconds)
 
 void level_instance::tick_living(thing *t, float seconds)
 {
+    bool can_push_button = false;
+
     // Handle horizontal movement
     vec3 impulse(0.f);
 
@@ -187,6 +205,7 @@ void level_instance::tick_living(thing *t, float seconds)
         impulse.x = t->m_facing_left ? -ENEMY_RUN_SPEED : ENEMY_RUN_SPEED;
         break;
     case thing_type::walking_enemy:
+        can_push_button = true;
         impulse.x = t->m_facing_left ? -ENEMY_RUN_SPEED : ENEMY_RUN_SPEED;
         break;
     }
@@ -235,6 +254,30 @@ void level_instance::tick_living(thing *t, float seconds)
             t->m_position += y_velocity * y_force_time;
         else
             t->m_velocity.y = 0.f;
+    }
+
+    // Check whether we activated an item
+    for (thing *t2 : m_items)
+    {
+        if (can_push_button)
+        {
+            if (t2->get_type() != thing_type::button)
+                continue;
+
+            // Cannot push buttons bigger than us
+            if (t2->m_target_scale > t->m_target_scale)
+                continue;
+
+            if (collide(t, vec3(0), t2, vec3(0), 0.f, seconds) >= seconds)
+                continue;
+
+            /* If we pressed a button, switch off all lasers */
+            for (thing *t3 : m_items)
+            {
+                if (t3->get_type() == thing_type::laser)
+                    t3->m_hidden = true;
+            }
+        }
     }
 }
 
@@ -399,9 +442,9 @@ void level_instance::build()
         m_things.push(t);
         Ticker::Ref(t);
 
-        // If necessary, scale object thanks to our in-map markers
-        if (t->can_scale() && j < size.x - 1
-             && m_map->m_layout[i][j + 1] == thing_type::item_scaler)
+        // If necessary, scale object thanks to our in-map markers. This can
+        // scale objects that are otherwise unaffected by the gun.
+        if (j < size.x - 1 && m_map->m_layout[i][j + 1] == thing_type::item_scaler)
         {
             t->m_scale = 2.0f;
             t->m_target_scale = 2.0f;
