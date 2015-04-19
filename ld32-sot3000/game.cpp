@@ -15,7 +15,7 @@
 #include <lol/engine.h>
 
 // XXX: use this alternate set of maps for debugging purposes
-#define USE_DEBUG_MAPS 1
+#define USE_DEBUG_MAPS 0
 
 using namespace lol;
 
@@ -118,6 +118,20 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
 
     if (m_state == game_state::you_win)
         scene.AddTile(m_tiles, Tiles::YouWinScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
+
+    if (m_state == game_state::in_game)
+    {
+        // Put the pause text in front of the camera…
+        m_pause_text->SetPos(vec3(m_poi, 0.0f));
+
+        // Display the active gun
+        thing_type gun = m_level->get_active_gun();
+        if (gun != thing_type::none)
+        {
+            int id = gun == thing_type::blue_gun ? Tiles::BlueGun : Tiles::PinkGun;
+            scene.AddTile(m_tiles, id, vec3(m_poi + m_viewport_size * vec2(-0.45f, 0.30f), 50.f), 0, vec2(3.f), 0.f);
+        }
+    }
 }
 
 void ld32_game::tick_camera(float seconds)
@@ -150,23 +164,19 @@ void ld32_game::tick_camera(float seconds)
                                  MAX_VIEWPORT_Y / level_size.y), 1.f);
         float zoom_out = max(max(MIN_VIEWPORT_X / level_size.x,
                                  MIN_VIEWPORT_Y / level_size.y), 1.f);
-        vec2 viewport_size = level_size * zoom_in * zoom_out;
-        mat4 proj = mat4::ortho(viewport_size.x, viewport_size.y, -100.f, 100.f);
+        m_viewport_size = level_size * zoom_in * zoom_out;
+        mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
 
         /* Try to center the camera around the player but don’t show stuff outside the
          * level boundaries if possible. */
-        vec2 poi = m_level->get_poi().xy;
-        poi = max(poi, 0.5f * viewport_size);
-        poi = min(poi, level_size - 0.5f * viewport_size);
-        mat4 view = mat4::translate(-vec3(poi, 0.0f));
+        m_poi = m_level->get_poi().xy;
+        m_poi = max(m_poi, 0.5f * m_viewport_size);
+        m_poi = min(m_poi, level_size - 0.5f * m_viewport_size);
+        mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
 
         m_camera->SetView(view);
         m_camera->SetProjection(proj);
 
-        // Handle the HUD here because it can use POI for instance
-
-        // Put the pause text behind the camera…
-        m_pause_text->SetPos(vec3(poi, 0.0f));
         // FIXME: this is wrong but honestly I don't have time to fix it
         m_pause_text->SetScale(vec2(1.5f / (zoom_in * zoom_out)));
     }

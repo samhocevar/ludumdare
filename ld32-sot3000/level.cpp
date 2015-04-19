@@ -349,6 +349,10 @@ void level_instance::build()
             t->m_tile_index = Tiles::Blocker;
             t->m_hidden = true;
             break;
+        case thing_type::item_scaler:
+            t->m_tile_index = Tiles::Blocker;
+            t->m_hidden = true;
+            break;
         case thing_type::door:
             t->m_tile_index = Tiles::Door;
             break;
@@ -382,9 +386,19 @@ void level_instance::build()
             break;
         default:
             t->m_tile_index = Tiles::Blocker; // FIXME: what to do here?
+            t->m_hidden = true;
+            break;
         }
         m_things.push(t);
         Ticker::Ref(t);
+
+        // If necessary, scale object thanks to our in-map markers
+        if (t->can_scale() && j < size.x - 1
+             && m_map->m_layout[i][j + 1] == thing_type::item_scaler)
+        {
+            t->m_scale = 2.0f;
+            t->m_target_scale = 2.0f;
+        }
     }
 
     // Now the moving parts

@@ -30,6 +30,7 @@ enum class thing_type : int
     platform,
     blocker,
     enemy_blocker,
+    item_scaler,
     spikes,
 };
 

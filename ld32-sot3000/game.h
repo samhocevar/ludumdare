@@ -66,6 +66,7 @@ private:
     Text *m_start_text;
     Text *m_pause_text;
     Text *m_level_text;
+    vec2 m_viewport_size, m_poi;
 
     ld32_map m_map;
     int m_current_progress;

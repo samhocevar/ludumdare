@@ -40,7 +40,7 @@ public:
             switch (ch)
             {
             case 'S':
-                m_layout[i][j] = thing_type::door;
+                //m_layout[i][j] = thing_type::door;
                 m_start = ivec2(i, j);
                 break;
             case 'E':
@@ -55,6 +55,9 @@ public:
                 break;
             case '-':
                 m_layout[i][j] = thing_type::enemy_blocker;
+                break;
+            case '+':
+                m_layout[i][j] = thing_type::item_scaler;
                 break;
             case 'W':
                 m_layout[i][j] = thing_type::spikes;
@@ -119,6 +122,7 @@ public:
     vec3 get_poi() const;
     inline bool get_exit_reached() const { return m_exit_reached; }
     inline bool get_player_fell() const { return m_player_fell; }
+    inline thing_type get_active_gun() const { return m_active_gun; }
 
     float collide_thing(thing const *t, vec3 velocity, float seconds);
     void impulse_x(float impulse);

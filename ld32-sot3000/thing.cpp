@@ -63,6 +63,7 @@ bool thing::can_fall()
     case thing_type::platform:
     case thing_type::blocker:
     case thing_type::enemy_blocker:
+    case thing_type::item_scaler:
     case thing_type::pink_gun:
     case thing_type::blue_gun:
     case thing_type::key:
@@ -91,6 +92,7 @@ bool thing::can_kill()
     case thing_type::platform:
     case thing_type::blocker:
     case thing_type::enemy_blocker:
+    case thing_type::item_scaler:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
     case thing_type::blue_projectile:
@@ -119,6 +121,7 @@ bool thing::can_block()
     case thing_type::blue_gun:
     case thing_type::key:
     case thing_type::enemy_blocker:
+    case thing_type::item_scaler:
     case thing_type::walking_enemy:
     case thing_type::sitting_enemy:
     case thing_type::flying_enemy:
@@ -143,6 +146,7 @@ bool thing::can_block_enemy()
     case thing_type::pink_gun:
     case thing_type::blue_projectile:
     case thing_type::blue_gun:
+    case thing_type::item_scaler:
     case thing_type::key:
     case thing_type::walking_enemy:
     case thing_type::sitting_enemy:
@@ -168,6 +172,7 @@ bool thing::can_scale()
     case thing_type::door:
     case thing_type::spikes:
     case thing_type::enemy_blocker:
+    case thing_type::item_scaler:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
     case thing_type::blue_projectile:
