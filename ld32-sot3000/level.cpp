@@ -25,7 +25,9 @@ level_instance::level_instance()
   : m_player(nullptr),
     m_player_impulse(0.f),
     m_active_gun(thing_type::none),
-    m_exit_reached(false)
+    m_exit_reached(false),
+    m_player_killed(false),
+    m_player_fell(false)
 {
 }
 
@@ -52,17 +54,32 @@ void level_instance::TickGame(float seconds)
 
 void level_instance::tick_player(float seconds)
 {
-    // If there is an impulse, fix player orientation (TODO: animation states)
-    // Otherwise, don’t touch the sprite.
-    if (m_player_impulse.x < 0)
-        m_player->m_tile_index = Tiles::PlayerGoLeft;
-    if (m_player_impulse.x > 0)
-        m_player->m_tile_index = Tiles::PlayerGoRight;
+    // Check whether we fell out of the map
+    if (m_player->m_position.y < -10.f * TILE_SIZE)
+    {
+        m_player_fell = true;
+        return;
+    }
 
-    // Check how long we can apply player impulse before we hit something
-    float impulse_time = collide_thing(m_player, m_player_impulse, seconds);
-    m_player->m_position += m_player_impulse * impulse_time;
-    m_player_impulse = vec3(0.0f);
+    if (!m_player_killed)
+    {
+        // If there is an impulse, fix player orientation (TODO: animation states)
+        // Otherwise, don’t touch the sprite.
+        if (m_player_impulse.x < 0)
+            m_player->m_tile_index = Tiles::PlayerGoLeft;
+        if (m_player_impulse.x > 0)
+            m_player->m_tile_index = Tiles::PlayerGoRight;
+
+        // Check how long we can apply player impulse before we hit something
+        float impulse_time = collide_thing(m_player, m_player_impulse, seconds);
+        m_player->m_position += m_player_impulse * impulse_time;
+        m_player_impulse = vec3(0.0f);
+    }
+    else
+    {
+        // FIXME: delta-time this shit!
+        m_player->m_target_scale = min(4.f, m_player->m_target_scale * (1.f + 2.f * seconds));
+    }
 
     // We have gravity (most of the time)
     m_player->m_velocity.y -= GRAVITY * seconds;
@@ -74,8 +91,20 @@ void level_instance::tick_player(float seconds)
         m_player->m_velocity *= (PLAYER_MAX_SPEED / speed);
 
     // Apply as much velocity from forces as possible
-    float force_time = collide_thing(m_player, m_player->m_velocity, seconds);
+    float force_time;
+    if (!m_player_killed)
+    {
+        force_time = collide_thing(m_player, m_player->m_velocity, seconds);
+    }
+    else
+    {
+        force_time = seconds;
+    }
+
     m_player->m_position += m_player->m_velocity * force_time;
+
+    if (m_player_killed)
+        return;
 
     // If not all forces were applied, try to slide horizontally or vertically
     if (force_time < seconds)
@@ -131,6 +160,19 @@ void level_instance::tick_player(float seconds)
     // Check whether we reached the exit
     vec2 exit_position = vec2(m_map->m_exit) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
     m_exit_reached = distance(exit_position, m_player->m_position.xy) < TILE_SIZE * m_player->m_scale;
+
+    // Check whether we were killed
+    for (thing *t : m_things)
+    {
+        if (t->can_kill()
+             && collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) < seconds)
+        {
+            m_player_killed = true;
+            m_player->m_position.z = 90.f;
+            m_player->m_velocity = vec3(0.f, PLAYER_JUMP_SPEED, 0.f);
+            break;
+        }
+    }
 }
 
 void level_instance::tick_living(thing *t, float seconds)
@@ -391,8 +433,10 @@ float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds
         if (t2 == t)
             continue;
 
-        // If t2 can block us, make sure it’s not an enemy blocker that affects us
-        if ((t2->m_hidden || !t2->can_block()) && (!is_moving_enemy || t2->get_type() != thing_type::enemy_blocker))
+        if (is_moving_enemy && !t2->can_block_enemy())
+            continue;
+
+        if (!is_moving_enemy && !t2->can_block())
             continue;
 
         float collision_time = collide(t, velocity, t2, vec3(0), 0.f, seconds);
@@ -476,4 +520,3 @@ void level_instance::fire()
     fire->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
     fire->m_velocity = PROJECTILE_MAX_SPEED * dir;
 }
-

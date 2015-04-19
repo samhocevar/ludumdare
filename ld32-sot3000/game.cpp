@@ -15,7 +15,7 @@
 #include <lol/engine.h>
 
 // XXX: use this alternate set of maps for debugging purposes
-#define USE_DEBUG_MAPS 0
+#define USE_DEBUG_MAPS 1
 
 using namespace lol;
 
@@ -173,7 +173,7 @@ void ld32_game::tick_camera(float seconds)
 
     if (m_state == game_state::paused)
     {
-        m_pause_text->SetText("PAUSED!");
+        m_pause_text->SetText("PAUSED");
     }
     else
     {
@@ -199,18 +199,6 @@ void ld32_game::tick_events(float seconds)
         {
             m_state = game_state::you_win;
             return;
-        }
-    }
-
-    if (m_controller->WasKeyPressedThisFrame(input::escape))
-    {
-        if (m_state == game_state::in_game)
-        {
-            // Escape restarts the level when not paused
-            Ticker::Unref(m_level);
-            m_level = new level_instance();
-            m_level->load_map(&m_map);
-            Ticker::Ref(m_level);
         }
     }
 
@@ -283,6 +271,16 @@ void ld32_game::tick_events(float seconds)
             m_level = nullptr;
             m_state = game_state::next_level;
             return;
+        }
+
+        // Escape restarts the level when not paused
+        if (m_controller->WasKeyPressedThisFrame(input::escape)
+             || m_level->get_player_fell())
+        {
+            Ticker::Unref(m_level);
+            m_level = new level_instance();
+            m_level->load_map(&m_map);
+            Ticker::Ref(m_level);
         }
 
         if (m_controller->IsKeyPressed(input::go_left))

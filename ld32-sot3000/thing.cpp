@@ -112,24 +112,48 @@ bool thing::can_block()
     case thing_type::none:
         return false;
     case thing_type::door:
+    case thing_type::spikes:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
     case thing_type::blue_projectile:
     case thing_type::blue_gun:
     case thing_type::key:
+    case thing_type::enemy_blocker:
+    case thing_type::walking_enemy:
+    case thing_type::sitting_enemy:
+    case thing_type::flying_enemy:
         return false;
     case thing_type::player:
     case thing_type::platform:
     case thing_type::ground:
     case thing_type::blocker:
-    case thing_type::spikes:
+        return true;
+    }
+}
+
+bool thing::can_block_enemy()
+{
+    switch (m_type)
+    {
+    case thing_type::none:
+        return false;
+    case thing_type::player:
+    case thing_type::door:
+    case thing_type::pink_projectile:
+    case thing_type::pink_gun:
+    case thing_type::blue_projectile:
+    case thing_type::blue_gun:
+    case thing_type::key:
     case thing_type::walking_enemy:
     case thing_type::sitting_enemy:
     case thing_type::flying_enemy:
-        return true;
-    // XXX: special case; we’ll handle it manually
-    case thing_type::enemy_blocker:
         return false;
+    case thing_type::platform:
+    case thing_type::ground:
+    case thing_type::blocker:
+    case thing_type::enemy_blocker:
+    case thing_type::spikes:
+        return true;
     }
 }
 

@@ -45,6 +45,7 @@ public:
     bool can_fall();
     bool can_kill();
     bool can_block();
+    bool can_block_enemy();
     bool can_scale();
 
     inline thing_type get_type() const { return m_type; }
