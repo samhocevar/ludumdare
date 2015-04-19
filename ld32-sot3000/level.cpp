@@ -100,9 +100,12 @@ void level_instance::tick_player(float seconds)
 void level_instance::tick_living(thing *t, float seconds)
 {
     // We have gravity (most of the time)
-    t->m_velocity.y -= GRAVITY * seconds;
+    if (t->can_fall())
+    {
+        t->m_velocity.y -= GRAVITY * seconds;
+    }
 
-    // But we also have air friction which prevents our speed to reach
+    // We also have air friction which prevents our speed to reach
     // dangerous values… make this naive for now
     float speed = length(t->m_velocity);
     if (speed > OBJECT_MAX_SPEED)
@@ -226,6 +229,13 @@ void level_instance::build()
             if (i + 2 >= size.x || m_map->m_layout[i + 2][j] != thing_type::ground)
                 t->m_tile_index = Tiles::GroundTopLeft;
             break;
+        case thing_type::blocker:
+            t->m_tile_index = Tiles::Blocker;
+            m_items.push(t);
+            break;
+        case thing_type::spikes:
+            t->m_tile_index = Tiles::Spikes;
+            break;
         case thing_type::key:
             t->m_tile_index = Tiles::Key;
             m_items.push(t);
@@ -246,8 +256,12 @@ void level_instance::build()
             t->m_tile_index = Tiles::WalkingEnemy;
             m_enemies.push(t);
             break;
+        case thing_type::flying_enemy:
+            t->m_tile_index = Tiles::FlyingGoLeft;
+            m_enemies.push(t);
+            break;
         default:
-            t->m_tile_index = Tiles::Rock; // FIXME: what to do here?
+            t->m_tile_index = Tiles::Blocker; // FIXME: what to do here?
         }
         m_things.push(t);
         Ticker::Ref(t);

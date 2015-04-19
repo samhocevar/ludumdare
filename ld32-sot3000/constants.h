@@ -16,7 +16,7 @@ static int TILE_SIZE = 64;
 static int WINDOW_SIZE_X = 1024;
 static int WINDOW_SIZE_Y = 720;
 
-/* The size of the viewport, in world coordinates */
+/* The default size of the viewport, in world coordinates */
 static int VIEWPORT_SIZE_X = TILE_SIZE * 40;
 static int VIEWPORT_SIZE_Y = TILE_SIZE * 30;
 
@@ -47,13 +47,16 @@ enum Tiles
     GroundTopRight = 17,
     GroundTopLeft = 18,
 
-    Rock = 19,
+    Blocker = 19,
     PinkProjectile = 20,
     PinkGun = 21,
     BlueProjectile = 22,
     BlueGun = 23,
     Key = 24,
+    Spikes = 25,
 
     SittingEnemy = 32,
     WalkingEnemy = 33,
+    FlyingGoRight = 48,
+    FlyingGoLeft = 49,
 };

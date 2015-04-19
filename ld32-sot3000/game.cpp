@@ -109,6 +109,6 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
 {
     Entity::TickDraw(seconds, scene);
 
-    g_renderer->SetClearColor(vec4(1.f));
+    g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
 }
 

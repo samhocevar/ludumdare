@@ -17,6 +17,7 @@ enum class thing_type : int
     player,
     sitting_enemy,
     walking_enemy,
+    flying_enemy,
     pink_projectile,
     blue_projectile,
     /* Items */
@@ -27,6 +28,7 @@ enum class thing_type : int
     ground,
     platform,
     blocker,
+    spikes,
 };
 
 class thing : public WorldEntity

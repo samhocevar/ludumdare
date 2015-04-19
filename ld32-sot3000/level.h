@@ -48,6 +48,12 @@ public:
             case '%':
                 m_layout[i][j] = thing_type::ground;
                 break;
+            case 'X':
+                m_layout[i][j] = thing_type::blocker;
+                break;
+            case 'W':
+                m_layout[i][j] = thing_type::spikes;
+                break;
             case 'p':
                 m_layout[i][j] = thing_type::pink_gun;
                 break;
@@ -62,6 +68,9 @@ public:
                 break;
             case '@':
                 m_layout[i][j] = thing_type::walking_enemy;
+                break;
+            case '*':
+                m_layout[i][j] = thing_type::flying_enemy;
                 break;
             }
         }
@@ -97,16 +106,17 @@ public:
         "%                                     #                 % %\n"
         "%                               % % % % % % %             %\n"
         "% % %                                                     %\n"
-        "%                       p                               % %\n"
+        "%            *    X     p                               % %\n"
         "%                                                         %\n"
-        "%                                                         %\n"
+        "%                                             *           %\n"
         "%                                                       % %\n"
         "%                                              E          %\n"
         "%                              @            % % %         %\n"
-        "%                             % % %                     % %\n"
+        "%    % % %                    % % %                     % %\n"
         "%               % % %                                     %\n"
-        "%     S                                                   %\n"
-        "% % % % % % % % % % % % % % % % % % % % % % % % % % % % % %\n" ;
+        "%  S      X                                               %\n"
+        "% % % % % % % % % % % %                       % % % % % % %\n"
+        "                    % % W W W W W W W W W W W % %          \n";
 
         load_data(data);
     }
