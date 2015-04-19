@@ -23,6 +23,7 @@ using namespace lol;
 
 thing::thing(thing_type t)
   : m_type(t),
+    m_scale(1.f),
     m_hidden(false),
     m_grounded(false),
     m_can_impulse(false),
@@ -38,6 +39,9 @@ thing::~thing()
 void thing::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
+
+    m_bbox[0] = m_original_aabb.A * m_scale;
+    m_bbox[1] = m_original_aabb.B * m_scale;
 }
 
 void thing::TickDraw(float seconds, Scene &scene)

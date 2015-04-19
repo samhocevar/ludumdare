@@ -165,7 +165,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         if (t->m_hidden)
             continue;
 
-        scene.AddTile(g_game->m_tiles, t->m_tile_index, t->m_position, 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, t->m_tile_index, t->m_position, 0, vec2(t->m_scale), 0.f);
     }
 }
 
@@ -213,8 +213,8 @@ void level_instance::build()
 
         thing *t = new thing(m_map->m_layout[i][j]);
         t->m_position = vec3(i * 0.5f, j, 0) * float(TILE_SIZE);
-        t->m_bbox[0] = vec3(0);
-        t->m_bbox[1] = vec3(float(TILE_SIZE));
+        t->m_original_aabb.A = vec3(0);
+        t->m_original_aabb.B = vec3(float(TILE_SIZE));
 
         switch (m_map->m_layout[i][j])
         {
@@ -222,10 +222,10 @@ void level_instance::build()
             t->m_tile_index = Tiles::GroundTop;
 
             // Slightly tweak platform positions
-            t->m_bbox[0].x += TILE_SIZE * 0.1f;
-            t->m_bbox[0].y += TILE_SIZE * 0.3f;
-            t->m_bbox[1].x -= TILE_SIZE * 0.1f;
-            t->m_bbox[1].y -= TILE_SIZE * 0.1f;
+            t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
+            t->m_original_aabb.A.y += TILE_SIZE * 0.3f;
+            t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
+            t->m_original_aabb.B.y -= TILE_SIZE * 0.1f;
 
             // FIXME: reduce bounding box in the following two cases
             if (i - 2 < 0 || m_map->m_layout[i - 2][j] != thing_type::ground)
@@ -277,8 +277,8 @@ void level_instance::build()
     // Now the moving parts
     m_player = new thing(thing_type::player);
     m_player->m_position = vec3(vec2(m_map->m_start) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
-    m_player->m_bbox[0] = vec3(0.f);
-    m_player->m_bbox[1] = vec3(float(TILE_SIZE));
+    m_player->m_original_aabb.A = vec3(0.f);
+    m_player->m_original_aabb.B = vec3(float(TILE_SIZE));
     m_player->m_tile_index = Tiles::PlayerGoRight;
     m_things.push(m_player);
     Ticker::Ref(m_player);
@@ -288,8 +288,8 @@ void level_instance::build()
         thing *t = new thing(type);
         m_projectiles.push(t);
         t->m_hidden = true;
-        t->m_bbox[0] = vec3(TILE_SIZE * 0.3f);
-        t->m_bbox[1] = vec3(TILE_SIZE * 0.7f);
+        t->m_original_aabb.A = vec3(TILE_SIZE * 0.3f);
+        t->m_original_aabb.B = vec3(TILE_SIZE * 0.7f);
         switch (type)
         {
             case thing_type::pink_projectile:
@@ -307,7 +307,7 @@ void level_instance::build()
 vec3 level_instance::get_poi() const
 {
     // Get the level instance’s Point of Interest — for now, just the player
-    return m_player->m_position + 0.5f * (m_player->m_bbox[1] - m_player->m_bbox[0]);
+    return m_player->m_position + 0.5f * (m_player->m_original_aabb.B - m_player->m_original_aabb.A);
 }
 
 float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)

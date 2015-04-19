@@ -50,6 +50,8 @@ public:
 public:
     /* Generic */
     vec2 m_size;
+    box3 m_original_aabb;
+    float m_scale;
     int m_tile_index;
     bool m_hidden;
 
@@ -63,3 +65,4 @@ private:
 
 extern float collide(thing const *t1, vec3 v1,
                      thing const *t2, vec3 v2, float start, float stop);
+
