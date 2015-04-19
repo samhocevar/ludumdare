@@ -50,6 +50,10 @@ static char const * const g_maps[] =
 
 
     /* Must jump more */
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
     "                        E                      \n"
     "                      % % %                    \n"
     "                                               \n"

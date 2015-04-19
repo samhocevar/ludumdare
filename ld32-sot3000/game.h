@@ -29,6 +29,7 @@ enum class game_state
 {
     title_screen,
     in_game,
+    next_level,
     paused,
     you_win,
 };
@@ -46,7 +47,7 @@ public:
 
 private:
     void tick_camera(float seconds);
-    void tick_input(float seconds);
+    void tick_events(float seconds);
 
 public:
     TileSet *m_tiles;
@@ -61,6 +62,7 @@ private:
 
     Text *m_start_text;
     Text *m_pause_text;
+    Text *m_level_text;
 
     ld32_map m_map;
     int m_current_progress;

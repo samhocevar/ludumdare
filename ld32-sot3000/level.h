@@ -114,6 +114,7 @@ public:
     void build();
 
     vec3 get_poi() const;
+    inline bool get_exit_reached() const { return m_exit_reached; }
 
     float collide_thing(thing const *t, vec3 velocity, float seconds);
     void impulse_x(float impulse);
@@ -134,5 +135,6 @@ private:
 
     vec3 m_player_impulse;
     thing_type m_active_gun;
+    bool m_exit_reached;
 };
 

@@ -15,7 +15,7 @@
 #include <lol/engine.h>
 
 // XXX: use this alternate set of maps for debugging purposes
-//#define USE_DEBUG_MAPS 1
+#define USE_DEBUG_MAPS 1
 
 using namespace lol;
 
@@ -62,6 +62,12 @@ ld32_game::ld32_game()
     m_pause_text->SetSpacing(0.0f);
     Ticker::Ref(m_pause_text);
 
+    m_level_text = new Text("", "data/font.png");
+    m_level_text->SetAlign(TextAlign::Center);
+    m_level_text->SetScale(vec2(0.25f));
+    m_level_text->SetSpacing(-0.2f);
+    Ticker::Ref(m_level_text);
+
     m_start_text = new Text("", "data/font.png");
     m_start_text->SetAlign(TextAlign::Center);
     m_start_text->SetScale(vec2(0.15f));
@@ -71,16 +77,17 @@ ld32_game::ld32_game()
 
 ld32_game::~ld32_game()
 {
+    // Just in case; but this should not happen!
     if (m_level)
     {
-        // Destroy the current level
-        m_level->clear();
+        Log::Error("there’s still a level active…");
         Ticker::Unref(m_level);
     }
 
     // Clean up after ourselves
     Ticker::Unref(m_pause_text);
     Ticker::Unref(m_start_text);
+    Ticker::Unref(m_level_text);
     Tiler::Deregister(m_tiles);
     g_scene->PopCamera(m_camera);
     Ticker::Unref(m_camera);
@@ -90,7 +97,7 @@ void ld32_game::TickGame(float seconds)
 {
     Entity::TickGame(seconds);
 
-    tick_input(seconds);
+    tick_events(seconds);
     tick_camera(seconds);
 }
 
@@ -114,6 +121,7 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
 void ld32_game::tick_camera(float seconds)
 {
     if (m_state == game_state::title_screen
+         || m_state == game_state::next_level
          || m_state == game_state::you_win)
     {
         mat4 view = mat4::identity;
@@ -158,7 +166,7 @@ void ld32_game::tick_camera(float seconds)
         // Put the pause text behind the camera…
         m_pause_text->SetPos(vec3(poi, 0.0f));
         // FIXME: this is wrong but honestly I don't have time to fix it
-        m_pause_text->SetScale(vec2(1.f / (zoom_in * zoom_out)));
+        m_pause_text->SetScale(vec2(1.5f / (zoom_in * zoom_out)));
     }
 
     if (m_state == game_state::paused)
@@ -169,10 +177,29 @@ void ld32_game::tick_camera(float seconds)
     {
         m_pause_text->SetText("");
     }
+
+    if (m_state == game_state::next_level)
+    {
+        String str = String::Printf("Level %d/%d", 1 + m_current_progress, g_map_count);
+        m_level_text->SetText(str);
+    }
+    else
+    {
+        m_level_text->SetText("");
+    }
 }
 
-void ld32_game::tick_input(float seconds)
+void ld32_game::tick_events(float seconds)
 {
+    if (m_state == game_state::next_level)
+    {
+        if (m_current_progress >= g_map_count)
+        {
+            m_state = game_state::you_win;
+            return;
+        }
+    }
+
     if (m_controller->WasKeyPressedThisFrame(input::escape))
     {
         if (m_state == game_state::in_game)
@@ -191,6 +218,12 @@ void ld32_game::tick_input(float seconds)
         if (m_state == game_state::title_screen)
         {
             m_current_progress = 0;
+            m_state = game_state::next_level;
+            return;
+        }
+
+        if (m_state == game_state::next_level)
+        {
             m_map.load_data(g_maps[m_current_progress]);
 
             // Create a new level
@@ -200,6 +233,12 @@ void ld32_game::tick_input(float seconds)
 
             m_state = game_state::in_game;
             return; // state has changed — don’t do anything else
+        }
+
+        if (m_state == game_state::you_win)
+        {
+            m_state = game_state::title_screen;
+            return;
         }
     }
 
@@ -221,6 +260,15 @@ void ld32_game::tick_input(float seconds)
     // Input stuff
     if (m_state == game_state::in_game)
     {
+        if (m_level->get_exit_reached())
+        {
+            ++m_current_progress;
+            Ticker::Unref(m_level);
+            m_level = nullptr;
+            m_state = game_state::next_level;
+            return;
+        }
+
         if (m_controller->IsKeyPressed(input::go_left))
             m_level->impulse_x(-1.f);
         else if (m_controller->IsKeyPressed(input::go_right))

@@ -24,7 +24,8 @@ using namespace lol;
 level_instance::level_instance()
   : m_player(nullptr),
     m_player_impulse(0.f),
-    m_active_gun(thing_type::none)
+    m_active_gun(thing_type::none),
+    m_exit_reached(false)
 {
 }
 
@@ -126,6 +127,10 @@ void level_instance::tick_player(float seconds)
             }
         }
     }
+
+    // Check whether we reached the exit
+    vec2 exit_position = vec2(m_map->m_exit) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
+    m_exit_reached = distance(exit_position, m_player->m_position.xy) < TILE_SIZE * m_player->m_scale;
 }
 
 void level_instance::tick_living(thing *t, float seconds)
