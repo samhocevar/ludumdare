@@ -54,6 +54,7 @@ enum Tiles
     BlueGun = 23,
     Key = 24,
     Spikes = 25,
+    Door = 26,
 
     SittingEnemy = 32,
     WalkingEnemy = 33,

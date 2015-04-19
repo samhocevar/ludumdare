@@ -26,6 +26,7 @@ enum class thing_type : int
     blue_gun,
     /* Environment */
     ground,
+    door,
     platform,
     blocker,
     spikes,

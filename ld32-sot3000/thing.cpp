@@ -59,6 +59,7 @@ bool thing::can_fall()
     case thing_type::sitting_enemy:
         return true;
     case thing_type::ground:
+    case thing_type::door:
     case thing_type::spikes:
     case thing_type::pink_projectile:
     case thing_type::blue_projectile:
@@ -73,6 +74,7 @@ bool thing::can_kill()
     {
     case thing_type::player:
     case thing_type::ground:
+    case thing_type::door:
     case thing_type::platform:
     case thing_type::blocker:
     case thing_type::pink_projectile:
@@ -93,6 +95,7 @@ bool thing::can_block()
 {
     switch (m_type)
     {
+    case thing_type::door:
     case thing_type::pink_projectile:
     case thing_type::pink_gun:
     case thing_type::blue_projectile:

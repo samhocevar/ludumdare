@@ -31,10 +31,13 @@ ld32_game::ld32_game()
     Ticker::Ref(m_camera);
 
     m_controller = new Controller("default controller");
+
     m_input << InputProfile::Keyboard(input::go_left, "Left");
     m_input << InputProfile::Keyboard(input::go_right, "Right");
     m_input << InputProfile::Keyboard(input::jump, "Up");
     m_input << InputProfile::Keyboard(input::fire, "Space");
+    m_input << InputProfile::Keyboard(input::escape, "Escape");
+
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
     m_input << InputProfile::JoystickKey(1, input::jump, "Y");
@@ -89,6 +92,15 @@ void ld32_game::TickGame(float seconds)
     // Center the camera around the centre of the level for now
     mat4 view = mat4::translate(vec3(vec2(- m_level->world_size()), 0.f) * 0.5f);
     m_camera->SetView(view);
+
+    // Escape restarts the level
+    if (m_controller->WasKeyPressedThisFrame(input::escape))
+    {
+        Ticker::Unref(m_level);
+        m_level = new level_instance();
+        m_level->load_map(m_map);
+        Ticker::Ref(m_level);
+    }
 
     // Input stuff
     if (m_controller->IsKeyPressed(input::go_left))

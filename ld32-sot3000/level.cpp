@@ -233,6 +233,9 @@ void level_instance::build()
             t->m_tile_index = Tiles::Blocker;
             m_items.push(t);
             break;
+        case thing_type::door:
+            t->m_tile_index = Tiles::Door;
+            break;
         case thing_type::spikes:
             t->m_tile_index = Tiles::Spikes;
             break;
@@ -269,7 +272,7 @@ void level_instance::build()
 
     // Now the moving parts
     m_player = new thing(thing_type::player);
-    m_player->m_position = vec3(vec2(m_map->m_start), 0.f) * float(TILE_SIZE);
+    m_player->m_position = vec3(vec2(m_map->m_start) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
     m_player->m_bbox[0] = vec3(0.f);
     m_player->m_bbox[1] = vec3(float(TILE_SIZE));
     m_player->m_tile_index = Tiles::PlayerGoRight;

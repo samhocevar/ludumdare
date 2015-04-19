@@ -20,6 +20,7 @@ enum input
     go_right = 1,
     jump = 2,
     fire = 3,
+    escape = 4,
 };
 
 class ld32_game : public Entity

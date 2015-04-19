@@ -40,9 +40,11 @@ public:
             switch (ch)
             {
             case 'S':
+                m_layout[i][j] = thing_type::door;
                 m_start = ivec2(i, j);
                 break;
             case 'E':
+                m_layout[i][j] = thing_type::door;
                 m_exit = ivec2(i, j);
                 break;
             case '%':
@@ -93,32 +95,53 @@ protected:
 //
 // Debug class to test the game before we have actual level design
 //
+static char const * const test_maps[] =
+{
+    /* Level 1 */
+    "%                                                       b %\n"
+    "%                                 K                       %\n"
+    "%  K                                                      %\n"
+    "%           % % % % %                                     %\n"
+    "%                                     #                 % %\n"
+    "%                               % % % % % % %             %\n"
+    "% % %                                                     %\n"
+    "%            *    X     p                               % %\n"
+    "%                                                         %\n"
+    "%                                             *           %\n"
+    "%     %                                                 % %\n"
+    "%  S  %                                        E          %\n"
+    "%     %                        @            % % %         %\n"
+    "%     % % %                   % % %                     % %\n"
+    "%               % % %                                     %\n"
+    "%         X                                               %\n"
+    "% % % % % % % % % % % %                       % % % % % % %\n"
+    "                    % % W W W W W W W W W W W % %          \n",
+
+    /* Level 2 */
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                               \n"
+    "                                            % %\n"
+    "                                              %\n"
+    "                                              %\n"
+    "% %                                     E     %\n"
+    "%                     % % % % % % % % % % % % %\n"
+    "%                       % % % % % % % % % % % %\n"
+    "%   S                   % % % % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
+};
+
 class test_map : public ld32_map
 {
 public:
     test_map()
     {
-        char const *data =
-        "%                                                       b %\n"
-        "%                                 K                       %\n"
-        "%  K                                                      %\n"
-        "%           % % % % %                                     %\n"
-        "%                                     #                 % %\n"
-        "%                               % % % % % % %             %\n"
-        "% % %                                                     %\n"
-        "%            *    X     p                               % %\n"
-        "%                                                         %\n"
-        "%                                             *           %\n"
-        "%                                                       % %\n"
-        "%                                              E          %\n"
-        "%                              @            % % %         %\n"
-        "%    % % %                    % % %                     % %\n"
-        "%               % % %                                     %\n"
-        "%  S      X                                               %\n"
-        "% % % % % % % % % % % %                       % % % % % % %\n"
-        "                    % % W W W W W W W W W W W % %          \n";
-
-        load_data(data);
+        int count = sizeof(test_maps) / sizeof(*test_maps);
+        load_data(test_maps[lol::rand(count)]);
     }
 };
 
