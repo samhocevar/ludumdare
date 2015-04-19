@@ -145,7 +145,7 @@ void level_instance::tick_projectile(thing *t, float seconds)
 
         // Horizontal killbox until we get proper collisions
         if (t->m_position.x + TILE_SIZE * 2 < 0.f
-             || t->m_position.x - TILE_SIZE * 2 > TILE_SIZE * m_map->m_layout.GetSize().x)
+             || t->m_position.x - TILE_SIZE * 2 > world_size().x)
             t->m_hidden = true;
     }
 }
@@ -163,9 +163,14 @@ void level_instance::TickDraw(float seconds, Scene &scene)
     }
 }
 
-ivec2 level_instance::size()
+ivec2 level_instance::layout_size()
 {
     return (ivec2)m_map->m_layout.GetSize();
+}
+
+vec2 level_instance::world_size()
+{
+    return (vec2)m_map->m_layout.GetSize() * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
 }
 
 void level_instance::load_map(ld32_map *map)
@@ -190,7 +195,7 @@ void level_instance::clear()
 
 void level_instance::build()
 {
-    ivec2 const size = (ivec2)m_map->m_layout.GetSize();
+    ivec2 const size = layout_size();
 
     // First, the solid parts of the map
     for (int i = 0; i < size.x; ++i)
@@ -200,32 +205,41 @@ void level_instance::build()
             continue;
 
         thing *t = new thing(m_map->m_layout[i][j]);
-        t->m_position = vec3(i, j, 0) * float(TILE_SIZE);
+        t->m_position = vec3(i * 0.5f, j, 0) * float(TILE_SIZE);
         t->m_bbox[0] = vec3(0);
         t->m_bbox[1] = vec3(float(TILE_SIZE));
-
-        // Slightly tweak platform positions
-        t->m_bbox[0].x += TILE_SIZE * 0.1f;
-        t->m_bbox[0].y += TILE_SIZE * 0.3f;
-        t->m_bbox[1].x -= TILE_SIZE * 0.1f;
-        t->m_bbox[1].y -= TILE_SIZE * 0.1f;
 
         switch (m_map->m_layout[i][j])
         {
         case thing_type::ground:
             t->m_tile_index = Tiles::GroundTop;
+
+            // Slightly tweak platform positions
+            t->m_bbox[0].x += TILE_SIZE * 0.1f;
+            t->m_bbox[0].y += TILE_SIZE * 0.3f;
+            t->m_bbox[1].x -= TILE_SIZE * 0.1f;
+            t->m_bbox[1].y -= TILE_SIZE * 0.1f;
+
             // FIXME: reduce bounding box in the following two cases
-            if (i == 0 || m_map->m_layout[i - 1][j] != thing_type::ground)
+            if (i - 2 < 0 || m_map->m_layout[i - 2][j] != thing_type::ground)
                 t->m_tile_index = Tiles::GroundTopRight;
-            if (i == size.x - 1 || m_map->m_layout[i + 1][j] != thing_type::ground)
+            if (i + 2 >= size.x || m_map->m_layout[i + 2][j] != thing_type::ground)
                 t->m_tile_index = Tiles::GroundTopLeft;
             break;
         case thing_type::key:
             t->m_tile_index = Tiles::Key;
             m_keys.push(t);
             break;
+        case thing_type::sitting_enemy:
+            t->m_tile_index = Tiles::SittingEnemy;
+            m_enemies.push(t);
+            break;
+        case thing_type::walking_enemy:
+            t->m_tile_index = Tiles::WalkingEnemy;
+            m_enemies.push(t);
+            break;
         default:
-            t->m_tile_index = Tiles::Rock;
+            t->m_tile_index = Tiles::Rock; // FIXME: what to do here?
         }
         m_things.push(t);
         Ticker::Ref(t);

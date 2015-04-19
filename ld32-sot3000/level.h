@@ -51,6 +51,12 @@ public:
             case 'K':
                 m_layout[i][j] = thing_type::key;
                 break;
+            case '#':
+                m_layout[i][j] = thing_type::sitting_enemy;
+                break;
+            case '@':
+                m_layout[i][j] = thing_type::walking_enemy;
+                break;
             }
         }
     }
@@ -78,23 +84,23 @@ public:
     test_map()
     {
         char const *data =
-        "%                            %\n"
-        "% K          K               %\n"
-        "%                            %\n"
-        "%     %%%%%                  %\n"
-        "%                           %%\n"
-        "%               %%%%%%%      %\n"
-        "%%%                          %\n"
-        "%                           %%\n"
-        "%                            %\n"
-        "%                            %\n"
-        "%                           %%\n"
-        "%                       E    %\n"
-        "%                     %%%    %\n"
-        "%              %%%          %%\n"
-        "%       %%%                  %\n"
-        "%  S                         %\n"
-        "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+        "%                                                         %\n"
+        "%   KKK                   K                               %\n"
+        "%                                                         %\n"
+        "%           % % % % %                                     %\n"
+        "%                                     #                 % %\n"
+        "%                               % % % % % % %             %\n"
+        "% % %                                                     %\n"
+        "%                                                       % %\n"
+        "%                                                         %\n"
+        "%                                                         %\n"
+        "%                                                       % %\n"
+        "%                                              E          %\n"
+        "%                              @            % % %         %\n"
+        "%                             % % %                     % %\n"
+        "%               % % %                                     %\n"
+        "%     S                                                   %\n"
+        "% % % % % % % % % % % % % % % % % % % % % % % % % % % % % %\n" ;
 
         load_data(data);
     }
@@ -114,7 +120,8 @@ public:
 
     virtual void TickDraw(float seconds, Scene &scene);
 
-    ivec2 size();
+    ivec2 layout_size();
+    vec2 world_size();
     void load_map(ld32_map *map);
     void clear();
     void build();

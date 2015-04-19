@@ -41,7 +41,7 @@ ld32_game::ld32_game()
     m_input << InputProfile::JoystickKey(1, input::fire, "X");
     m_controller->Init(m_input);
 
-    // Some debug 
+    // Some debug
     char const *debug_info[] = { "Hi :-)", "\\o/", "$%!%^#@" };
     float debug_y = VIEWPORT_SIZE_Y * 0.5f;
     for (auto t : debug_info)
@@ -87,7 +87,7 @@ void ld32_game::TickGame(float seconds)
     Entity::TickGame(seconds);
 
     // Center the camera around the centre of the level for now
-    mat4 view = mat4::translate(vec3(vec2(m_level->size()), 0.f) * (-0.5f * TILE_SIZE));
+    mat4 view = mat4::translate(vec3(vec2(- m_level->world_size()), 0.f) * 0.5f);
     m_camera->SetView(view);
 
     // Input stuff
