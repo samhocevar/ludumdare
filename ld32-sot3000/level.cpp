@@ -303,6 +303,10 @@ void level_instance::build()
             t->m_tile_index = Tiles::Blocker;
             m_items.push(t);
             break;
+        case thing_type::enemy_blocker:
+            t->m_tile_index = Tiles::Blocker;
+            t->m_hidden = true;
+            break;
         case thing_type::door:
             t->m_tile_index = Tiles::Door;
             break;
@@ -379,9 +383,16 @@ vec3 level_instance::get_poi() const
 
 float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)
 {
+    bool is_moving_enemy = t->get_type() == thing_type::walking_enemy
+                        || t->get_type() == thing_type::flying_enemy;
+
     for (thing *t2 : m_things)
     {
-        if (t2 == t || t2->m_hidden || !t2->can_block())
+        if (t2 == t)
+            continue;
+
+        // If t2 can block us, make sure it’s not an enemy blocker that affects us
+        if ((t2->m_hidden || !t2->can_block()) && (!is_moving_enemy || t2->get_type() != thing_type::enemy_blocker))
             continue;
 
         float collision_time = collide(t, velocity, t2, vec3(0), 0.f, seconds);

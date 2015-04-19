@@ -29,6 +29,7 @@ enum class thing_type : int
     door,
     platform,
     blocker,
+    enemy_blocker,
     spikes,
 };
 

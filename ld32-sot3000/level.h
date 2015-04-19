@@ -53,6 +53,9 @@ public:
             case 'X':
                 m_layout[i][j] = thing_type::blocker;
                 break;
+            case '-':
+                m_layout[i][j] = thing_type::enemy_blocker;
+                break;
             case 'W':
                 m_layout[i][j] = thing_type::spikes;
                 break;
