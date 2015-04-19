@@ -338,7 +338,10 @@ void level_instance::impulse_x(float impulse)
 {
     // FIXME: left/right commands should affect velocity directly so
     // that we can do more appealing air control.
+    // FIXME: decide whether we run faster when scaled up; I don’t think
+    // it looks cool, but maybe it makes sense for the gameplay?
     m_player_impulse += vec3(impulse, 0.f, 0.f);
+    //m_player_impulse += vec3(impulse * m_player->m_scale, 0.f, 0.f);
     //m_player->m_velocity.x += impulse;
 
     m_player->m_facing_left = impulse < 0.0f;
@@ -358,8 +361,9 @@ void level_instance::continue_jump(float velocity, float seconds)
 {
     if (m_player->m_can_impulse)
     {
+        // We can jump higher when scaled up!
         if (m_player->m_jump_time == PLAYER_JUMP_TIME)
-            m_player->m_velocity.y = velocity;
+            m_player->m_velocity.y = velocity * m_player->m_scale;
 
         m_player->m_jump_time -= seconds;
         if (m_player->m_jump_time < 0.0f)
