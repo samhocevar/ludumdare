@@ -12,12 +12,15 @@
 
 enum class thing_type : int
 {
-    none     = -1,
-    player   =  0,
-    ground   =  1,
-    platform =  2,
-    rock     =  3,
-    enemy    =  4,
+    none = -1,
+    /* Living things */
+    player,
+    enemy,
+    projectile,
+    /* Environment */
+    ground,
+    platform,
+    rock,
 };
 
 class thing : public WorldEntity
@@ -31,14 +34,16 @@ public:
 
     bool can_fall();
     bool can_kill();
+    bool can_block();
 
 public:
     /* Generic */
     vec2 m_size;
     int m_tile_index;
+    bool m_hidden;
 
     /* Player-specific (for now) */
-    bool m_grounded, m_can_impulse;
+    bool m_grounded, m_can_impulse, m_facing_left;
     float m_jump_time;
 
 private:

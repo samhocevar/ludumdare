@@ -10,11 +10,15 @@
 
 #pragma once
 
+static int TILE_SIZE = 64;
+
 /* The size of the window we create */
 static int WINDOW_SIZE_X = 1024;
 static int WINDOW_SIZE_Y = 720;
 
-static int TILE_SIZE = 64;
+/* The size of the viewport, in world coordinates */
+static int VIEWPORT_SIZE_X = TILE_SIZE * 40;
+static int VIEWPORT_SIZE_Y = TILE_SIZE * 30;
 
 /* Player runs at 12 tiles per second */
 static float PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
@@ -31,6 +35,18 @@ static float PLAYER_JUMP_TIME = 0.100f;
 /* Maximum player speed, including in free fall. */
 static float PLAYER_MAX_SPEED = TILE_SIZE * 35.f;
 
-/* The size of the viewport, in world coordinates */
-static int VIEWPORT_SIZE_X = TILE_SIZE * 40;
-static int VIEWPORT_SIZE_Y = TILE_SIZE * 30;
+static float PROJECTILE_SPEED = TILE_SIZE * 20.f;
+
+/* Tiles */
+enum Tiles
+{
+    PlayerGoRight = 0,
+    PlayerGoLeft = 1,
+
+    GroundTop = 16,
+    GroundTopRight = 17,
+    GroundTopLeft = 18,
+
+    Rock = 19,
+    Projectile = 20,
+};

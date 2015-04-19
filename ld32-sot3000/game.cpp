@@ -42,7 +42,7 @@ ld32_game::ld32_game()
     m_controller->Init(m_input);
 
     // Some debug 
-    char const *debug_info[] = { "Hello Folks!", "Let's have fun", "PLEASE HAVE FUN!!" };
+    char const *debug_info[] = { "Hi :-)", "\\o/", "$%!%^#@" };
     float debug_y = VIEWPORT_SIZE_Y * 0.5f;
     for (auto t : debug_info)
     {
@@ -100,6 +100,9 @@ void ld32_game::TickGame(float seconds)
         m_level->jump();
     if (m_controller->IsKeyPressed(input::jump))
         m_level->continue_jump(PLAYER_JUMP_SPEED, seconds);
+
+    if (m_controller->WasKeyPressedThisFrame(input::fire))
+        m_level->fire();
 }
 
 void ld32_game::TickDraw(float seconds, Scene &scene)

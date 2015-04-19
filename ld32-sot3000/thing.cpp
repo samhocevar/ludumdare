@@ -23,8 +23,10 @@ using namespace lol;
 
 thing::thing(thing_type t)
   : m_type(t),
+    m_hidden(false),
     m_grounded(false),
     m_can_impulse(false),
+    m_facing_left(false),
     m_jump_time(0.0f)
 {
 }
@@ -53,6 +55,7 @@ bool thing::can_fall()
     case thing_type::enemy:
         return true;
     case thing_type::ground:
+    case thing_type::projectile:
         return false;
     }
 }
@@ -65,7 +68,23 @@ bool thing::can_kill()
     case thing_type::ground:
     case thing_type::platform:
     case thing_type::rock:
+    case thing_type::projectile:
         return false;
+    case thing_type::enemy:
+        return true;
+    }
+}
+
+bool thing::can_block()
+{
+    switch (m_type)
+    {
+    case thing_type::projectile:
+        return false;
+    case thing_type::player:
+    case thing_type::platform:
+    case thing_type::ground:
+    case thing_type::rock:
     case thing_type::enemy:
         return true;
     }
