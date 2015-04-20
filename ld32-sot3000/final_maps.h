@@ -48,6 +48,27 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
+    /* Lol physics */
+    "            X     X       X       X            \n"
+    "              X       X       X      X         \n"
+    "           X       X       X X    X            \n"
+    "          X   X       X X X        X           \n"
+    "                                               \n"
+    "                  X   X       X                \n"
+    "              X           X   X   X  X         \n"
+    "                                               \n"
+    "                        X                      \n"
+    "                          X          X      % %\n"
+    "             X       X                        %\n"
+    "                 X           X                %\n"
+    "% %         X                                 %\n"
+    "%              X                              %\n"
+    "%                                             %\n"
+    "%   S                                     E   %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
+
+
     /* Must jump */
     "                                               \n"
     "                                               \n"
@@ -64,7 +85,6 @@ static char const * const g_maps[] =
     "%   S        |                    % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
-
 
 
     /* Jump over spikes */
@@ -177,6 +197,28 @@ static char const * const g_maps[] =
     "%                        |              E     %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
+
+
+    /* Just for fun… */
+    "%                                                       b %\n"
+    "%                                                         %\n"
+    "%       -      @      -                                   %\n"
+    "%         % % % % % %                                     %\n"
+    "%                                     #                 % %\n"
+    "%  E                            % % % % % % %             %\n"
+    "% % %                                                     %\n"
+    "%            *    X   p     % %                         % %\n"
+    "%                                                         %\n"
+    "%                 % % %                       *           %\n"
+    "%     %                                                 % %\n"
+    "%  S  %                                 -   @     -       %\n"
+    "%     %                                   % % % %         %\n"
+    "%     % % %                   % % %                     % %\n"
+    "%               % % %                                     %\n"
+    "%         X                                               %\n"
+    "% % % % % % % % % % % %                       % % % % % % %\n"
+    "                    % % W W W W W W W W W W W % %          \n",
+
 };
 
 static int const g_map_count = (int)sizeof(g_maps) / (int)sizeof(*g_maps);
