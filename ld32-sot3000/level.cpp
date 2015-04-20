@@ -27,7 +27,8 @@ level_instance::level_instance()
     m_active_gun(thing_type::none),
     m_exit_reached(false),
     m_player_killed(false),
-    m_player_fell(false)
+    m_player_fell(false),
+    m_timer(0.0)
 {
 }
 
@@ -39,6 +40,8 @@ level_instance::~level_instance()
 void level_instance::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
+
+    m_timer += seconds;
 
     if (!g_game->is_paused())
     {
@@ -314,9 +317,52 @@ void level_instance::TickDraw(float seconds, Scene &scene)
             continue;
 
         // Slight tweaking of the tile size so that we can use overlap for effects
-        vec3 pos = t->m_position - vec3(t->m_scale) * 0.5f;
+        // FIXME: value added to pos is wrong here
+        vec3 pos = t->m_position - vec3(t->m_scale) * 0.25f;
         vec2 scale = vec2(t->m_scale * 1.5f);
-        scene.AddTile(g_game->m_tiles, t->m_tile_index, pos, 0, scale, 0.f);
+
+        /* Some tweaks */
+        switch (t->m_tile_index)
+        {
+        case Tiles::Laser:
+             if (lol::cos(5.0 * m_timer) > 0)
+             {
+                 pos.x += TILE_SIZE * scale.x;
+                 scale.x *= -1.f;
+             }
+             if (lol::sin(5.0 * m_timer) > 0)
+             {
+                 pos.y += TILE_SIZE * scale.y;
+                 scale.y *= -1.f;
+             }
+             break;
+        case Tiles::PinkProjectile:
+        case Tiles::BlueProjectile:
+             if (t->m_velocity.x < 0.0f)
+             {
+                 pos.x += TILE_SIZE * scale.x;
+                 scale.x *= -1.f;
+             }
+             break;
+        }
+
+        switch (t->m_tile_index)
+        {
+        case Tiles::GroundTop:
+        case Tiles::GroundTopLeft:
+        case Tiles::GroundTopRight:
+        case Tiles::PinkGun:
+        case Tiles::PinkProjectile:
+        case Tiles::BlueGun:
+        case Tiles::BlueProjectile:
+        case Tiles::Button:
+        case Tiles::Laser:
+            scene.AddTile(g_game->m_newtiles, t->m_tile_index, pos, 0, scale / 3.f, 0.f);
+            break;
+        default:
+            scene.AddTile(g_game->m_tiles, t->m_tile_index, pos, 0, scale, 0.f);
+            break;
+        }
     }
 }
 
@@ -328,7 +374,7 @@ ivec2 level_instance::layout_size()
 vec2 level_instance::world_size()
 {
     // We add +1 in X because we account for the last column’s tile which is probably double-width
-    return (vec2(m_map->m_layout.GetSize()) + vec2(1.f, 0.f)) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
+    return (vec2(m_map->m_layout.GetSize()) + vec2(2.f, 0.f)) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
 }
 
 void level_instance::load_map(ld32_map *map)
@@ -379,9 +425,9 @@ void level_instance::build()
             t->m_original_aabb.B.y -= TILE_SIZE * 0.1f;
 
             // FIXME: reduce bounding box in the following two cases
-            if (i - 2 < 0 || m_map->m_layout[i - 2][j] != thing_type::ground)
+            if (i - 2 >= 0 && m_map->m_layout[i - 2][j] != thing_type::ground)
                 t->m_tile_index = Tiles::GroundTopRight;
-            if (i + 2 >= size.x || m_map->m_layout[i + 2][j] != thing_type::ground)
+            if (i + 2 < size.x && m_map->m_layout[i + 2][j] != thing_type::ground)
                 t->m_tile_index = Tiles::GroundTopLeft;
             break;
         case thing_type::blocker:
@@ -444,7 +490,7 @@ void level_instance::build()
 
         // If necessary, scale object thanks to our in-map markers. This can
         // scale objects that are otherwise unaffected by the gun.
-        if (j < size.x - 1 && m_map->m_layout[i][j + 1] == thing_type::item_scaler)
+        if (j < size.y - 1 && m_map->m_layout[i][j + 1] == thing_type::item_scaler)
         {
             t->m_scale = 2.0f;
             t->m_target_scale = 2.0f;

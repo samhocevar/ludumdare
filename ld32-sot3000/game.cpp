@@ -36,6 +36,9 @@ ld32_game::ld32_game()
     m_tiles->AddTile(ibox2(512, 640, 1024, 1024));
     m_tiles->AddTile(ibox2(0, 640, 512, 1024));
 
+    m_newtiles = Tiler::Register("data/newtiles.png");
+    m_newtiles->AddTile(ivec2(16, 8));
+
     m_camera = new Camera();
     g_scene->PushCamera(m_camera);
     Ticker::Ref(m_camera);
@@ -91,6 +94,7 @@ ld32_game::~ld32_game()
     Ticker::Unref(m_start_text);
     Ticker::Unref(m_level_text);
     Tiler::Deregister(m_tiles);
+    Tiler::Deregister(m_newtiles);
     g_scene->PopCamera(m_camera);
     Ticker::Unref(m_camera);
 }
@@ -109,6 +113,9 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
 
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
+
+    m_newtiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
+    m_newtiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
 
     g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
 
@@ -129,7 +136,7 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
         if (gun != thing_type::none)
         {
             int id = gun == thing_type::blue_gun ? Tiles::BlueGun : Tiles::PinkGun;
-            scene.AddTile(m_tiles, id, vec3(m_poi + m_viewport_size * vec2(-0.45f, 0.30f), 50.f), 0, vec2(3.f), 0.f);
+            scene.AddTile(m_newtiles, id, vec3(m_poi + m_viewport_size * vec2(-0.45f, 0.30f), 50.f), 0, vec2(1.f), 0.f);
         }
     }
 }

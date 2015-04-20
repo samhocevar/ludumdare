@@ -53,7 +53,7 @@ private:
     void tick_events(float seconds);
 
 public:
-    TileSet *m_tiles;
+    TileSet *m_tiles, *m_newtiles;
 
 private:
     game_state m_state;
