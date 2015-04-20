@@ -52,7 +52,7 @@ ld32_game::ld32_game()
     m_input << InputProfile::Keyboard(input::pause, "P");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
 
-    m_input << InputProfile::Keyboard(input::next_level, "X");
+    //m_input << InputProfile::Keyboard(input::next_level, "X");
 
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
