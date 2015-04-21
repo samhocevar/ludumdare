@@ -1,5 +1,5 @@
 ﻿//
-// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32 3000
+// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
 //
 // Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
 //   This program is free software; you can redistribute it and/or
@@ -12,16 +12,26 @@
 
 #include "thing.h"
 
+struct level_layout
+{
+    array2d<thing_type> m_tiles;
+    ivec2 m_start;
+
+    // Parser state
+    array<std::string> m_lines;
+    array<int> m_numbers;
+    ivec2 m_size, m_cursor;
+};
+
 class level_description
 {
-    friend class level_instance;
-
 public:
     void load_data(char const *data);
-    void clear();
 
-protected:
-    array2d<thing_type> m_layout;
-    ivec2 m_start, m_exit;
+    array2d<thing_type> const & get_layout() const { return m_layout.m_tiles; }
+    ivec2 get_start() const { return m_layout.m_start; }
+
+private:
+    level_layout m_layout;
 };
 

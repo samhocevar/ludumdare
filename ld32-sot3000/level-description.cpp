@@ -1,5 +1,5 @@
 ﻿//
-// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32 3000
+// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
 //
 // Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
 //   This program is free software; you can redistribute it and/or
@@ -12,82 +12,105 @@
 #   include "config.h"
 #endif
 
+#include <string>
+
 #include <lol/engine.h>
 
 #include "pegtl.hh"
 
 using namespace lol;
+using namespace pegtl;
 
 #include "level-description.h"
 
+struct do_size : action_base<do_size>
+{
+    static void apply(std::string const &ctx, level_layout &layout)
+    {
+        printf(">%s<\n", ctx.c_str());
+    }
+};
+
+struct do_line : action_base<do_line>
+{
+    static void apply(std::string const &ctx, level_layout &layout)
+    {
+        // Resize layout
+        layout.m_size.y += 1;
+        layout.m_size.x = lol::max(layout.m_size.x, (int)ctx.length());
+        layout.m_lines.push(ctx);
+    }
+};
+
+struct _ : star<space> {};
+
+struct r_line
+  : seq<ifapply<star<one<' ',
+                         'S', 'E', '%', 'X', '-', '+', '_',
+                         '|', 'W', 'p', 'b', '#', '@', '*'>>,
+                do_line>,
+        eol> {};
+
+struct r_layout
+  : plus<r_line> {};
+
+struct r_size
+  : ifapply<seq<string<'s', 'i', 'z', 'e'>,
+                _, plus<digit>, _, plus<digit>, _, eol>,
+            do_size> {};
+
+struct r_header
+  : opt<r_size> {};
+
+struct r_level
+  : seq<r_header, r_layout> {};
+
+//
+// Level description implementation
+//
+
 void level_description::load_data(char const *data)
 {
-    int const width = ::strchr(data, '\n') - data;
-    int const height = ::strlen(data) / (width + 1);
+    m_layout.~level_layout();
+    new(&m_layout) level_layout();
 
-    m_layout.SetSize(ivec2(width, height));
-    clear();
+    m_layout.m_size = ivec2(0);
+    basic_parse_string<r_level>(data, m_layout);
+    m_layout.m_tiles.set_size(m_layout.m_size);
 
-    for (int i = 0; i < width; ++i)
-    for (int j = 0; j < height; ++j)
+    for (int j = 0; j < m_layout.m_size.y; ++j)
     {
-        char ch = data[(height - 1 - j) * (width + 1) + i];
-        switch (ch)
+        std::string const &line = m_layout.m_lines[m_layout.m_size.y - 1 - j];
+
+        for (int i = 0; i < m_layout.m_size.x; ++i)
         {
-        case 'S':
-            //m_layout[i][j] = thing_type::door;
-            m_start = ivec2(i, j);
-            break;
-        case 'E':
-            m_layout[i][j] = thing_type::door;
-            m_exit = ivec2(i, j);
-            break;
-        case '%':
-            m_layout[i][j] = thing_type::ground;
-            break;
-        case 'X':
-            m_layout[i][j] = thing_type::blocker;
-            break;
-        case '-':
-            m_layout[i][j] = thing_type::monster_blocker;
-            break;
-        case '+':
-            m_layout[i][j] = thing_type::item_scaler;
-            break;
-        case '_':
-            m_layout[i][j] = thing_type::button;
-            break;
-        case '|':
-            m_layout[i][j] = thing_type::laser;
-            break;
-        case 'W':
-            m_layout[i][j] = thing_type::spikes;
-            break;
-        case 'p':
-            m_layout[i][j] = thing_type::pink_gun;
-            break;
-        case 'b':
-            m_layout[i][j] = thing_type::blue_gun;
-            break;
-        case '#':
-            m_layout[i][j] = thing_type::sitting_monster;
-            break;
-        case '@':
-            m_layout[i][j] = thing_type::walking_monster;
-            break;
-        case '*':
-            m_layout[i][j] = thing_type::flying_monster;
-            break;
-        }
-    }
-}
+            thing_type t = thing_type::none;
 
-void level_description::clear()
-{
-    for (int i = 0; i < m_layout.GetSize().x; ++i)
-    for (int j = 0; j < m_layout.GetSize().y; ++j)
-    {
-        m_layout[i][j] = thing_type::none;
+            char ch = i < line.length() ? line[i] : ' ';
+            switch (ch)
+            {
+                case 'S': break;
+                case 'E': t = thing_type::door; break;
+                case '%': t = thing_type::ground; break;
+                case 'X': t = thing_type::blocker; break;
+                case '-': t = thing_type::monster_blocker; break;
+                case '+': t = thing_type::item_scaler; break;
+                case '_': t = thing_type::button; break;
+                case '|': t = thing_type::laser; break;
+                case 'W': t = thing_type::spikes; break;
+                case 'p': t = thing_type::pink_gun; break;
+                case 'b': t = thing_type::blue_gun; break;
+                case '#': t = thing_type::sitting_monster; break;
+                case '@': t = thing_type::walking_monster; break;
+                case '*': t = thing_type::flying_monster; break;
+                default: break;
+            }
+
+            if (ch == 'S')
+                m_layout.m_start = ivec2(i, j);
+
+            m_layout.m_tiles[i][j] = t;
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 ﻿//
-// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32 3000
+// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
 //
 // Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
 //   This program is free software; you can redistribute it and/or
@@ -383,8 +383,8 @@ void level_instance::init(level_description const &desc)
 {
     clear();
 
-    auto const &layout = desc.m_layout;
-    m_layout_size = (ivec2)layout.GetSize();
+    auto const &layout = desc.get_layout();
+    m_layout_size = (ivec2)layout.get_size();
 
     // First, the solid parts of the map
     for (int i = 0; i < m_layout_size.x; ++i)
@@ -491,7 +491,7 @@ void level_instance::init(level_description const &desc)
 
     // Now the moving parts
     m_player = new thing(thing_type::player);
-    m_player->m_position = vec3(vec2(desc.m_start) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
+    m_player->m_position = vec3(vec2(desc.get_start()) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
     m_player->m_original_aabb.A = vec3(0.f);
     m_player->m_original_aabb.B = vec3(float(TILE_SIZE));
     m_player->m_tile_index = Tiles::PlayerGoRight;
