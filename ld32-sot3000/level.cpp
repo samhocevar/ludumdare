@@ -87,27 +87,22 @@ void level_instance::tick_player(float seconds)
     // We have gravity (most of the time)
     m_player->m_velocity.y -= GRAVITY * seconds;
 
-    // But we also have air friction which prevents our speed to reach
+    // If the play was killed, we have no collision or air friction
+    if (m_player_killed)
+    {
+        m_player->m_position += m_player->m_velocity * seconds;
+        return;
+    }
+
+    // We have air friction which prevents our speed to reach
     // dangerous values… make this naive for now
     float y_speed = lol::abs(m_player->m_velocity.y);
     if (y_speed > PLAYER_MAX_SPEED)
         m_player->m_velocity.y *= (PLAYER_MAX_SPEED / y_speed);
 
-    // Apply as much velocity from forces as possible
     float force_time;
-    if (!m_player_killed)
-    {
-        force_time = collide_thing(m_player, m_player->m_velocity, seconds);
-    }
-    else
-    {
-        force_time = seconds;
-    }
-
+    force_time = collide_thing(m_player, m_player->m_velocity, seconds);
     m_player->m_position += m_player->m_velocity * force_time;
-
-    if (m_player_killed)
-        return;
 
     // If not all forces were applied, try to slide horizontally or vertically
     if (force_time < seconds)
