@@ -14,6 +14,7 @@
 
 struct level_layout
 {
+    String m_name;
     array2d<thing_type> m_tiles;
     ivec2 m_start;
 
@@ -29,6 +30,7 @@ public:
     void load_data(char const *data);
 
     array2d<thing_type> const & get_layout() const { return m_layout.m_tiles; }
+    String const &get_name() const { return m_layout.m_name; }
     ivec2 get_start() const { return m_layout.m_start; }
 
 private:

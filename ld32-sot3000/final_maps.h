@@ -12,26 +12,7 @@
 
 static char const * const g_maps[] =
 {
-#if 0
-    /* (Test) */
-    "                                               \n"
-    "                                               \n"
-    "                                               \n"
-    "                                               \n"
-    "                                               \n"
-    "% %                                         % %\n"
-    "%                                             %\n"
-    "%                                             %\n"
-    "%               -         @         -         %\n"
-    "%                 % % % % % % % % %           %\n"
-    "%                        % %            +     %\n"
-    "%    S                   % %            E     %\n"
-    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
-    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
-#endif
-
-
-    /* Just reach the end */
+    "name = A Walk in the Park\n"
     "             X       X       X                 \n"
     "                X        X      X              \n"
     "                                               \n"
@@ -55,7 +36,7 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Jump! */
+    "name = Some Excitement\n"
     "              X  X   X  X        X             \n"
     "                 X   X   X     X               \n"
     "          X   X                   X            \n"
@@ -79,7 +60,7 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Must jump */
+    "name = It Burns!\n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
@@ -87,17 +68,17 @@ static char const * const g_maps[] =
     "                                               \n"
     "                                               \n"
     "                                            % %\n"
-    "                                              %\n"
-    "                                        +     %\n"
-    "% %          W                          E     %\n"
-    "%         % % % %               % % % % % % % %\n"
+    "              % % % %         % % %           %\n"
+    "               |               |        +     %\n"
+    "% %            |               |        E     %\n"
+    "%         % % % %           % % % % % % % % % %\n"
     "%            |                    % % % % % % %\n"
     "%   S        |                    % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Jump over spikes */
+    "name = It Stings!\n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
@@ -111,11 +92,11 @@ static char const * const g_maps[] =
     "%                                             %\n"
     "%                                       +     %\n"
     "%    S                                  E     %\n"
-    "% % % % % % % % % W W W W W W % % % % % % % % %\n",
-    "% % % % % % % % % % % % % % % % % % % % % % % %\n"
+    "% % % % % % % % % W W W W W W % % % % % % % % %\n"
+    "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Must jump more */
+    "name = Elevation\n"
     "                                               \n"
     "                                              %\n"
     "                                              %\n"
@@ -137,7 +118,7 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Use the blue gun */
+    "name = The Blue Gun\n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
@@ -155,7 +136,7 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Use the pink gun */
+    "name = The Pink Gun\n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
@@ -173,7 +154,7 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Practice delayed jump */
+    "name = Airwalk\n"
     "                                               \n"
     "                                               \n"
     "%                     %                        \n"
@@ -191,15 +172,15 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Press the button then take the gun */
+    "name = Getting Serious\n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
     "                                               \n"
-    "%                                   %  +       \n"
-    "%                                   %  E      %\n"
-    "%                       +           % % %     %\n"
+    "%                                   %   +      \n"
+    "%                                   %   E     %\n"
+    "%                       +           % % % %   %\n"
     "% S                     W      _    %         %\n"
     "% %               % % % % % % % % % %         %\n"
     "%                   |                       % %\n"
@@ -209,7 +190,7 @@ static char const * const g_maps[] =
     "% % % % % % % % % % % % % % % % % % % % % % % %\n",
 
 
-    /* Just for fun… */
+    "name = Just for Fun\n"
     "%                                                       b %\n"
     "%                                                         %\n"
     "%       -      @      -                                   %\n"
@@ -228,7 +209,6 @@ static char const * const g_maps[] =
     "%         X                                               %\n"
     "% % % % % % % % % % % % W W W W W W W W W W W % % % % % % %\n"
     "% % % % % % % % % % % % % % % % % % % % % % % % % % % % % %\n",
-
 };
 
 static int const g_map_count = (int)sizeof(g_maps) / (int)sizeof(*g_maps);

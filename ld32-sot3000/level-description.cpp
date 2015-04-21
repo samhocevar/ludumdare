@@ -31,6 +31,14 @@ struct do_size : action_base<do_size>
     }
 };
 
+struct do_name : action_base<do_name>
+{
+    static void apply(std::string const &ctx, level_layout &layout)
+    {
+        layout.m_name = ctx.c_str();
+    }
+};
+
 struct do_line : action_base<do_line>
 {
     static void apply(std::string const &ctx, level_layout &layout)
@@ -54,13 +62,20 @@ struct r_line
 struct r_layout
   : plus<r_line> {};
 
+struct r_name
+  : seq<string<'n', 'a', 'm', 'e'>, _, one<'='>, _,
+        ifapply<until<at<eol>, any>,
+                do_name>,
+        eol> {};
+
 struct r_size
   : ifapply<seq<string<'s', 'i', 'z', 'e'>,
                 _, plus<digit>, _, plus<digit>, _, eol>,
             do_size> {};
 
 struct r_header
-  : opt<r_size> {};
+  : star<sor<r_size,
+             r_name>> {};
 
 struct r_level
   : seq<r_header, r_layout> {};

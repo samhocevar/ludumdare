@@ -71,7 +71,15 @@ sot3000_game::sot3000_game()
     m_level_text->SetAlign(TextAlign::Center);
     m_level_text->SetScale(vec2(0.25f));
     m_level_text->SetSpacing(-0.2f);
+    m_level_text->SetPos(vec3(0.f, 20.f, 0.f));
     Ticker::Ref(m_level_text);
+
+    m_level_name_text = new Text("", "data/font.png");
+    m_level_name_text->SetAlign(TextAlign::Center);
+    m_level_name_text->SetScale(vec2(0.2f));
+    m_level_name_text->SetSpacing(-0.2f);
+    m_level_name_text->SetPos(vec3(0.f, -40.f, 0.f));
+    Ticker::Ref(m_level_name_text);
 
     m_start_text = new Text("", "data/font.png");
     m_start_text->SetAlign(TextAlign::Center);
@@ -93,6 +101,7 @@ sot3000_game::~sot3000_game()
     Ticker::Unref(m_pause_text);
     Ticker::Unref(m_start_text);
     Ticker::Unref(m_level_text);
+    Ticker::Unref(m_level_name_text);
     Tiler::Deregister(m_tiles);
     Tiler::Deregister(m_newtiles);
     Scene::PopCamera(m_camera);
@@ -201,12 +210,13 @@ void sot3000_game::tick_camera(float seconds)
 
     if (m_state == game_state::next_level)
     {
-        String str = String::Printf("Level %d/%d", 1 + m_current_level, g_map_count);
-        m_level_text->SetText(str);
+        m_level_text->SetText(String::Printf("Level %d/%d", 1 + m_current_level, g_map_count));
+        m_level_name_text->SetText(String::Printf("\"%s\"", m_level_desc.get_name().C()));
     }
     else
     {
         m_level_text->SetText("");
+        m_level_name_text->SetText("");
     }
 }
 
@@ -241,14 +251,14 @@ void sot3000_game::tick_events(float seconds)
         if (m_state == game_state::title_screen)
         {
             m_current_level = 0;
+            m_level_desc.load_data(g_maps[m_current_level]);
+
             m_state = game_state::next_level;
             return;
         }
 
         if (m_state == game_state::next_level)
         {
-            m_level_desc.load_data(g_maps[m_current_level]);
-
             // Create a new level
             m_level = new level_instance();
             m_level->init(m_level_desc);
@@ -285,10 +295,12 @@ void sot3000_game::tick_events(float seconds)
     {
         if (m_level->get_exit_reached())
         {
-            ++m_current_level;
             Ticker::Unref(m_level);
             m_level = nullptr;
             m_state = game_state::next_level;
+
+            if (++m_current_level < g_map_count)
+                m_level_desc.load_data(g_maps[m_current_level]);
             return;
         }
 
