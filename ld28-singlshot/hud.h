@@ -35,7 +35,7 @@ public:
         m_camera->SetProjection(mat4::ortho(-ARENA.x * 0.5f, ARENA.x * 0.5f,
                                             -ARENA.y * 0.5f, ARENA.y * 0.5f,
                                             -100.f, 100.f));
-        g_scene->PushCamera(m_camera);
+        Scene::PushCamera(m_camera);
         Ticker::Ref(m_camera);
 
         /* TileSet */
@@ -110,7 +110,7 @@ public:
         for (int i = 0; i < m_score.Count(); ++i)
             Ticker::Unref(m_score[i]);
 
-        g_scene->PopCamera(m_camera);
+        Scene::PopCamera(m_camera);
         Ticker::Unref(m_camera);
 
         //Tiler::Deregister(m_tiles);
