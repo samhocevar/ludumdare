@@ -89,9 +89,9 @@ void level_instance::tick_player(float seconds)
 
     // But we also have air friction which prevents our speed to reach
     // dangerous values… make this naive for now
-    float speed = length(m_player->m_velocity);
-    if (speed > PLAYER_MAX_SPEED)
-        m_player->m_velocity *= (PLAYER_MAX_SPEED / speed);
+    float y_speed = lol::abs(m_player->m_velocity.y);
+    if (y_speed > PLAYER_MAX_SPEED)
+        m_player->m_velocity.y *= (PLAYER_MAX_SPEED / y_speed);
 
     // Apply as much velocity from forces as possible
     float force_time;
@@ -204,7 +204,6 @@ void level_instance::tick_living(thing *t, float seconds)
     switch (t->get_type())
     {
     case thing_type::flying_monster:
-        t->m_tile_index = t->m_facing_left ? Tiles::FlyingGoLeft : Tiles::FlyingGoRight;
         impulse.x = t->m_facing_left ? -MONSTER_RUN_SPEED : MONSTER_RUN_SPEED;
         break;
     case thing_type::walking_monster:
@@ -227,9 +226,9 @@ void level_instance::tick_living(thing *t, float seconds)
 
     // We also have air friction which prevents our speed to reach
     // dangerous values… make this naive for now
-    float speed = length(t->m_velocity);
-    if (speed > OBJECT_MAX_SPEED)
-        t->m_velocity *= (OBJECT_MAX_SPEED / speed);
+    float y_speed = lol::abs(t->m_velocity.y);
+    if (y_speed > OBJECT_MAX_SPEED)
+        t->m_velocity.y *= (OBJECT_MAX_SPEED / y_speed);
 
     // Apply as much velocity from forces as possible
     float force_time = collide_thing(t, t->m_velocity, seconds);
@@ -338,7 +337,9 @@ void level_instance::TickDraw(float seconds, Scene &scene)
              break;
         case Tiles::PinkProjectile:
         case Tiles::BlueProjectile:
-             if (t->m_velocity.x < 0.0f)
+        case Tiles::FlyingMonster:
+        case Tiles::WalkingMonster:
+             if (t->m_velocity.x < 0.0f || t->m_facing_left)
              {
                  pos.x += TILE_SIZE * scale.x;
                  scale.x *= -1.f;
@@ -346,23 +347,12 @@ void level_instance::TickDraw(float seconds, Scene &scene)
              break;
         }
 
-        switch (t->m_tile_index)
-        {
-        case Tiles::GroundTop:
-        case Tiles::GroundTopLeft:
-        case Tiles::GroundTopRight:
-        case Tiles::PinkGun:
-        case Tiles::PinkProjectile:
-        case Tiles::BlueGun:
-        case Tiles::BlueProjectile:
-        case Tiles::Button:
-        case Tiles::Laser:
-            scene.AddTile(g_game->m_newtiles, t->m_tile_index, pos, 0, scale / 3.f, 0.f);
-            break;
-        default:
-            scene.AddTile(g_game->m_tiles, t->m_tile_index, pos, 0, scale, 0.f);
-            break;
-        }
+        if (t->m_tile_index < 1000)
+            scene.AddTile(g_game->m_newtiles, t->m_tile_index,
+                          pos, 0, scale / 3.f, 0.f);
+        else
+            scene.AddTile(g_game->m_tiles, t->m_tile_index - 1000,
+                          pos, 0, scale, 0.f);
     }
 }
 
@@ -410,25 +400,31 @@ void level_instance::build()
 
         thing *t = new thing(m_map->m_layout[i][j]);
         t->m_position = vec3(i * 0.5f, j, 0) * float(TILE_SIZE);
+        t->m_velocity = vec3(0.f);
         t->m_original_aabb.A = vec3(0);
         t->m_original_aabb.B = vec3(float(TILE_SIZE));
+
+        int b = 0;
 
         switch (m_map->m_layout[i][j])
         {
         case thing_type::ground:
-            t->m_tile_index = Tiles::GroundTop;
+            b = (j + 1 < size.y && m_map->m_layout[i][j + 1] != thing_type::ground ? 4 : 0)
+              | (j - 1 >= 0 && m_map->m_layout[i][j - 1] != thing_type::ground ? 8 : 0)
+              | (i + 2 < size.x && m_map->m_layout[i + 2][j] != thing_type::ground ? 2 : 0)
+              | (i - 2 >= 0 && m_map->m_layout[i - 2][j] != thing_type::ground ? 1 : 0);
 
-            // Slightly tweak platform positions
-            t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
-            t->m_original_aabb.A.y += TILE_SIZE * 0.3f;
-            t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
-            t->m_original_aabb.B.y -= TILE_SIZE * 0.1f;
+            t->m_tile_index = Tiles::Ground + b;
 
-            // FIXME: reduce bounding box in the following two cases
-            if (i - 2 >= 0 && m_map->m_layout[i - 2][j] != thing_type::ground)
-                t->m_tile_index = Tiles::GroundTopRight;
-            if (i + 2 < size.x && m_map->m_layout[i + 2][j] != thing_type::ground)
-                t->m_tile_index = Tiles::GroundTopLeft;
+            // Reduce bounding box in open ends
+            if (b & 0x1)
+                t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
+            if (b & 0x8)
+                t->m_original_aabb.A.y += TILE_SIZE * 0.3f;
+            if (b & 0x2)
+                t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
+            if (b & 0x4)
+                t->m_original_aabb.B.y -= TILE_SIZE * 0.1f;
             break;
         case thing_type::blocker:
             t->m_tile_index = Tiles::Blocker;
@@ -477,7 +473,7 @@ void level_instance::build()
             m_monsters.push(t);
             break;
         case thing_type::flying_monster:
-            t->m_tile_index = Tiles::FlyingGoLeft;
+            t->m_tile_index = Tiles::FlyingMonster;
             m_monsters.push(t);
             break;
         default:

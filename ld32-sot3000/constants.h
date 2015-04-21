@@ -43,31 +43,33 @@ static float PROJECTILE_MAX_SPEED = TILE_SIZE * 20.f;
 /* Tiles */
 enum Tiles
 {
-    PlayerGoRight = 0,
-    PlayerGoLeft = 1,
+    /* Bits: down up right left, 1 means open */
+    Button = 2,
+    Laser = 3,
 
-    GroundTop = 16,
-    GroundTopRight = 17,
-    GroundTopLeft = 18,
+    PinkProjectile = 8,
+    PinkGun = 9,
+    BlueProjectile = 10,
+    BlueGun = 11,
 
-    Blocker = 19,
-    Spikes = 20,
-    Door = 21,
-    SawBlade = 22,
-    Button = 23,
-    Laser = 24,
+    Ground = 32,
 
-    SittingMonster = 32,
-    WalkingMonster = 33,
-    FlyingGoRight = 48,
-    FlyingGoLeft = 49,
+    /* Old tiles */
+    PlayerGoRight = 1000,
+    PlayerGoLeft = 1001,
 
-    PinkProjectile = 64,
-    PinkGun = 65,
-    BlueProjectile = 66,
-    BlueGun = 67,
-    Key = 68, /* UNUSED */
+    Blocker = 1019,
+    Spikes = 1020,
+    Door = 1021,
+    SawBlade = 1022,
+
+    SittingMonster = 1032,
+    WalkingMonster = 1033,
+    FlyingMonster = 1048,
+
+    Key = 1068, /* UNUSED */
 
     TitleScreen = 256,
     YouWinScreen = 257,
 };
+

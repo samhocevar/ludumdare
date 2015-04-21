@@ -19,8 +19,6 @@ using namespace lol;
 #include "constants.h"
 #include "thing.h"
 
-#pragma once
-
 thing::thing(thing_type t)
   : m_type(t),
     m_scale(1.f),

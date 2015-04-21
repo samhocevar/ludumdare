@@ -37,10 +37,10 @@ ld32_game::ld32_game()
     m_tiles->AddTile(ibox2(0, 640, 512, 1024));
 
     m_newtiles = Tiler::Register("data/newtiles.png");
-    m_newtiles->AddTile(ivec2(16, 8));
+    m_newtiles->AddTile(ivec2(8, 8));
 
     m_camera = new Camera();
-    g_scene->PushCamera(m_camera);
+    Scene::PushCamera(m_camera);
     Ticker::Ref(m_camera);
 
     m_controller = new Controller("default controller");
@@ -52,7 +52,7 @@ ld32_game::ld32_game()
     m_input << InputProfile::Keyboard(input::pause, "P");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
 
-    //m_input << InputProfile::Keyboard(input::next_level, "X");
+    m_input << InputProfile::Keyboard(input::next_level, "X");
 
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
@@ -95,7 +95,7 @@ ld32_game::~ld32_game()
     Ticker::Unref(m_level_text);
     Tiler::Deregister(m_tiles);
     Tiler::Deregister(m_newtiles);
-    g_scene->PopCamera(m_camera);
+    Scene::PopCamera(m_camera);
     Ticker::Unref(m_camera);
 }
 
