@@ -19,8 +19,8 @@ static int const WINDOW_SIZE_Y = 720;
 /* The minimum and maximum sizes of the playing area, in world coordinates */
 static int const MIN_VIEWPORT_X = TILE_SIZE * 16;
 static int const MIN_VIEWPORT_Y = TILE_SIZE * 12;
-static int const MAX_VIEWPORT_X = TILE_SIZE * 40;
-static int const MAX_VIEWPORT_Y = TILE_SIZE * 30;
+static int const MAX_VIEWPORT_X = TILE_SIZE * 24;
+static int const MAX_VIEWPORT_Y = TILE_SIZE * 16;
 
 /* Player runs at 12 tiles per second, monsters are slower */
 static float const PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
@@ -52,15 +52,16 @@ enum Tiles
     BlueProjectile = 10,
     BlueGun = 11,
 
+    Blocker = 16,
+    Door = 17,
+    Spikes = 18,
+
     Ground = 32,
 
     /* Old tiles */
     PlayerGoRight = 1000,
     PlayerGoLeft = 1001,
 
-    Blocker = 1019,
-    Spikes = 1020,
-    Door = 1021,
     SawBlade = 1022,
 
     SittingMonster = 1032,
