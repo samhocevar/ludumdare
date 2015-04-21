@@ -3,13 +3,15 @@
   <ItemGroup>
     <ClCompile Include="ld32.cpp" />
     <ClCompile Include="game.cpp" />
-    <ClCompile Include="level.cpp" />
+    <ClCompile Include="level-description.cpp" />
+    <ClCompile Include="level-instance.cpp" />
     <ClCompile Include="thing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="constants.h" />
     <ClInclude Include="game.h" />
-    <ClInclude Include="level.h" />
+    <ClInclude Include="level-description.h" />
+    <ClInclude Include="level-instance.h" />
     <ClInclude Include="menu.h" />
     <ClInclude Include="thing.h" />
   </ItemGroup>

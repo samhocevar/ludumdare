@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include "level.h"
+#include "level-description.h"
+#include "level-instance.h"
 
 extern class ld32_game *g_game;
 
@@ -68,8 +69,8 @@ private:
     Text *m_level_text;
     vec2 m_viewport_size, m_poi;
 
-    ld32_map m_map;
-    int m_current_progress;
+    level_description m_level_desc;
     level_instance *m_level;
+    int m_current_level;
 };
 

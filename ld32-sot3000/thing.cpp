@@ -20,14 +20,14 @@ using namespace lol;
 #include "thing.h"
 
 thing::thing(thing_type t)
-  : m_type(t),
+  : m_target_scale(1.f),
     m_scale(1.f),
-    m_target_scale(1.f),
     m_hidden(false),
     m_grounded(false),
     m_can_impulse(false),
     m_facing_left(false),
-    m_jump_time(0.0f)
+    m_jump_time(0.0f),
+    m_type(t)
 {
 }
 
@@ -77,6 +77,7 @@ bool thing::can_fall()
     case thing_type::laser:
         return false;
     }
+    return false;
 }
 
 bool thing::can_kill()
@@ -105,6 +106,7 @@ bool thing::can_kill()
     case thing_type::laser:
         return !m_hidden;
     }
+    return false;
 }
 
 bool thing::can_block()
@@ -133,6 +135,7 @@ bool thing::can_block()
     case thing_type::blocker:
         return true;
     }
+    return false;
 }
 
 bool thing::can_block_monster()
@@ -161,6 +164,7 @@ bool thing::can_block_monster()
     case thing_type::spikes:
         return true;
     }
+    return false;
 }
 
 bool thing::can_scale()
@@ -189,6 +193,7 @@ bool thing::can_scale()
     case thing_type::flying_monster:
         return true;
     }
+    return false;
 }
 
 // Return collision time between two rectangular things

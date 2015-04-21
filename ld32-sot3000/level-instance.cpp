@@ -16,8 +16,8 @@
 
 using namespace lol;
 
+#include "level-instance.h"
 #include "constants.h"
-#include "level.h"
 #include "game.h"
 #include "thing.h"
 
@@ -171,9 +171,11 @@ void level_instance::tick_player(float seconds)
         }
     }
 
-    // Check whether we reached the exit
-    vec2 exit_position = vec2(m_map->m_exit) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
-    m_exit_reached = distance(exit_position, m_player->m_position.xy) < TILE_SIZE * m_player->m_scale;
+    // Check whether we reached the exit; FIXME: use standard collisions instead
+    if (m_exit)
+        m_exit_reached = distance(m_exit->m_position.xy,
+                                  m_player->m_position.xy)
+                   < TILE_SIZE * (m_player->m_scale + m_exit->m_scale) / 2;
 
     // Check whether we were killed
     for (thing *t : m_things)
@@ -204,6 +206,8 @@ void level_instance::tick_living(thing *t, float seconds)
     case thing_type::walking_monster:
         can_push_button = true;
         impulse.x = t->m_facing_left ? -MONSTER_RUN_SPEED : MONSTER_RUN_SPEED;
+        break;
+    default:
         break;
     }
 
@@ -351,22 +355,15 @@ void level_instance::TickDraw(float seconds, Scene &scene)
     }
 }
 
-ivec2 level_instance::layout_size()
+ivec2 level_instance::layout_size() const
 {
-    return (ivec2)m_map->m_layout.GetSize();
+    return m_layout_size;
 }
 
-vec2 level_instance::world_size()
+vec2 level_instance::world_size() const
 {
     // We add +1 in X because we account for the last column’s tile which is probably double-width
-    return (vec2(m_map->m_layout.GetSize()) + vec2(2.f, 0.f)) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
-}
-
-void level_instance::load_map(ld32_map *map)
-{
-    clear();
-    m_map = map;
-    build();
+    return (vec2(m_layout_size) + vec2(2.f, 0.f)) * vec2(TILE_SIZE * 0.5f, TILE_SIZE);
 }
 
 void level_instance::clear()
@@ -382,18 +379,21 @@ void level_instance::clear()
     m_items.empty();
 }
 
-void level_instance::build()
+void level_instance::init(level_description const &desc)
 {
-    ivec2 const size = layout_size();
+    clear();
+
+    auto const &layout = desc.m_layout;
+    m_layout_size = (ivec2)layout.GetSize();
 
     // First, the solid parts of the map
-    for (int i = 0; i < size.x; ++i)
-    for (int j = 0; j < size.y; ++j)
+    for (int i = 0; i < m_layout_size.x; ++i)
+    for (int j = 0; j < m_layout_size.y; ++j)
     {
-        if (m_map->m_layout[i][j] == thing_type::none)
+        if (layout[i][j] == thing_type::none)
             continue;
 
-        thing *t = new thing(m_map->m_layout[i][j]);
+        thing *t = new thing(layout[i][j]);
         t->m_position = vec3(i * 0.5f, j, 0) * float(TILE_SIZE);
         t->m_velocity = vec3(0.f);
         t->m_original_aabb.A = vec3(0);
@@ -401,13 +401,13 @@ void level_instance::build()
 
         int b = 0;
 
-        switch (m_map->m_layout[i][j])
+        switch (layout[i][j])
         {
         case thing_type::ground:
-            b = (j + 1 < size.y && m_map->m_layout[i][j + 1] != thing_type::ground ? 4 : 0)
-              | (j - 1 >= 0 && m_map->m_layout[i][j - 1] != thing_type::ground ? 8 : 0)
-              | (i + 2 < size.x && m_map->m_layout[i + 2][j] != thing_type::ground ? 2 : 0)
-              | (i - 2 >= 0 && m_map->m_layout[i - 2][j] != thing_type::ground ? 1 : 0);
+            b = (j + 1 < m_layout_size.y && layout[i][j + 1] != thing_type::ground ? 4 : 0)
+              | (j - 1 >= 0 && layout[i][j - 1] != thing_type::ground ? 8 : 0)
+              | (i + 2 < m_layout_size.x && layout[i + 2][j] != thing_type::ground ? 2 : 0)
+              | (i - 2 >= 0 && layout[i - 2][j] != thing_type::ground ? 1 : 0);
 
             t->m_tile_index = Tiles::Ground + b;
 
@@ -435,6 +435,7 @@ void level_instance::build()
             break;
         case thing_type::door:
             t->m_tile_index = Tiles::Door;
+            m_exit = t;
             break;
         case thing_type::spikes:
             t->m_tile_index = Tiles::Spikes;
@@ -481,7 +482,7 @@ void level_instance::build()
 
         // If necessary, scale object thanks to our in-map markers. This can
         // scale objects that are otherwise unaffected by the gun.
-        if (j < size.y - 1 && m_map->m_layout[i][j + 1] == thing_type::item_scaler)
+        if (j < m_layout_size.y - 1 && layout[i][j + 1] == thing_type::item_scaler)
         {
             t->m_scale = 2.0f;
             t->m_target_scale = 2.0f;
@@ -490,29 +491,27 @@ void level_instance::build()
 
     // Now the moving parts
     m_player = new thing(thing_type::player);
-    m_player->m_position = vec3(vec2(m_map->m_start) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
+    m_player->m_position = vec3(vec2(desc.m_start) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
     m_player->m_original_aabb.A = vec3(0.f);
     m_player->m_original_aabb.B = vec3(float(TILE_SIZE));
     m_player->m_tile_index = Tiles::PlayerGoRight;
     m_things.push(m_player);
     Ticker::Ref(m_player);
 
-    for (thing_type type : { thing_type::pink_projectile, thing_type::blue_projectile})
+    for (thing_type type : { thing_type::pink_projectile,
+                             thing_type::blue_projectile })
     {
         thing *t = new thing(type);
         m_projectiles.push(t);
         t->m_hidden = true;
         t->m_original_aabb.A = vec3(TILE_SIZE * 0.4f);
         t->m_original_aabb.B = vec3(TILE_SIZE * 0.6f);
-        switch (type)
-        {
-            case thing_type::pink_projectile:
-                t->m_tile_index = Tiles::PinkProjectile;
-                break;
-            case thing_type::blue_projectile:
-                t->m_tile_index = Tiles::BlueProjectile;
-                break;
-        }
+
+        if (type == thing_type::pink_projectile)
+            t->m_tile_index = Tiles::PinkProjectile;
+        else
+            t->m_tile_index = Tiles::BlueProjectile;
+
         m_things.push(t);
         Ticker::Ref(t);
     }
@@ -524,7 +523,8 @@ vec3 level_instance::get_poi() const
     return m_player->m_position + 0.5f * (m_player->m_original_aabb.B - m_player->m_original_aabb.A);
 }
 
-float level_instance::collide_thing(thing const *t, vec3 velocity, float seconds)
+float level_instance::collide_thing(thing const *t, vec3 velocity,
+                                    float seconds) const
 {
     bool is_moving_monster = t->get_type() == thing_type::walking_monster
                         || t->get_type() == thing_type::flying_monster;
@@ -601,23 +601,23 @@ void level_instance::continue_jump(float velocity, float seconds)
 
 void level_instance::fire()
 {
-    thing *fire;
+    thing *projecile;
 
     switch (m_active_gun)
     {
-    case thing_type::none:
-        return;
     case thing_type::pink_gun:
-        fire = m_projectiles[0];
+        projecile = m_projectiles[0];
         break;
     case thing_type::blue_gun:
-        fire = m_projectiles[1];
+        projecile = m_projectiles[1];
         break;
+    default:
+        return;
     }
 
     vec3 dir = (m_player->m_facing_left ? -1.f : 1.f) * vec3(1.0f, 0.f, 0.f);
 
-    fire->m_hidden = false;
-    fire->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
-    fire->m_velocity = PROJECTILE_MAX_SPEED * dir;
+    projecile->m_hidden = false;
+    projecile->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
+    projecile->m_velocity = PROJECTILE_MAX_SPEED * dir;
 }

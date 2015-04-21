@@ -29,7 +29,7 @@ using namespace lol;
 
 ld32_game::ld32_game()
   : m_state(game_state::title_screen),
-    m_current_progress(0)
+    m_current_level(0)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->AddTile(ivec2(16, 16));
@@ -143,6 +143,8 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
 
 void ld32_game::tick_camera(float seconds)
 {
+    UNUSED(seconds);
+
     if (m_state == game_state::title_screen
          || m_state == game_state::next_level
          || m_state == game_state::you_win)
@@ -199,7 +201,7 @@ void ld32_game::tick_camera(float seconds)
 
     if (m_state == game_state::next_level)
     {
-        String str = String::Printf("Level %d/%d", 1 + m_current_progress, g_map_count);
+        String str = String::Printf("Level %d/%d", 1 + m_current_level, g_map_count);
         m_level_text->SetText(str);
     }
     else
@@ -212,7 +214,7 @@ void ld32_game::tick_events(float seconds)
 {
     if (m_state == game_state::next_level)
     {
-        if (m_current_progress >= g_map_count)
+        if (m_current_level >= g_map_count)
         {
             m_state = game_state::you_win;
             return;
@@ -223,12 +225,12 @@ void ld32_game::tick_events(float seconds)
     if (m_controller->WasKeyPressedThisFrame(input::next_level))
     {
         if (m_state == game_state::in_game
-             && m_current_progress + 1 < g_map_count)
+             && m_current_level + 1 < g_map_count)
         {
             Ticker::Unref(m_level);
             m_level = new level_instance();
-            m_map.load_data(g_maps[++m_current_progress]);
-            m_level->load_map(&m_map);
+            m_level_desc.load_data(g_maps[++m_current_level]);
+            m_level->init(m_level_desc);
             Ticker::Ref(m_level);
         }
     }
@@ -238,18 +240,18 @@ void ld32_game::tick_events(float seconds)
     {
         if (m_state == game_state::title_screen)
         {
-            m_current_progress = 0;
+            m_current_level = 0;
             m_state = game_state::next_level;
             return;
         }
 
         if (m_state == game_state::next_level)
         {
-            m_map.load_data(g_maps[m_current_progress]);
+            m_level_desc.load_data(g_maps[m_current_level]);
 
             // Create a new level
             m_level = new level_instance();
-            m_level->load_map(&m_map);
+            m_level->init(m_level_desc);
             Ticker::Ref(m_level);
 
             m_state = game_state::in_game;
@@ -283,7 +285,7 @@ void ld32_game::tick_events(float seconds)
     {
         if (m_level->get_exit_reached())
         {
-            ++m_current_progress;
+            ++m_current_level;
             Ticker::Unref(m_level);
             m_level = nullptr;
             m_state = game_state::next_level;
@@ -296,7 +298,7 @@ void ld32_game::tick_events(float seconds)
         {
             Ticker::Unref(m_level);
             m_level = new level_instance();
-            m_level->load_map(&m_map);
+            m_level->init(m_level_desc);
             Ticker::Ref(m_level);
         }
 
