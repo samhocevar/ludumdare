@@ -315,8 +315,9 @@ void level_instance::TickDraw(float seconds, Scene &scene)
             continue;
 
         // Slight tweaking of the tile size so that we can use overlap for effects
-        // FIXME: value added to pos is wrong here
-        vec3 pos = t->m_position - vec3(t->m_scale) * 0.25f;
+        vec3 pos = t->m_position;
+        pos.x -= (t->m_scale - 1.f) * (1.f / 3 + 0.5f) * TILE_SIZE;
+        pos.y -= (t->m_scale - 1.f) * (1.f / 3) * TILE_SIZE;
         vec2 scale = vec2(t->m_scale * 1.5f);
 
         /* Some tweaks */
@@ -422,6 +423,8 @@ void level_instance::init(level_description const &desc)
                 t->m_original_aabb.B.y -= TILE_SIZE * 0.1f;
             break;
         case thing_type::blocker:
+            t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
+            t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
             t->m_tile_index = Tiles::Blocker;
             m_items.push(t);
             break;

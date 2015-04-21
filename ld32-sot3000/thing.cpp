@@ -39,11 +39,20 @@ void thing::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
-    m_bbox[0] = m_original_aabb.A * m_scale;
-    m_bbox[1] = m_original_aabb.B * m_scale;
+    /* Make objects scale horizontally from the middle axis, but
+     * vertically from the baseline. */
+    vec3 delta(0.f);
+    delta.x = (m_scale - 1.f) * (0.5f) * TILE_SIZE;
+    delta.y = (m_scale - 1.f) * (0.0f) * TILE_SIZE;
 
-    // FIXME
-    m_scale = lerp(m_target_scale, m_scale, seconds * 0.5f);
+    m_bbox[0] = m_original_aabb.A * m_scale - delta;
+    m_bbox[1] = m_original_aabb.B * m_scale - delta;
+
+    // FIXME: delta-time this shit!
+    if (lol::abs(m_scale - m_target_scale) > 0.01f)
+        m_scale = lerp(m_scale, m_target_scale, seconds * 15.0f);
+    else
+        m_scale = m_target_scale;
 }
 
 void thing::TickDraw(float seconds, Scene &scene)
