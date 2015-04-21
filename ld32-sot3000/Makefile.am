@@ -1,10 +1,10 @@
 
 include $(top_srcdir)/build/autotools/common.am
 
-bin_PROGRAMS = ld32
+bin_PROGRAMS = sot3000
 
-ld32_SOURCES = \
-    ld32.cpp \
+sot3000_SOURCES = \
+    sot3000.cpp \
     game.cpp game.h \
     level-description.cpp level-description.h \
     level-instance.cpp level-instance.h \
@@ -12,6 +12,6 @@ ld32_SOURCES = \
     test_maps.h final_maps.h \
     constants.h menu.h
 
-ld32_CPPFLAGS = $(AM_CPPFLAGS)
-ld32_DEPENDENCIES = @LOL_DEPS@
+sot3000_CPPFLAGS = $(AM_CPPFLAGS)
+sot3000_DEPENDENCIES = @LOL_DEPS@
 

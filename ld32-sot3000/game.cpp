@@ -1,5 +1,5 @@
 ﻿//
-// Ludum Dare 32 Entry
+// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32 3000
 //
 // Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
 //   This program is free software; you can redistribute it and/or
@@ -27,7 +27,7 @@ using namespace lol;
 #   include "final_maps.h"
 #endif
 
-ld32_game::ld32_game()
+sot3000_game::sot3000_game()
   : m_state(game_state::title_screen),
     m_current_level(0)
 {
@@ -80,12 +80,12 @@ ld32_game::ld32_game()
     Ticker::Ref(m_start_text);
 }
 
-ld32_game::~ld32_game()
+sot3000_game::~sot3000_game()
 {
     // Just in case; but this should not happen!
     if (m_level)
     {
-        Log::Error("there’s still a level active…");
+        Log::Error("there’s still a level active…\n");
         Ticker::Unref(m_level);
     }
 
@@ -99,7 +99,7 @@ ld32_game::~ld32_game()
     Ticker::Unref(m_camera);
 }
 
-void ld32_game::TickGame(float seconds)
+void sot3000_game::TickGame(float seconds)
 {
     Entity::TickGame(seconds);
 
@@ -107,7 +107,7 @@ void ld32_game::TickGame(float seconds)
     tick_camera(seconds);
 }
 
-void ld32_game::TickDraw(float seconds, Scene &scene)
+void sot3000_game::TickDraw(float seconds, Scene &scene)
 {
     Entity::TickDraw(seconds, scene);
 
@@ -141,7 +141,7 @@ void ld32_game::TickDraw(float seconds, Scene &scene)
     }
 }
 
-void ld32_game::tick_camera(float seconds)
+void sot3000_game::tick_camera(float seconds)
 {
     UNUSED(seconds);
 
@@ -210,7 +210,7 @@ void ld32_game::tick_camera(float seconds)
     }
 }
 
-void ld32_game::tick_events(float seconds)
+void sot3000_game::tick_events(float seconds)
 {
     if (m_state == game_state::next_level)
     {

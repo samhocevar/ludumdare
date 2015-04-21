@@ -1,5 +1,5 @@
 ﻿//
-// Ludum Dare 32 Entry
+// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32 3000
 //
 // Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
 //   This program is free software; you can redistribute it and/or
@@ -13,7 +13,7 @@
 #include "level-description.h"
 #include "level-instance.h"
 
-extern class ld32_game *g_game;
+extern class sot3000_game *g_game;
 
 enum input
 {
@@ -38,11 +38,11 @@ enum class game_state
     you_win,
 };
 
-class ld32_game : public Entity
+class sot3000_game : public Entity
 {
 public:
-    ld32_game();
-    ~ld32_game();
+    sot3000_game();
+    ~sot3000_game();
 
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);

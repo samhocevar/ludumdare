@@ -36,9 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game.cpp" />
-    <ClCompile Include="ld32.cpp" />
     <ClCompile Include="level-description.cpp" />
     <ClCompile Include="level-instance.cpp" />
+    <ClCompile Include="sot3000.cpp" />
     <ClCompile Include="thing.cpp" />
   </ItemGroup>
   <ItemGroup>

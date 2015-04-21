@@ -1,5 +1,5 @@
 ﻿//
-// Ludum Dare 32 Entry
+// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32 3000
 //
 // Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
 //   This program is free software; you can redistribute it and/or
