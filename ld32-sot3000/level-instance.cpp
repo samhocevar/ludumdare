@@ -319,29 +319,30 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         vec2 scale = vec2(t->m_scale * 1.5f);
         float rot = 0.f;
 
-        /* Some tweaks */
-        int tid = t->m_tile_index;
-
+        /* Some Z-order tweaks */
         switch (t->get_type())
         {
         case thing_type::laser:
         case thing_type::pink_gun:
         case thing_type::blue_gun:
-            pos.z += 50.f;
-            break;
-        case thing_type::door:
-        case thing_type::button:
-        case thing_type::blocker:
-        case thing_type::spikes:
         case thing_type::pink_projectile:
         case thing_type::blue_projectile:
+            pos.z += 50.f;
+            break;
+        case thing_type::button:
+        case thing_type::blocker:
         case thing_type::flying_monster:
         case thing_type::walking_monster:
         case thing_type::boulder:
             pos.z -= 50.f;
             break;
+        case thing_type::spikes:
+        case thing_type::door:
+            pos.z -= 60.f;
+            break;
         }
 
+        /* Some horizontal/vertical flip tweaks */
         switch (t->get_type())
         {
         case thing_type::laser:
@@ -376,6 +377,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
             break;
         }
 
+        /* Some rotation tweaks */
         switch (t->get_type())
         {
         case thing_type::boulder:
@@ -386,6 +388,8 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         default:
             break;
         }
+
+        int tid = t->m_tile_index;
 
         if (tid < 1000)
             scene.AddTile(g_game->m_newtiles, tid, pos, 0, scale / 3.f, rot);
@@ -480,6 +484,8 @@ void level_instance::init(level_description const &desc)
             break;
         case thing_type::spikes:
             t->m_tile_index = Tiles::Spikes;
+            t->m_original_aabb.A.x += TILE_SIZE * 0.2f;
+            t->m_original_aabb.B.x -= TILE_SIZE * 0.2f;
             t->m_original_aabb.B.y -= TILE_SIZE * 0.5f;
             break;
         case thing_type::button:
@@ -488,6 +494,8 @@ void level_instance::init(level_description const &desc)
             m_items.push(t);
             break;
         case thing_type::boulder:
+            t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
+            t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
             t->m_tile_index = Tiles::Boulder;
             m_monsters.push(t);
             break;

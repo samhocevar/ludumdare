@@ -118,7 +118,9 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     m_newtiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
     m_newtiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
 
-    g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
+    //g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
+    g_renderer->SetClearColor(vec4(0.95f, 0.95f, 0.95f, 1.f));
+    //g_renderer->SetClearColor(vec4(1.0f, 1.0f, 1.0f, 1.f));
 
     /* We do not draw much; the level itself takes care of it. */
     if (m_state == game_state::title_screen)
@@ -127,7 +129,8 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     if (m_state == game_state::you_win)
         scene.AddTile(m_tiles, Tiles::YouWinScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
 
-    if (m_state == game_state::in_game)
+    if (m_state == game_state::in_game
+         || m_state == game_state::paused)
     {
         // Put the pause text in front of the camera…
         m_pause_text->SetPos(vec3(m_poi, 0.0f));
@@ -169,26 +172,25 @@ void sot3000_game::tick_camera(float seconds)
 
     if (m_state == game_state::in_game)
     {
-        vec2 level_size = m_instance->world_size();
-        float zoom_in  = min(min(MAX_VIEWPORT_X / level_size.x,
-                                 MAX_VIEWPORT_Y / level_size.y), 1.f);
-        float zoom_out = max(max(MIN_VIEWPORT_X / level_size.x,
-                                 MIN_VIEWPORT_Y / level_size.y), 1.f);
-        m_viewport_size = level_size * zoom_in * zoom_out;
+        vec2 world_size = m_instance->world_size();
+
+        vec2 tmp(MAX_VIEWPORT_X, MAX_VIEWPORT_X * WINDOW_SIZE_Y / WINDOW_SIZE_X);
+        tmp *= min(world_size.x / tmp.x, 1.f);
+        tmp *= min(world_size.y / tmp.y, 1.f);
+        tmp *= max(MIN_VIEWPORT_X / tmp.x, 1.f);
+        m_viewport_size = tmp;
+
         mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
 
         /* Try to center the camera around the player but don’t show stuff outside the
          * level boundaries if possible. */
         m_poi = m_instance->get_poi().xy;
-        m_poi = max(m_poi, 0.5f * m_viewport_size);
-        m_poi = min(m_poi, level_size - 0.5f * m_viewport_size);
+        m_poi = max(m_poi, 0.5f * m_viewport_size + vec2(0.5f * TILE_SIZE));
+        m_poi = min(m_poi, world_size - 0.5f * m_viewport_size - vec2(0.5f * TILE_SIZE));
         mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
 
         m_camera->SetView(view);
         m_camera->SetProjection(proj);
-
-        // FIXME: this is wrong but honestly I don't have time to fix it
-        m_pause_text->SetScale(vec2(1.5f / (zoom_in * zoom_out)));
     }
 
     if (m_state == game_state::paused)

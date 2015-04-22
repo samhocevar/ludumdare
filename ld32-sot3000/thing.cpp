@@ -18,6 +18,7 @@ using namespace lol;
 
 #include "constants.h"
 #include "thing.h"
+#include "game.h"
 
 thing::thing(thing_type t)
   : m_time(0.0),
@@ -40,7 +41,8 @@ void thing::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
-    m_time += seconds;
+    if (!g_game->is_paused())
+        m_time += seconds;
 
     /* Make objects scale horizontally from the middle axis, but
      * vertically from the baseline. */
@@ -172,12 +174,12 @@ bool thing::can_block_monster()
     case thing_type::walking_monster:
     case thing_type::sitting_monster:
     case thing_type::flying_monster:
+    case thing_type::spikes:
         return false;
     case thing_type::platform:
     case thing_type::ground:
     case thing_type::blocker:
     case thing_type::monster_blocker:
-    case thing_type::spikes:
         return true;
     }
     return false;
