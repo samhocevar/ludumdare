@@ -27,8 +27,7 @@ level_instance::level_instance()
     m_active_gun(thing_type::none),
     m_exit_reached(false),
     m_player_killed(false),
-    m_player_fell(false),
-    m_timer(0.0)
+    m_player_fell(false)
 {
 }
 
@@ -40,8 +39,6 @@ level_instance::~level_instance()
 void level_instance::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
-
-    m_timer += seconds;
 
     if (!g_game->is_paused())
     {
@@ -203,6 +200,7 @@ void level_instance::tick_living(thing *t, float seconds)
     case thing_type::flying_monster:
         impulse.x = t->m_facing_left ? -MONSTER_RUN_SPEED : MONSTER_RUN_SPEED;
         break;
+    case thing_type::boulder:
     case thing_type::walking_monster:
         can_push_button = true;
         impulse.x = t->m_facing_left ? -MONSTER_RUN_SPEED : MONSTER_RUN_SPEED;
@@ -319,40 +317,80 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         pos.x -= (t->m_scale - 1.f) * (1.f / 3 + 0.5f) * TILE_SIZE;
         pos.y -= (t->m_scale - 1.f) * (1.f / 3) * TILE_SIZE;
         vec2 scale = vec2(t->m_scale * 1.5f);
+        float rot = 0.f;
 
         /* Some tweaks */
-        switch (t->m_tile_index)
+        int tid = t->m_tile_index;
+
+        switch (t->get_type())
         {
-        case Tiles::Laser:
-             if (lol::cos(5.0 * m_timer) > 0)
-             {
-                 pos.x += TILE_SIZE * scale.x;
-                 scale.x *= -1.f;
-             }
-             if (lol::sin(5.0 * m_timer) > 0)
-             {
-                 pos.y += TILE_SIZE * scale.y;
-                 scale.y *= -1.f;
-             }
-             break;
-        case Tiles::PinkProjectile:
-        case Tiles::BlueProjectile:
-        case Tiles::FlyingMonster:
-        case Tiles::WalkingMonster:
-             if (t->m_velocity.x < 0.0f || t->m_facing_left)
-             {
-                 pos.x += TILE_SIZE * scale.x;
-                 scale.x *= -1.f;
-             }
-             break;
+        case thing_type::laser:
+        case thing_type::pink_gun:
+        case thing_type::blue_gun:
+            pos.z += 50.f;
+            break;
+        case thing_type::door:
+        case thing_type::button:
+        case thing_type::blocker:
+        case thing_type::spikes:
+        case thing_type::pink_projectile:
+        case thing_type::blue_projectile:
+        case thing_type::flying_monster:
+        case thing_type::walking_monster:
+        case thing_type::boulder:
+            pos.z -= 50.f;
+            break;
         }
 
-        if (t->m_tile_index < 1000)
-            scene.AddTile(g_game->m_newtiles, t->m_tile_index,
-                          pos, 0, scale / 3.f, 0.f);
+        switch (t->get_type())
+        {
+        case thing_type::laser:
+            if (lol::cos(5.0 * t->m_time) > 0)
+            {
+                pos.x += TILE_SIZE * scale.x;
+                scale.x *= -1.f;
+            }
+            if (lol::sin(5.0 * t->m_time) > 0)
+            {
+                pos.y += TILE_SIZE * scale.y;
+                scale.y *= -1.f;
+            }
+            break;
+        case thing_type::pink_gun:
+        case thing_type::blue_gun:
+            pos.z += 50.f;
+            pos.y += TILE_SIZE * 0.5f * lol::abs(lol::sin(6.f * t->m_time));
+            break;
+        case thing_type::pink_projectile:
+        case thing_type::blue_projectile:
+        case thing_type::flying_monster:
+        case thing_type::walking_monster:
+        case thing_type::boulder:
+            if (t->m_velocity.x < 0.0f || t->m_facing_left)
+            {
+                pos.x += TILE_SIZE * scale.x;
+                scale.x *= -1.f;
+            }
+            break;
+        default:
+            break;
+        }
+
+        switch (t->get_type())
+        {
+        case thing_type::boulder:
+            rot = (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time;
+            //scene.AddTile(g_game->m_newtiles, Tiles::Boulder, pos + vec3(0.f, 0.f, 10.f), 0, scale / 3.f, (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time);
+            //scene.AddTile(g_game->m_newtiles, Tiles::BoulderTexture, pos + vec3(0.f, 0.f, 10.f), 0, scale / 3.f, (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time);
+            break;
+        default:
+            break;
+        }
+
+        if (tid < 1000)
+            scene.AddTile(g_game->m_newtiles, tid, pos, 0, scale / 3.f, rot);
         else
-            scene.AddTile(g_game->m_tiles, t->m_tile_index - 1000,
-                          pos, 0, scale, 0.f);
+            scene.AddTile(g_game->m_tiles, tid - 1000, pos, 0, scale, rot);
     }
 }
 
@@ -449,6 +487,10 @@ void level_instance::init(level_description const &desc)
             t->m_original_aabb.B.y -= TILE_SIZE * 0.7f;
             m_items.push(t);
             break;
+        case thing_type::boulder:
+            t->m_tile_index = Tiles::Boulder;
+            m_monsters.push(t);
+            break;
         case thing_type::laser:
             t->m_tile_index = Tiles::Laser;
             t->m_original_aabb.A.x += TILE_SIZE * 0.4f;
@@ -529,7 +571,8 @@ vec3 level_instance::get_poi() const
 float level_instance::collide_thing(thing const *t, vec3 velocity,
                                     float seconds) const
 {
-    bool is_moving_monster = t->get_type() == thing_type::walking_monster
+    bool is_moving_monster = t->get_type() == thing_type::boulder
+                        || t->get_type() == thing_type::walking_monster
                         || t->get_type() == thing_type::flying_monster;
 
     for (thing *t2 : m_things)

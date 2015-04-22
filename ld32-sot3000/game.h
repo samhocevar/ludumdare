@@ -70,8 +70,8 @@ private:
     Text *m_level_name_text;
     vec2 m_viewport_size, m_poi;
 
-    level_description m_level_desc;
-    level_instance *m_level;
+    array<level_description> m_levels;
     int m_current_level;
+    level_instance *m_instance;
 };
 

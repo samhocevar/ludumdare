@@ -24,7 +24,7 @@ static int const MAX_VIEWPORT_Y = TILE_SIZE * 16;
 
 /* Player runs at 12 tiles per second, monsters are slower */
 static float const PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
-static float const MONSTER_RUN_SPEED = TILE_SIZE * 8.f;
+static float const MONSTER_RUN_SPEED = TILE_SIZE * 4.f;
 
 /* 30 / 120 are good values to prevent player from jumping
  * on 4-block platforms. For 3-block platforms, use 24 / 100. */
@@ -55,6 +55,9 @@ enum Tiles
     Blocker = 16,
     Door = 17,
     Spikes = 18,
+
+    OldBoulder = 24,
+    Boulder = 25,
 
     Ground = 32,
 

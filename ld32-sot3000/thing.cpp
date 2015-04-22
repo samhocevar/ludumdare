@@ -20,7 +20,8 @@ using namespace lol;
 #include "thing.h"
 
 thing::thing(thing_type t)
-  : m_target_scale(1.f),
+  : m_time(0.0),
+    m_target_scale(1.f),
     m_scale(1.f),
     m_hidden(false),
     m_grounded(false),
@@ -38,6 +39,8 @@ thing::~thing()
 void thing::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
+
+    m_time += seconds;
 
     /* Make objects scale horizontally from the middle axis, but
      * vertically from the baseline. */
@@ -73,6 +76,7 @@ bool thing::can_fall()
     case thing_type::item_scaler:
     case thing_type::pink_gun:
     case thing_type::blue_gun:
+    case thing_type::boulder:
     case thing_type::walking_monster:
     case thing_type::sitting_monster:
         return true;
@@ -109,6 +113,7 @@ bool thing::can_kill()
     case thing_type::button:
         return false;
     case thing_type::spikes:
+    case thing_type::boulder:
     case thing_type::walking_monster:
     case thing_type::sitting_monster:
     case thing_type::flying_monster:
@@ -134,6 +139,7 @@ bool thing::can_block()
     case thing_type::laser:
     case thing_type::monster_blocker:
     case thing_type::item_scaler:
+    case thing_type::boulder:
     case thing_type::walking_monster:
     case thing_type::sitting_monster:
     case thing_type::flying_monster:
@@ -162,6 +168,7 @@ bool thing::can_block_monster()
     case thing_type::item_scaler:
     case thing_type::button:
     case thing_type::laser:
+    case thing_type::boulder:
     case thing_type::walking_monster:
     case thing_type::sitting_monster:
     case thing_type::flying_monster:
@@ -197,6 +204,7 @@ bool thing::can_scale()
     case thing_type::player:
     case thing_type::blocker:
     case thing_type::button:
+    case thing_type::boulder:
     case thing_type::walking_monster:
     case thing_type::sitting_monster:
     case thing_type::flying_monster:

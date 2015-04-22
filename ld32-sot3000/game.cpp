@@ -14,18 +14,10 @@
 
 #include <lol/engine.h>
 
-// XXX: use this alternate set of maps for debugging purposes
-#define USE_DEBUG_MAPS 0
-
 using namespace lol;
 
 #include "constants.h"
 #include "game.h"
-#if USE_DEBUG_MAPS
-#   include "test_maps.h"
-#else
-#   include "final_maps.h"
-#endif
 
 sot3000_game::sot3000_game()
   : m_state(game_state::title_screen),
@@ -91,10 +83,10 @@ sot3000_game::sot3000_game()
 sot3000_game::~sot3000_game()
 {
     // Just in case; but this should not happen!
-    if (m_level)
+    if (m_instance)
     {
         Log::Error("there’s still a level active…\n");
-        Ticker::Unref(m_level);
+        Ticker::Unref(m_instance);
     }
 
     // Clean up after ourselves
@@ -141,7 +133,7 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
         m_pause_text->SetPos(vec3(m_poi, 0.0f));
 
         // Display the active gun
-        thing_type gun = m_level->get_active_gun();
+        thing_type gun = m_instance->get_active_gun();
         if (gun != thing_type::none)
         {
             int id = gun == thing_type::blue_gun ? Tiles::BlueGun : Tiles::PinkGun;
@@ -177,7 +169,7 @@ void sot3000_game::tick_camera(float seconds)
 
     if (m_state == game_state::in_game)
     {
-        vec2 level_size = m_level->world_size();
+        vec2 level_size = m_instance->world_size();
         float zoom_in  = min(min(MAX_VIEWPORT_X / level_size.x,
                                  MAX_VIEWPORT_Y / level_size.y), 1.f);
         float zoom_out = max(max(MIN_VIEWPORT_X / level_size.x,
@@ -187,7 +179,7 @@ void sot3000_game::tick_camera(float seconds)
 
         /* Try to center the camera around the player but don’t show stuff outside the
          * level boundaries if possible. */
-        m_poi = m_level->get_poi().xy;
+        m_poi = m_instance->get_poi().xy;
         m_poi = max(m_poi, 0.5f * m_viewport_size);
         m_poi = min(m_poi, level_size - 0.5f * m_viewport_size);
         mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
@@ -208,10 +200,10 @@ void sot3000_game::tick_camera(float seconds)
         m_pause_text->SetText("");
     }
 
-    if (m_state == game_state::next_level)
+    if (m_state == game_state::next_level && m_current_level < m_levels.count())
     {
-        m_level_text->SetText(String::Printf("Level %d/%d", 1 + m_current_level, g_map_count));
-        m_level_name_text->SetText(String::Printf("\"%s\"", m_level_desc.get_name().C()));
+        m_level_text->SetText(String::Printf("Level %d/%d", 1 + m_current_level, (int)m_levels.count()));
+        m_level_name_text->SetText(String::Printf("%s", m_levels[m_current_level].get_name().C()));
     }
     else
     {
@@ -224,7 +216,7 @@ void sot3000_game::tick_events(float seconds)
 {
     if (m_state == game_state::next_level)
     {
-        if (m_current_level >= g_map_count)
+        if (m_current_level >= m_levels.count())
         {
             m_state = game_state::you_win;
             return;
@@ -235,13 +227,12 @@ void sot3000_game::tick_events(float seconds)
     if (m_controller->WasKeyPressedThisFrame(input::next_level))
     {
         if (m_state == game_state::in_game
-             && m_current_level + 1 < g_map_count)
+             && m_current_level + 1 < m_levels.count())
         {
-            Ticker::Unref(m_level);
-            m_level = new level_instance();
-            m_level_desc.load_data(g_maps[++m_current_level]);
-            m_level->init(m_level_desc);
-            Ticker::Ref(m_level);
+            Ticker::Unref(m_instance);
+            m_instance = new level_instance();
+            m_instance->init(m_levels[++m_current_level]);
+            Ticker::Ref(m_instance);
         }
     }
 
@@ -250,19 +241,40 @@ void sot3000_game::tick_events(float seconds)
     {
         if (m_state == game_state::title_screen)
         {
+            // Discover all levels
+            m_levels.empty();
             m_current_level = 0;
-            m_level_desc.load_data(g_maps[m_current_level]);
 
-            m_state = game_state::next_level;
+            for (bool found = true; found;)
+            {
+                found = false;
+
+                String name = String::Printf("data/level%d.txt", (int)m_levels.count() + 1);
+                array<String> datafiles = System::GetPathList(name);
+                for (String candidate : datafiles)
+                {
+                    File f;
+                    f.Open(candidate, FileAccess::Read);
+                    if (!f.IsValid())
+                        continue;
+                    m_levels.push(level_description());
+                    m_levels.last().load_data(f.ReadString().C());
+                    f.Close();
+                    found = true;
+                }
+            }
+
+            if (m_levels.count() > 0)
+                m_state = game_state::next_level;
             return;
         }
 
         if (m_state == game_state::next_level)
         {
             // Create a new level
-            m_level = new level_instance();
-            m_level->init(m_level_desc);
-            Ticker::Ref(m_level);
+            m_instance = new level_instance();
+            m_instance->init(m_levels[m_current_level]);
+            Ticker::Ref(m_instance);
 
             m_state = game_state::in_game;
             return; // state has changed — don’t do anything else
@@ -293,39 +305,37 @@ void sot3000_game::tick_events(float seconds)
     // Input stuff
     if (m_state == game_state::in_game)
     {
-        if (m_level->get_exit_reached())
+        if (m_instance->get_exit_reached())
         {
-            Ticker::Unref(m_level);
-            m_level = nullptr;
+            Ticker::Unref(m_instance);
+            m_instance = nullptr;
+            ++m_current_level;
             m_state = game_state::next_level;
-
-            if (++m_current_level < g_map_count)
-                m_level_desc.load_data(g_maps[m_current_level]);
             return;
         }
 
         // Escape restarts the level when not paused
         if (m_controller->WasKeyPressedThisFrame(input::escape)
-             || m_level->get_player_fell())
+             || m_instance->get_player_fell())
         {
-            Ticker::Unref(m_level);
-            m_level = new level_instance();
-            m_level->init(m_level_desc);
-            Ticker::Ref(m_level);
+            Ticker::Unref(m_instance);
+            m_instance = new level_instance();
+            m_instance->init(m_levels[m_current_level]);
+            Ticker::Ref(m_instance);
         }
 
         if (m_controller->IsKeyPressed(input::go_left))
-            m_level->impulse_x(-1.f);
+            m_instance->impulse_x(-1.f);
         else if (m_controller->IsKeyPressed(input::go_right))
-            m_level->impulse_x(1.f);
+            m_instance->impulse_x(1.f);
 
         if (m_controller->WasKeyPressedThisFrame(input::jump))
-            m_level->jump();
+            m_instance->jump();
         if (m_controller->IsKeyPressed(input::jump))
-            m_level->continue_jump(PLAYER_JUMP_SPEED, seconds);
+            m_instance->continue_jump(PLAYER_JUMP_SPEED, seconds);
 
         if (m_controller->WasKeyPressedThisFrame(input::fire))
-            m_level->fire();
+            m_instance->fire();
     }
 }
 

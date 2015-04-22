@@ -17,6 +17,7 @@ enum class thing_type : int
     player,
     sitting_monster,
     walking_monster,
+    boulder,
     flying_monster,
     pink_projectile,
     blue_projectile,
@@ -56,6 +57,7 @@ public:
     /* Generic */
     vec2 m_size;
     box3 m_original_aabb;
+    double m_time;
     float m_target_scale, m_scale;
     int m_tile_index;
     bool m_hidden;

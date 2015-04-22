@@ -52,10 +52,12 @@ struct do_line : action_base<do_line>
 
 struct _ : star<space> {};
 
+struct r_bom
+  : opt<string<'\xef', '\xbb', '\xbf'>> {};
+
 struct r_line
-  : seq<ifapply<star<one<' ',
-                         'S', 'E', '%', 'X', '-', '+', '_',
-                         '|', 'W', 'p', 'b', '#', '@', '*'>>,
+  : seq<ifapply<star<one<' ', 'S', 'E', '%', 'X', '-', '+', '_',
+                         'o', '|', 'W', 'p', 'b', '#', '@', '*'>>,
                 do_line>,
         eol> {};
 
@@ -78,7 +80,7 @@ struct r_header
              r_name>> {};
 
 struct r_level
-  : seq<r_header, r_layout> {};
+  : seq<r_bom, r_header, r_layout, eof> {};
 
 //
 // Level description implementation
@@ -86,8 +88,7 @@ struct r_level
 
 void level_description::load_data(char const *data)
 {
-    m_layout.~level_layout();
-    new(&m_layout) level_layout();
+    m_layout = level_layout();
 
     m_layout.m_size = ivec2(0);
     basic_parse_string<r_level>(data, m_layout);
@@ -108,6 +109,7 @@ void level_description::load_data(char const *data)
                 case 'E': t = thing_type::door; break;
                 case '%': t = thing_type::ground; break;
                 case 'X': t = thing_type::blocker; break;
+                case 'o': t = thing_type::boulder; break;
                 case '-': t = thing_type::monster_blocker; break;
                 case '+': t = thing_type::item_scaler; break;
                 case '_': t = thing_type::button; break;
