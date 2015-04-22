@@ -474,8 +474,8 @@ void level_instance::init(level_description const &desc)
         thing *t = new thing(layout[i][j]);
         t->m_position = vec3(i * 0.5f, j, 0) * float(TILE_SIZE);
         t->m_velocity = vec3(0.f);
-        t->m_original_aabb.A = vec3(0);
-        t->m_original_aabb.B = vec3(float(TILE_SIZE));
+        t->m_original_aabb.aa = vec3(0);
+        t->m_original_aabb.bb = vec3(float(TILE_SIZE));
 
         int b = 0;
 
@@ -491,17 +491,17 @@ void level_instance::init(level_description const &desc)
 
             // Reduce bounding box in open ends
             if (b & 0x1)
-                t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
+                t->m_original_aabb.aa.x += TILE_SIZE * 0.1f;
             if (b & 0x8)
-                t->m_original_aabb.A.y += TILE_SIZE * 0.3f;
+                t->m_original_aabb.aa.y += TILE_SIZE * 0.3f;
             if (b & 0x2)
-                t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
+                t->m_original_aabb.bb.x -= TILE_SIZE * 0.1f;
             if (b & 0x4)
-                t->m_original_aabb.B.y -= TILE_SIZE * 0.1f;
+                t->m_original_aabb.bb.y -= TILE_SIZE * 0.1f;
             break;
         case thing_type::blocker:
-            t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
-            t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
+            t->m_original_aabb.aa.x += TILE_SIZE * 0.1f;
+            t->m_original_aabb.bb.x -= TILE_SIZE * 0.1f;
             t->m_tile_index = Tiles::Blocker;
             m_items.push(t);
             break;
@@ -519,25 +519,25 @@ void level_instance::init(level_description const &desc)
             break;
         case thing_type::spikes:
             t->m_tile_index = Tiles::Spikes;
-            t->m_original_aabb.A.x += TILE_SIZE * 0.2f;
-            t->m_original_aabb.B.x -= TILE_SIZE * 0.2f;
-            t->m_original_aabb.B.y -= TILE_SIZE * 0.5f;
+            t->m_original_aabb.aa.x += TILE_SIZE * 0.2f;
+            t->m_original_aabb.bb.x -= TILE_SIZE * 0.2f;
+            t->m_original_aabb.bb.y -= TILE_SIZE * 0.5f;
             break;
         case thing_type::button:
             t->m_tile_index = Tiles::Button;
-            t->m_original_aabb.B.y -= TILE_SIZE * 0.7f;
+            t->m_original_aabb.bb.y -= TILE_SIZE * 0.7f;
             m_items.push(t);
             break;
         case thing_type::boulder:
-            t->m_original_aabb.A.x += TILE_SIZE * 0.1f;
-            t->m_original_aabb.B.x -= TILE_SIZE * 0.1f;
+            t->m_original_aabb.aa.x += TILE_SIZE * 0.1f;
+            t->m_original_aabb.bb.x -= TILE_SIZE * 0.1f;
             t->m_tile_index = Tiles::Boulder;
             m_monsters.push(t);
             break;
         case thing_type::laser:
             t->m_tile_index = Tiles::Laser;
-            t->m_original_aabb.A.x += TILE_SIZE * 0.4f;
-            t->m_original_aabb.B.x -= TILE_SIZE * 0.4f;
+            t->m_original_aabb.aa.x += TILE_SIZE * 0.4f;
+            t->m_original_aabb.bb.x -= TILE_SIZE * 0.4f;
             m_items.push(t);
             break;
         case thing_type::minus_ammo:
@@ -574,8 +574,8 @@ void level_instance::init(level_description const &desc)
     // Now the moving parts
     m_player = new thing(thing_type::player);
     m_player->m_position = vec3(vec2(desc.get_start()) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
-    m_player->m_original_aabb.A = vec3(0.f);
-    m_player->m_original_aabb.B = vec3(float(TILE_SIZE));
+    m_player->m_original_aabb.aa = vec3(0.f);
+    m_player->m_original_aabb.bb = vec3(float(TILE_SIZE));
     m_player->m_tile_index = Tiles::Player;
     m_things.push(m_player);
     Ticker::Ref(m_player);
@@ -583,8 +583,8 @@ void level_instance::init(level_description const &desc)
     thing *t = new thing(thing_type::projectile);
     m_projectiles.push(t);
     t->m_hidden = true;
-    t->m_original_aabb.A = vec3(TILE_SIZE * 0.4f);
-    t->m_original_aabb.B = vec3(TILE_SIZE * 0.6f);
+    t->m_original_aabb.aa = vec3(TILE_SIZE * 0.4f);
+    t->m_original_aabb.bb = vec3(TILE_SIZE * 0.6f);
     t->m_tile_index = Tiles::Projectile;
     m_things.push(t);
     Ticker::Ref(t);
@@ -593,7 +593,7 @@ void level_instance::init(level_description const &desc)
 vec3 level_instance::get_poi() const
 {
     // Get the level instance’s Point of Interest — for now, just the player
-    return m_player->m_position + 0.5f * (m_player->m_original_aabb.B - m_player->m_original_aabb.A);
+    return m_player->m_position + 0.5f * m_player->m_original_aabb.extent();
 }
 
 float level_instance::collide_thing(thing const *t, vec3 velocity,

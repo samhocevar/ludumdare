@@ -50,8 +50,7 @@ void thing::TickGame(float seconds)
     delta.x = (m_scale - 1.f) * (0.5f) * TILE_SIZE;
     delta.y = (m_scale - 1.f) * (0.0f) * TILE_SIZE;
 
-    m_bbox[0] = m_original_aabb.A * m_scale - delta;
-    m_bbox[1] = m_original_aabb.B * m_scale - delta;
+    m_aabb = m_original_aabb * m_scale - delta;
 
     // FIXME: delta-time this shit!
     if (lol::abs(m_scale - m_target_scale) > 0.01f)
@@ -215,8 +214,8 @@ bool thing::can_scale()
 float collide(thing const *t1, vec3 v1,
               thing const *t2, vec3 v2, float min_time, float max_time)
 {
-    vec3 aa = t2->m_position + t2->m_bbox[0] - t1->m_bbox[1];
-    vec3 bb = t2->m_position + t2->m_bbox[1] - t1->m_bbox[0];
+    vec3 aa = t2->m_position + t2->m_aabb.aa - t1->m_aabb.bb;
+    vec3 bb = t2->m_position + t2->m_aabb.bb - t1->m_aabb.aa;
 
     vec3 start = t1->m_position + (v1 - v2) * min_time;
     vec3 end = t1->m_position + (v1 - v2) * max_time;
