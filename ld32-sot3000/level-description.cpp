@@ -115,8 +115,8 @@ void level_description::load_data(char const *data)
                 case '_': t = thing_type::button; break;
                 case '|': t = thing_type::laser; break;
                 case 'W': t = thing_type::spikes; break;
-                case 'p': t = thing_type::pink_gun; break;
-                case 'b': t = thing_type::blue_gun; break;
+                case 'p': t = thing_type::minus_ammo; break;
+                case 'b': t = thing_type::plus_ammo; break;
                 case '#': t = thing_type::sitting_monster; break;
                 case '@': t = thing_type::walking_monster; break;
                 case '*': t = thing_type::flying_monster; break;

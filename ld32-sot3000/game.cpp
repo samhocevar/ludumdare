@@ -135,11 +135,11 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
         // Put the pause text in front of the camera…
         m_pause_text->SetPos(vec3(m_poi, 0.0f));
 
-        // Display the active gun
-        thing_type gun = m_instance->get_active_gun();
-        if (gun != thing_type::none)
+        // Display the active ammo
+        thing_type ammo = m_instance->get_active_ammo();
+        if (ammo != thing_type::none)
         {
-            int id = gun == thing_type::blue_gun ? Tiles::BlueGun : Tiles::PinkGun;
+            int id = ammo == thing_type::plus_ammo ? Tiles::PlusAmmo : Tiles::MinusAmmo;
             scene.AddTile(m_newtiles, id, vec3(m_poi + m_viewport_size * vec2(-0.45f, 0.30f), 50.f), 0, vec2(1.f), 0.f);
         }
     }

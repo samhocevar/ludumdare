@@ -24,7 +24,7 @@ using namespace lol;
 level_instance::level_instance()
   : m_player(nullptr),
     m_player_impulse(0.f),
-    m_active_gun(thing_type::none),
+    m_active_ammo(thing_type::none),
     m_exit_reached(false),
     m_player_killed(false),
     m_player_fell(false)
@@ -128,31 +128,31 @@ void level_instance::tick_player(float seconds)
     // Check whether we can pick up an item
     for (thing *t : m_items)
     {
-        if (t->m_hidden || m_active_gun == t->get_type())
+        if (t->m_hidden || m_active_ammo == t->get_type())
             continue;
 
-        bool is_pink = t->get_type() == thing_type::pink_gun;
-        bool is_blue = t->get_type() == thing_type::blue_gun;
+        bool is_minus = t->get_type() == thing_type::minus_ammo;
+        bool is_plus = t->get_type() == thing_type::plus_ammo;
         bool is_button = t->get_type() == thing_type::button;
 
-        if (!is_pink && !is_blue && !is_button)
+        if (!is_minus && !is_plus && !is_button)
             continue;
 
         if (collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) >= seconds)
             continue;
 
-        if (is_pink || is_blue)
+        if (is_minus || is_plus)
         {
-            m_active_gun = t->get_type();
+            m_active_ammo = t->get_type();
             t->m_hidden = true;
 
-            // If we picked the blue gun, show all hidden pink guns, and vice-versa
+            // If we picked the plus ammo, show all hidden minus ammo, and vice-versa
             for (thing *t2 : m_items)
             {
-                bool other_is_pink = t2->get_type() == thing_type::pink_gun;
-                bool other_is_blue = t2->get_type() == thing_type::blue_gun;
+                bool other_is_minus = t2->get_type() == thing_type::minus_ammo;
+                bool other_is_plus = t2->get_type() == thing_type::plus_ammo;
 
-                if (t2->m_hidden && ((is_pink && other_is_blue) || (is_blue && other_is_pink)))
+                if (t2->m_hidden && ((is_minus && other_is_plus) || (is_plus && other_is_minus)))
                     t2->m_hidden = false;
             }
         }
@@ -292,7 +292,10 @@ void level_instance::tick_projectile(thing *t, float seconds)
                  collide(t, vec3(0), t2, vec3(0), 0.f, seconds) < seconds)
             {
                 t->m_hidden = true;
-                t2->m_target_scale = (t->get_type() == thing_type::blue_projectile) ? 2.f : 1.f;
+                if (m_active_ammo == thing_type::plus_ammo)
+                    t2->m_target_scale = 2.f;
+                else if (m_active_ammo == thing_type::minus_ammo)
+                    t2->m_target_scale = 1.f;
             }
         };
 
@@ -323,10 +326,9 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         switch (t->get_type())
         {
         case thing_type::laser:
-        case thing_type::pink_gun:
-        case thing_type::blue_gun:
-        case thing_type::pink_projectile:
-        case thing_type::blue_projectile:
+        case thing_type::minus_ammo:
+        case thing_type::plus_ammo:
+        case thing_type::projectile:
             pos.z += 50.f;
             break;
         case thing_type::button:
@@ -357,13 +359,12 @@ void level_instance::TickDraw(float seconds, Scene &scene)
                 scale.y *= -1.f;
             }
             break;
-        case thing_type::pink_gun:
-        case thing_type::blue_gun:
+        case thing_type::minus_ammo:
+        case thing_type::plus_ammo:
             pos.z += 50.f;
             pos.y += TILE_SIZE * 0.5f * lol::abs(lol::sin(6.f * t->m_time));
             break;
-        case thing_type::pink_projectile:
-        case thing_type::blue_projectile:
+        case thing_type::projectile:
         case thing_type::flying_monster:
         case thing_type::walking_monster:
         case thing_type::boulder:
@@ -505,12 +506,12 @@ void level_instance::init(level_description const &desc)
             t->m_original_aabb.B.x -= TILE_SIZE * 0.4f;
             m_items.push(t);
             break;
-        case thing_type::pink_gun:
-            t->m_tile_index = Tiles::PinkGun;
+        case thing_type::minus_ammo:
+            t->m_tile_index = Tiles::MinusAmmo;
             m_items.push(t);
             break;
-        case thing_type::blue_gun:
-            t->m_tile_index = Tiles::BlueGun;
+        case thing_type::plus_ammo:
+            t->m_tile_index = Tiles::PlusAmmo;
             m_items.push(t);
             break;
         case thing_type::sitting_monster:
@@ -534,7 +535,7 @@ void level_instance::init(level_description const &desc)
         Ticker::Ref(t);
 
         // If necessary, scale object thanks to our in-map markers. This can
-        // scale objects that are otherwise unaffected by the gun.
+        // scale objects that are otherwise unaffected by the ammo.
         if (j < m_layout_size.y - 1 && layout[i][j + 1] == thing_type::item_scaler)
         {
             t->m_scale = 2.0f;
@@ -551,23 +552,14 @@ void level_instance::init(level_description const &desc)
     m_things.push(m_player);
     Ticker::Ref(m_player);
 
-    for (thing_type type : { thing_type::pink_projectile,
-                             thing_type::blue_projectile })
-    {
-        thing *t = new thing(type);
-        m_projectiles.push(t);
-        t->m_hidden = true;
-        t->m_original_aabb.A = vec3(TILE_SIZE * 0.4f);
-        t->m_original_aabb.B = vec3(TILE_SIZE * 0.6f);
-
-        if (type == thing_type::pink_projectile)
-            t->m_tile_index = Tiles::PinkProjectile;
-        else
-            t->m_tile_index = Tiles::BlueProjectile;
-
-        m_things.push(t);
-        Ticker::Ref(t);
-    }
+    thing *t = new thing(thing_type::projectile);
+    m_projectiles.push(t);
+    t->m_hidden = true;
+    t->m_original_aabb.A = vec3(TILE_SIZE * 0.4f);
+    t->m_original_aabb.B = vec3(TILE_SIZE * 0.6f);
+    t->m_tile_index = Tiles::Projectile;
+    m_things.push(t);
+    Ticker::Ref(t);
 }
 
 vec3 level_instance::get_poi() const
@@ -655,19 +647,7 @@ void level_instance::continue_jump(float velocity, float seconds)
 
 void level_instance::fire()
 {
-    thing *projecile;
-
-    switch (m_active_gun)
-    {
-    case thing_type::pink_gun:
-        projecile = m_projectiles[0];
-        break;
-    case thing_type::blue_gun:
-        projecile = m_projectiles[1];
-        break;
-    default:
-        return;
-    }
+    thing *projecile = m_projectiles[0];
 
     vec3 dir = (m_player->m_facing_left ? -1.f : 1.f) * vec3(1.0f, 0.f, 0.f);
 

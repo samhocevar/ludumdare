@@ -45,10 +45,9 @@ enum Tiles
     Button = 2,
     Laser = 3,
 
-    PinkProjectile = 8,
-    PinkGun = 9,
-    BlueProjectile = 10,
-    BlueGun = 11,
+    PlusAmmo = 8,
+    MinusAmmo = 9,
+    Projectile = 10,
 
     Blocker = 16,
     Door = 17,

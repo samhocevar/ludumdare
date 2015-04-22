@@ -19,12 +19,11 @@ enum class thing_type : int
     walking_monster,
     boulder,
     flying_monster,
-    pink_projectile,
-    blue_projectile,
+    projectile,
     /* Items */
     button,
-    pink_gun,
-    blue_gun,
+    minus_ammo,
+    plus_ammo,
     /* Environment */
     ground,
     door,

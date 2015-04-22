@@ -35,7 +35,7 @@ public:
     vec3 get_poi() const;
     inline bool get_exit_reached() const { return m_exit_reached; }
     inline bool get_player_fell() const { return m_player_fell; }
-    inline thing_type get_active_gun() const { return m_active_gun; }
+    inline thing_type get_active_ammo() const { return m_active_ammo; }
 
     float collide_thing(thing const *t, vec3 velocity, float seconds) const;
     void impulse_x(float impulse);
@@ -53,7 +53,7 @@ private:
     array<thing *> m_items;
 
     vec3 m_player_impulse;
-    thing_type m_active_gun;
+    thing_type m_active_ammo;
     bool m_exit_reached, m_player_killed, m_player_fell;
     double m_timer;
 };
