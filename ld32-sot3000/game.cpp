@@ -40,10 +40,15 @@ sot3000_game::sot3000_game()
     m_controller = new Controller("default controller");
 
     m_input << InputProfile::Keyboard(input::go_left, "Left");
+    m_input << InputProfile::Keyboard(input::go_left, "A");
+    m_input << InputProfile::Keyboard(input::go_left, "Q");
     m_input << InputProfile::Keyboard(input::go_right, "Right");
+    m_input << InputProfile::Keyboard(input::go_right, "D");
     m_input << InputProfile::Keyboard(input::jump, "Up");
-    m_input << InputProfile::Keyboard(input::fire, "Space");
+    m_input << InputProfile::Keyboard(input::jump, "Space");
+    m_input << InputProfile::Keyboard(input::fire, "Enter");
     m_input << InputProfile::Keyboard(input::pause, "P");
+    m_input << InputProfile::Keyboard(input::reset, "R");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
 
     m_input << InputProfile::Keyboard(input::next_level, "X");
@@ -54,6 +59,7 @@ sot3000_game::sot3000_game()
     m_input << InputProfile::JoystickKey(1, input::fire, "X");
     m_input << InputProfile::JoystickKey(1, input::jump, "LeftShoulder");
     m_input << InputProfile::JoystickKey(1, input::fire, "RightShoulder");
+    m_input << InputProfile::JoystickKey(1, input::reset, "Back");
     m_input << InputProfile::JoystickKey(1, input::pause, "Start");
 
     m_controller->Init(m_input);
@@ -227,6 +233,27 @@ void sot3000_game::tick_events(float seconds)
         }
     }
 
+    if (m_controller->WasKeyPressedThisFrame(input::escape))
+    {
+        if (m_state == game_state::in_game
+             || m_state == game_state::paused
+             || m_state == game_state::you_win
+             || m_state == game_state::next_level)
+        {
+            if (m_instance)
+                Ticker::Unref(m_instance);
+            m_instance = nullptr;
+            m_state = game_state::title_screen;
+            return;
+        }
+
+        if (m_state == game_state::title_screen)
+        {
+            Ticker::Shutdown();
+            return;
+        }
+    }
+
     // XXX: debug code
     if (m_controller->WasKeyPressedThisFrame(input::next_level))
     {
@@ -320,7 +347,7 @@ void sot3000_game::tick_events(float seconds)
         }
 
         // Escape restarts the level when not paused
-        if (m_controller->WasKeyPressedThisFrame(input::escape)
+        if (m_controller->WasKeyPressedThisFrame(input::reset)
              || m_instance->get_player_fell())
         {
             Ticker::Unref(m_instance);
