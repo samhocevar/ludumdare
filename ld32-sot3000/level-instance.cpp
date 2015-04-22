@@ -325,7 +325,6 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         /* Some Z-order tweaks */
         switch (t->get_type())
         {
-        case thing_type::laser:
         case thing_type::minus_ammo:
         case thing_type::plus_ammo:
         case thing_type::projectile:
@@ -338,6 +337,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         case thing_type::boulder:
             pos.z -= 50.f;
             break;
+        case thing_type::laser:
         case thing_type::spikes:
         case thing_type::door:
             pos.z -= 60.f;
@@ -358,6 +358,8 @@ void level_instance::TickDraw(float seconds, Scene &scene)
                 pos.y += TILE_SIZE * scale.y;
                 scale.y *= -1.f;
             }
+            // Slightly offset vertically for aesthetics
+            pos.y += 0.15f * TILE_SIZE * lol::abs(scale.y);
             break;
         case thing_type::minus_ammo:
         case thing_type::plus_ammo:
@@ -383,19 +385,15 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         {
         case thing_type::boulder:
             rot = (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time;
-            //scene.AddTile(g_game->m_newtiles, Tiles::Boulder, pos + vec3(0.f, 0.f, 10.f), 0, scale / 3.f, (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time);
-            //scene.AddTile(g_game->m_newtiles, Tiles::BoulderTexture, pos + vec3(0.f, 0.f, 10.f), 0, scale / 3.f, (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time);
+            //scene.AddTile(g_game->m_tiles, Tiles::Boulder, pos + vec3(0.f, 0.f, 10.f), 0, scale / 3.f, (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time);
+            //scene.AddTile(g_game->m_tiles, Tiles::BoulderTexture, pos + vec3(0.f, 0.f, 10.f), 0, scale / 3.f, (t->m_velocity.x < 0.0f || t->m_facing_left ? 0.6f : -0.6f) * MONSTER_RUN_SPEED * t->m_time);
             break;
         default:
             break;
         }
 
         int tid = t->m_tile_index;
-
-        if (tid < 1000)
-            scene.AddTile(g_game->m_newtiles, tid, pos, 0, scale / 3.f, rot);
-        else
-            scene.AddTile(g_game->m_tiles, tid - 1000, pos, 0, scale, rot);
+        scene.AddTile(g_game->m_tiles, tid, pos, 0, scale / 3.f, rot);
     }
 }
 
@@ -515,19 +513,13 @@ void level_instance::init(level_description const &desc)
             m_items.push(t);
             break;
         case thing_type::sitting_monster:
-            t->m_tile_index = Tiles::SittingMonster;
-            m_monsters.push(t);
-            break;
         case thing_type::walking_monster:
-            t->m_tile_index = Tiles::WalkingMonster;
-            m_monsters.push(t);
-            break;
         case thing_type::flying_monster:
-            t->m_tile_index = Tiles::FlyingMonster;
+            // FIXME: deprecated
+            t->m_hidden = true;
             m_monsters.push(t);
             break;
         default:
-            t->m_tile_index = Tiles::Blocker; // FIXME: what to do here?
             t->m_hidden = true;
             break;
         }
@@ -647,11 +639,14 @@ void level_instance::continue_jump(float velocity, float seconds)
 
 void level_instance::fire()
 {
-    thing *projecile = m_projectiles[0];
+    if (m_active_ammo != thing_type::none)
+    {
+        thing *projecile = m_projectiles[0];
 
-    vec3 dir = (m_player->m_facing_left ? -1.f : 1.f) * vec3(1.0f, 0.f, 0.f);
+        vec3 dir = (m_player->m_facing_left ? -1.f : 1.f) * vec3(1.0f, 0.f, 0.f);
 
-    projecile->m_hidden = false;
-    projecile->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
-    projecile->m_velocity = PROJECTILE_MAX_SPEED * dir;
+        projecile->m_hidden = false;
+        projecile->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
+        projecile->m_velocity = PROJECTILE_MAX_SPEED * dir;
+    }
 }

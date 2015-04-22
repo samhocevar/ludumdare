@@ -21,15 +21,17 @@ using namespace lol;
 
 sot3000_game::sot3000_game()
   : m_state(game_state::title_screen),
-    m_current_level(0)
+    m_current_level(0),
+    m_instance(nullptr)
 {
     m_tiles = Tiler::Register("data/tiles.png");
-    m_tiles->AddTile(ivec2(16, 16));
-    m_tiles->AddTile(ibox2(512, 640, 1024, 1024));
-    m_tiles->AddTile(ibox2(0, 640, 512, 1024));
+    m_tiles->AddTile(ivec2(8, 8));
 
-    m_newtiles = Tiler::Register("data/newtiles.png");
-    m_newtiles->AddTile(ivec2(8, 8));
+    m_title = Tiler::Register("data/title.png");
+    m_title->AddTile(ibox2(0, 0, 1024, 768));
+
+    m_ending = Tiler::Register("data/title.png");
+    m_ending->AddTile(ibox2(0, 0, 1024, 768));
 
     m_camera = new Camera();
     Scene::PushCamera(m_camera);
@@ -48,8 +50,10 @@ sot3000_game::sot3000_game()
 
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
-    m_input << InputProfile::JoystickKey(1, input::jump, "Y");
+    m_input << InputProfile::JoystickKey(1, input::jump, "A");
     m_input << InputProfile::JoystickKey(1, input::fire, "X");
+    m_input << InputProfile::JoystickKey(1, input::jump, "LeftShoulder");
+    m_input << InputProfile::JoystickKey(1, input::fire, "RightShoulder");
     m_input << InputProfile::JoystickKey(1, input::pause, "Start");
 
     m_controller->Init(m_input);
@@ -95,7 +99,8 @@ sot3000_game::~sot3000_game()
     Ticker::Unref(m_level_text);
     Ticker::Unref(m_level_name_text);
     Tiler::Deregister(m_tiles);
-    Tiler::Deregister(m_newtiles);
+    Tiler::Deregister(m_title);
+    Tiler::Deregister(m_ending);
     Scene::PopCamera(m_camera);
     Ticker::Unref(m_camera);
 }
@@ -115,19 +120,16 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
 
-    m_newtiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
-    m_newtiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
-
     //g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
     g_renderer->SetClearColor(vec4(0.95f, 0.95f, 0.95f, 1.f));
     //g_renderer->SetClearColor(vec4(1.0f, 1.0f, 1.0f, 1.f));
 
     /* We do not draw much; the level itself takes care of it. */
     if (m_state == game_state::title_screen)
-        scene.AddTile(m_tiles, Tiles::TitleScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(m_title, 0, vec3(-256.f, -192.f, 0.f), 0, vec2(0.5f), 0.f);
 
     if (m_state == game_state::you_win)
-        scene.AddTile(m_tiles, Tiles::YouWinScreen, vec3(-256.f, -192.f, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(m_ending, 0, vec3(-256.f, -192.f, 0.f), 0, vec2(0.5f), 0.f);
 
     if (m_state == game_state::in_game
          || m_state == game_state::paused)
@@ -140,7 +142,7 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
         if (ammo != thing_type::none)
         {
             int id = ammo == thing_type::plus_ammo ? Tiles::PlusAmmo : Tiles::MinusAmmo;
-            scene.AddTile(m_newtiles, id, vec3(m_poi + m_viewport_size * vec2(-0.45f, 0.30f), 50.f), 0, vec2(1.f), 0.f);
+            scene.AddTile(m_tiles, id, vec3(m_poi + m_viewport_size * vec2(-0.45f, 0.30f), 50.f), 0, vec2(1.f), 0.f);
         }
     }
 }
@@ -162,8 +164,8 @@ void sot3000_game::tick_camera(float seconds)
 
     if (m_state == game_state::title_screen)
     {
-        m_start_text->SetPos(vec3(0.f, 0.f, 50.f));
-        m_start_text->SetText("Press start to start!!");
+        m_start_text->SetPos(vec3(0.f, -180.f, 50.f));
+        m_start_text->SetText("Press start to start!! LOL");
     }
     else
     {
@@ -239,7 +241,8 @@ void sot3000_game::tick_events(float seconds)
     }
 
     if (m_controller->WasKeyPressedThisFrame(input::pause)
-         || m_controller->WasKeyPressedThisFrame(input::fire))
+         || m_controller->WasKeyPressedThisFrame(input::fire)
+         || m_controller->WasKeyPressedThisFrame(input::jump))
     {
         if (m_state == game_state::title_screen)
         {

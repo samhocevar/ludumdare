@@ -42,35 +42,23 @@ static float const PROJECTILE_MAX_SPEED = TILE_SIZE * 20.f;
 enum Tiles
 {
     /* Bits: down up right left, 1 means open */
-    Button = 2,
-    Laser = 3,
+    PlayerGoRight = 0,
+    PlayerGoLeft = 1,
 
     PlusAmmo = 8,
     MinusAmmo = 9,
     Projectile = 10,
+    Button = 11,
+    PressedButton = 12,
+    Laser = 13,
 
     Blocker = 16,
     Door = 17,
     Spikes = 18,
 
-    OldBoulder = 24,
-    Boulder = 25,
+    OldBoulder = 19,
+    Boulder = 20,
 
     Ground = 32,
-
-    /* Old tiles */
-    PlayerGoRight = 1000,
-    PlayerGoLeft = 1001,
-
-    SawBlade = 1022,
-
-    SittingMonster = 1032,
-    WalkingMonster = 1033,
-    FlyingMonster = 1048,
-
-    Key = 1068, /* UNUSED */
-
-    TitleScreen = 256,
-    YouWinScreen = 257,
 };
 
