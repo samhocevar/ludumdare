@@ -45,6 +45,8 @@ enum Tiles
     PlayerGoRight = 0,
     PlayerGoLeft = 1,
 
+    DeadPlayer = 24,
+
     PlusAmmo = 8,
     MinusAmmo = 9,
     Projectile = 10,

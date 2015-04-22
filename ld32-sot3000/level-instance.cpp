@@ -83,7 +83,7 @@ void level_instance::tick_player(float seconds)
     else
     {
         // FIXME: delta-time this shit!
-        m_player->m_target_scale = min(4.f, m_player->m_target_scale * (1.f + 2.f * seconds));
+        m_player->m_target_scale = min(8.f, m_player->m_target_scale * (1.f + 2.f * seconds));
     }
 
     // We have gravity (most of the time)
@@ -398,6 +398,17 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         }
 
         int tid = t->m_tile_index;
+
+        switch (t->get_type())
+        {
+        case thing_type::player:
+            if (m_player_killed)
+                tid = Tiles::DeadPlayer + (lol::sin(20.0 * t->m_time) > 0);
+            break;
+        default:
+            break;
+        }
+
         scene.AddTile(g_game->m_tiles, tid, pos, 0, scale / 3.f, rot);
     }
 }
@@ -602,20 +613,23 @@ float level_instance::collide_thing(thing const *t, vec3 velocity,
 
 void level_instance::impulse_x(float impulse)
 {
-    // FIXME: left/right commands should affect velocity directly so
-    // that we can do more appealing air control.
-    // FIXME: decide whether we run faster when scaled up; I don’t think
-    // it looks cool, but maybe it makes sense for the gameplay?
-    m_player_impulse += vec3(impulse * PLAYER_RUN_SPEED, 0.f, 0.f);
-    //m_player_impulse += vec3(impulse * m_player->m_scale, 0.f, 0.f);
-    //m_player->m_velocity.x += impulse;
+    if (!m_player_killed)
+    {
+        // FIXME: left/right commands should affect velocity directly so
+        // that we can do more appealing air control.
+        // FIXME: decide whether we run faster when scaled up; I don’t think
+        // it looks cool, but maybe it makes sense for the gameplay?
+        m_player_impulse += vec3(impulse * PLAYER_RUN_SPEED, 0.f, 0.f);
+        //m_player_impulse += vec3(impulse * m_player->m_scale, 0.f, 0.f);
+        //m_player->m_velocity.x += impulse;
 
-    m_player->m_facing_left = impulse < 0.0f;
+        m_player->m_facing_left = impulse < 0.0f;
+    }
 }
 
 void level_instance::jump()
 {
-    if (m_player->m_grounded)
+    if (!m_player_killed && m_player->m_grounded)
     {
         m_player->m_grounded = false;
         m_player->m_can_impulse = true;
@@ -625,7 +639,7 @@ void level_instance::jump()
 
 void level_instance::continue_jump(float velocity, float seconds)
 {
-    if (m_player->m_can_impulse)
+    if (!m_player_killed && m_player->m_can_impulse)
     {
         // We can jump higher when scaled up!
         if (m_player->m_jump_time == PLAYER_JUMP_TIME)
@@ -644,7 +658,7 @@ void level_instance::continue_jump(float velocity, float seconds)
 
 void level_instance::fire()
 {
-    if (m_active_ammo != thing_type::none)
+    if (!m_player_killed && m_active_ammo != thing_type::none)
     {
         thing *projecile = m_projectiles[0];
 
