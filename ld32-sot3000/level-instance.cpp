@@ -24,6 +24,7 @@ using namespace lol;
 level_instance::level_instance()
   : m_player(nullptr),
     m_player_impulse(0.f),
+    m_player_effective_impulse(0.f),
     m_active_ammo(thing_type::none),
     m_exit_reached(false),
     m_player_killed(false),
@@ -70,9 +71,13 @@ void level_instance::tick_player(float seconds)
         if (m_player_impulse.x > 0)
             m_player->m_tile_index = Tiles::PlayerGoRight;
 
+        // lerping speed for inertia -- braking is faster than accelerating
+        float s = m_player_impulse.x ? 8.f * seconds : 20.f * seconds;
+        m_player_effective_impulse = lerp(m_player_effective_impulse, m_player_impulse, s);
+
         // Check how long we can apply player impulse before we hit something
-        float impulse_time = collide_thing(m_player, m_player_impulse, seconds);
-        m_player->m_position += m_player_impulse * impulse_time;
+        float impulse_time = collide_thing(m_player, m_player_effective_impulse, seconds);
+        m_player->m_position += m_player_effective_impulse * impulse_time;
         m_player_impulse = vec3(0.0f);
     }
     else

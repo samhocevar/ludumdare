@@ -80,7 +80,7 @@ sot3000_game::sot3000_game()
     m_start_text = new Text("", "data/font.png");
     m_start_text->SetAlign(TextAlign::Center);
     m_start_text->SetScale(vec2(0.15f));
-    m_start_text->SetSpacing(-0.2f);
+    m_start_text->SetSpacing(-0.1f);
     Ticker::Ref(m_start_text);
 }
 
