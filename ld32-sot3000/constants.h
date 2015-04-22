@@ -41,10 +41,7 @@ static float const PROJECTILE_MAX_SPEED = TILE_SIZE * 20.f;
 /* Tiles */
 enum Tiles
 {
-    /* Bits: down up right left, 1 means open */
-    PlayerGoRight = 0,
-    PlayerGoLeft = 1,
-
+    Player = 0,
     DeadPlayer = 24,
 
     PlusAmmo = 8,
@@ -61,6 +58,7 @@ enum Tiles
     OldBoulder = 19,
     Boulder = 20,
 
+    /* Bits: down up right left, 1 means open */
     Ground = 32,
 };
 

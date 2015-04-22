@@ -64,12 +64,12 @@ void level_instance::tick_player(float seconds)
 
     if (!m_player_killed)
     {
-        // If there is an impulse, fix player orientation (TODO: animation states)
+        // If there is an impulse, fix player orientation
         // Otherwise, don’t touch the sprite.
         if (m_player_impulse.x < 0)
-            m_player->m_tile_index = Tiles::PlayerGoLeft;
+            m_player->m_facing_left = true;
         if (m_player_impulse.x > 0)
-            m_player->m_tile_index = Tiles::PlayerGoRight;
+            m_player->m_facing_left = false;
 
         // lerping speed for inertia -- braking is faster than accelerating
         float s = m_player_impulse.x ? 8.f * seconds : 20.f * seconds;
@@ -83,7 +83,8 @@ void level_instance::tick_player(float seconds)
     else
     {
         // FIXME: delta-time this shit!
-        m_player->m_target_scale = min(8.f, m_player->m_target_scale * (1.f + 2.f * seconds));
+        m_player->m_target_scale = m_player->m_target_scale + 8.f * seconds;
+        //m_player->m_target_scale = min(8.f, m_player->m_target_scale * (1.f + 4.f * seconds));
     }
 
     // We have gravity (most of the time)
@@ -327,6 +328,16 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         vec2 scale = vec2(t->m_scale * 1.5f);
         float rot = 0.f;
 
+        /* Some scaling tweaks */
+        switch (t->get_type())
+        {
+        case thing_type::player:
+            scale *= 1.5f;
+            break;
+        default:
+            break;
+        }
+
         /* Some Z-order tweaks */
         switch (t->get_type())
         {
@@ -346,6 +357,8 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         case thing_type::spikes:
         case thing_type::door:
             pos.z -= 60.f;
+            break;
+        default:
             break;
         }
 
@@ -371,6 +384,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
             pos.z += 50.f;
             pos.y += TILE_SIZE * 0.5f * lol::abs(lol::sin(6.f * t->m_time));
             break;
+        case thing_type::player:
         case thing_type::projectile:
         case thing_type::flying_monster:
         case thing_type::walking_monster:
@@ -404,6 +418,12 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         case thing_type::player:
             if (m_player_killed)
                 tid = Tiles::DeadPlayer + (lol::sin(20.0 * t->m_time) > 0);
+            else if (!t->m_grounded)
+                tid = Tiles::Player + 3;
+            else if (lol::abs(m_player_effective_impulse.x) < 0.1 * TILE_SIZE)
+                tid = Tiles::Player + 6;
+            else
+                tid = Tiles::Player + int(lol::fmod(8.0 * t->m_time, 6.0));
             break;
         default:
             break;
@@ -556,7 +576,7 @@ void level_instance::init(level_description const &desc)
     m_player->m_position = vec3(vec2(desc.get_start()) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
     m_player->m_original_aabb.A = vec3(0.f);
     m_player->m_original_aabb.B = vec3(float(TILE_SIZE));
-    m_player->m_tile_index = Tiles::PlayerGoRight;
+    m_player->m_tile_index = Tiles::Player;
     m_things.push(m_player);
     Ticker::Ref(m_player);
 
@@ -662,10 +682,11 @@ void level_instance::fire()
     {
         thing *projecile = m_projectiles[0];
 
-        vec3 dir = (m_player->m_facing_left ? -1.f : 1.f) * vec3(1.0f, 0.f, 0.f);
+        float dir = m_player->m_facing_left ? -1.f : 1.f;
 
         projecile->m_hidden = false;
-        projecile->m_position = m_player->m_position + (TILE_SIZE * 0.5f) * dir;
-        projecile->m_velocity = PROJECTILE_MAX_SPEED * dir;
+        projecile->m_position = m_player->m_position + vec3(TILE_SIZE * 1.2f * dir, TILE_SIZE * 0.5f, 0.f);
+        projecile->m_velocity = vec3(PROJECTILE_MAX_SPEED * dir, 0.f, 0.f);
     }
 }
+
