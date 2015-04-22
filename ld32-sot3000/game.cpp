@@ -44,8 +44,12 @@ sot3000_game::sot3000_game()
     m_input << InputProfile::Keyboard(input::go_left, "A");
     m_input << InputProfile::Keyboard(input::go_right, "Right");
     m_input << InputProfile::Keyboard(input::go_right, "D");
+    m_input << InputProfile::Keyboard(input::jump, "W");
+    m_input << InputProfile::Keyboard(input::jump, "Z");
     m_input << InputProfile::Keyboard(input::jump, "Up");
     m_input << InputProfile::Keyboard(input::jump, "Space");
+    m_input << InputProfile::Keyboard(input::fire, "S");
+    m_input << InputProfile::Keyboard(input::fire, "Down");
     m_input << InputProfile::Keyboard(input::fire, "Return");
     m_input << InputProfile::Keyboard(input::pause, "P");
     m_input << InputProfile::Keyboard(input::reset, "R");
