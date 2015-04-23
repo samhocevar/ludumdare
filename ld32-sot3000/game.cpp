@@ -33,6 +33,9 @@ sot3000_game::sot3000_game()
     m_ending = Tiler::Register("data/title.png");
     m_ending->AddTile(ibox2(0, 0, 1024, 768));
 
+    m_background = Tiler::Register("data/background.png");
+    m_background->AddTile(ibox2(0, 0, 1024, 1024));
+
     m_camera = new Camera();
     Scene& scene = Scene::GetScene();
     scene.PushCamera(m_camera);
@@ -112,6 +115,7 @@ sot3000_game::~sot3000_game()
     Tiler::Deregister(m_tiles);
     Tiler::Deregister(m_title);
     Tiler::Deregister(m_ending);
+    Tiler::Deregister(m_background);
     Scene& scene = Scene::GetScene();
     scene.PopCamera(m_camera);
     Ticker::Unref(m_camera);
@@ -132,9 +136,7 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
 
-    //g_renderer->SetClearColor(vec4(0.9f, 0.9f, 0.9f, 1.f));
-    g_renderer->SetClearColor(vec4(0.95f, 0.95f, 0.95f, 1.f));
-    //g_renderer->SetClearColor(vec4(1.0f, 1.0f, 1.0f, 1.f));
+    g_renderer->SetClearColor(Color::white);
 
     /* We do not draw much; the level itself takes care of it. */
     if (m_state == game_state::title_screen)
@@ -146,8 +148,17 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     if (m_state == game_state::in_game
          || m_state == game_state::paused)
     {
-        // Put the pause text in front of the camera…
-        m_pause_text->SetPos(vec3(m_poi, 0.0f));
+        // Always render the pause text (it’s empty when not in-game)
+        m_pause_text->SetPos(vec3(m_poi, 90.0f));
+
+        // Display the background
+        vec2 parallax = m_poi * vec2(0.35f, 0.05f);
+        parallax.x = lol::fmod(parallax.x, 1024.f);
+        if (parallax.x < 0.f)
+            parallax.x += 1024.f;
+
+        for (float f : { -1024.f, 0.f, 1024.f })
+            scene.AddTile(m_background, 0, vec3(m_poi - parallax, -90.f) + vec3(f, -512.f, 0.f), 0, vec2(1.f), 0.f);
 
         // Display the active ammo
         thing_type ammo = m_instance->get_active_ammo();

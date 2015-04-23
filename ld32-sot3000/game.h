@@ -55,7 +55,7 @@ private:
     void tick_events(float seconds);
 
 public:
-    TileSet *m_tiles, *m_title, *m_ending;
+    TileSet *m_tiles, *m_title, *m_background, *m_ending;
 
 private:
     game_state m_state;
