@@ -56,7 +56,10 @@ void level_instance::TickGame(float seconds)
 void level_instance::tick_player(float seconds)
 {
     // Check whether we fell out of the map
-    if (m_player->m_position.y < -10.f * TILE_SIZE)
+    if (m_player->m_position.y < -2.f * TILE_SIZE)
+        m_player_killed = true;
+
+    if (m_player->m_position.y < -35.f * TILE_SIZE)
     {
         m_player_fell = true;
         return;
@@ -333,6 +336,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         {
         case thing_type::player:
             scale *= 1.5f;
+            pos.x -= TILE_SIZE / 3.f;
             break;
         default:
             break;
@@ -583,8 +587,8 @@ void level_instance::init(level_description const &desc)
     thing *t = new thing(thing_type::projectile);
     m_projectiles.push(t);
     t->m_hidden = true;
-    t->m_original_aabb.aa = vec3(TILE_SIZE * 0.4f);
-    t->m_original_aabb.bb = vec3(TILE_SIZE * 0.6f);
+    t->m_original_aabb.aa = vec3(TILE_SIZE * 0.35f);
+    t->m_original_aabb.bb = vec3(TILE_SIZE * 0.65f);
     t->m_tile_index = Tiles::Projectile;
     m_things.push(t);
     Ticker::Ref(t);

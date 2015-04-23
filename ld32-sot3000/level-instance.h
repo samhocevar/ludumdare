@@ -35,6 +35,7 @@ public:
     vec3 get_poi() const;
     inline bool get_exit_reached() const { return m_exit_reached; }
     inline bool get_player_fell() const { return m_player_fell; }
+    inline bool get_player_killed() const { return m_player_killed; }
     inline thing_type get_active_ammo() const { return m_active_ammo; }
 
     float collide_thing(thing const *t, vec3 velocity, float seconds) const;

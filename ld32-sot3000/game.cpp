@@ -30,9 +30,6 @@ sot3000_game::sot3000_game()
     m_title = Tiler::Register("data/title.png");
     m_title->AddTile(ibox2(0, 0, 1024, 768));
 
-    m_ending = Tiler::Register("data/title.png");
-    m_ending->AddTile(ibox2(0, 0, 1024, 768));
-
     m_background = Tiler::Register("data/background.png");
     m_background->AddTile(ibox2(0, 0, 1024, 1024));
 
@@ -72,10 +69,10 @@ sot3000_game::sot3000_game()
 
     m_controller->Init(m_input);
 
-    m_pause_text = new Text("", "data/font.png");
-    m_pause_text->SetAlign(TextAlign::Center);
-    m_pause_text->SetSpacing(0.0f);
-    Ticker::Ref(m_pause_text);
+    m_game_text = new Text("", "data/font.png");
+    m_game_text->SetAlign(TextAlign::Center);
+    m_game_text->SetSpacing(0.0f);
+    Ticker::Ref(m_game_text);
 
     m_level_text = new Text("", "data/font.png");
     m_level_text->SetAlign(TextAlign::Center);
@@ -108,13 +105,12 @@ sot3000_game::~sot3000_game()
     }
 
     // Clean up after ourselves
-    Ticker::Unref(m_pause_text);
+    Ticker::Unref(m_game_text);
     Ticker::Unref(m_start_text);
     Ticker::Unref(m_level_text);
     Ticker::Unref(m_level_name_text);
     Tiler::Deregister(m_tiles);
     Tiler::Deregister(m_title);
-    Tiler::Deregister(m_ending);
     Tiler::Deregister(m_background);
     Scene& scene = Scene::GetScene();
     scene.PopCamera(m_camera);
@@ -142,17 +138,14 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     if (m_state == game_state::title_screen)
         scene.AddTile(m_title, 0, vec3(-256.f, -192.f, 0.f), 0, vec2(0.5f), 0.f);
 
-    if (m_state == game_state::you_win)
-        scene.AddTile(m_ending, 0, vec3(-256.f, -192.f, 0.f), 0, vec2(0.5f), 0.f);
-
     if (m_state == game_state::in_game
          || m_state == game_state::paused)
     {
         // Always render the pause text (it’s empty when not in-game)
-        m_pause_text->SetPos(vec3(m_poi, 90.0f));
+        m_game_text->SetPos(vec3(m_poi, 90.0f));
 
         // Display the background
-        vec2 parallax = m_poi * vec2(0.35f, 0.05f);
+        vec2 parallax = m_poi * vec2(0.5f, 0.15f);
         parallax.x = lol::fmod(parallax.x, 1024.f);
         if (parallax.x < 0.f)
             parallax.x += 1024.f;
@@ -220,17 +213,27 @@ void sot3000_game::tick_camera(float seconds)
 
     if (m_state == game_state::paused)
     {
-        m_pause_text->SetText("PAUSED");
+        m_game_text->SetText("PAUSED");
+    }
+    else if (m_state == game_state::in_game
+              && m_instance->get_player_killed())
+    {
+        m_game_text->SetText("YOU DIED");
     }
     else
     {
-        m_pause_text->SetText("");
+        m_game_text->SetText("");
     }
 
     if (m_state == game_state::next_level && m_current_level < m_levels.count())
     {
         m_level_text->SetText(String::Printf("Level %d/%d", 1 + m_current_level, (int)m_levels.count()));
         m_level_name_text->SetText(String::Printf("%s", m_levels[m_current_level].get_name().C()));
+    }
+    else if (m_state == game_state::you_win)
+    {
+        m_level_text->SetText("YOU WIN");
+        m_level_name_text->SetText("Thanks for playing!");
     }
     else
     {
@@ -272,6 +275,7 @@ void sot3000_game::tick_events(float seconds)
     }
 
     // XXX: debug code
+#if 0
     if (m_controller->WasKeyPressedThisFrame(input::next_level))
     {
         if (m_state == game_state::in_game
@@ -283,6 +287,7 @@ void sot3000_game::tick_events(float seconds)
             Ticker::Ref(m_instance);
         }
     }
+#endif
 
     if (m_controller->WasKeyPressedThisFrame(input::pause)
          || m_controller->WasKeyPressedThisFrame(input::fire)

@@ -66,7 +66,7 @@ private:
     float m_input_cooldown;
 
     Text *m_start_text;
-    Text *m_pause_text;
+    Text *m_game_text;
     Text *m_level_text;
     Text *m_level_name_text;
     vec2 m_viewport_size, m_poi;
