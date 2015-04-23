@@ -34,7 +34,8 @@ sot3000_game::sot3000_game()
     m_ending->AddTile(ibox2(0, 0, 1024, 768));
 
     m_camera = new Camera();
-    Scene::PushCamera(m_camera);
+    Scene& scene = Scene::GetScene();
+    scene.PushCamera(m_camera);
     Ticker::Ref(m_camera);
 
     m_controller = new Controller("default controller");
@@ -111,7 +112,8 @@ sot3000_game::~sot3000_game()
     Tiler::Deregister(m_tiles);
     Tiler::Deregister(m_title);
     Tiler::Deregister(m_ending);
-    Scene::PopCamera(m_camera);
+    Scene& scene = Scene::GetScene();
+    scene.PopCamera(m_camera);
     Ticker::Unref(m_camera);
 }
 
