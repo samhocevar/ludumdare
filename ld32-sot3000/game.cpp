@@ -136,7 +136,7 @@ void sot3000_game::TickDraw(float seconds, Scene &scene)
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
 
-    g_renderer->SetClearColor(Color::white);
+    Renderer::Get()->SetClearColor(Color::white);
 
     /* We do not draw much; the level itself takes care of it. */
     if (m_state == game_state::title_screen)
