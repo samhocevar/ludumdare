@@ -1,0 +1,16 @@
+﻿name = Leap of Faith
+
+
+W                     % W W W W W
+%                     % % % % % %
+%                     %         
+%                     %         
+%  S            W W W %        +
+% % %           % % % %        E
+%                            % % %          W W
+%                                           % %
+%                                             %
+%                                             %
+%                                      X      %
+%                          b    W W % % % % % %
+% W W W W W W W W W W W % % % % % % % % % % % %

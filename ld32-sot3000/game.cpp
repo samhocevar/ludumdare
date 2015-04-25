@@ -16,6 +16,8 @@
 
 using namespace lol;
 
+#define DEBUG_CODE 0 // press X to skip level
+
 #include "constants.h"
 #include "game.h"
 
@@ -56,7 +58,9 @@ sot3000_game::sot3000_game()
     m_input << InputProfile::Keyboard(input::reset, "R");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
 
+#if DEBUG_CODE
     m_input << InputProfile::Keyboard(input::next_level, "X");
+#endif
 
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
@@ -274,8 +278,7 @@ void sot3000_game::tick_events(float seconds)
         }
     }
 
-    // XXX: debug code
-#if 0
+#if DEBUG_CODE
     if (m_controller->WasKeyPressedThisFrame(input::next_level))
     {
         if (m_state == game_state::in_game
@@ -299,12 +302,33 @@ void sot3000_game::tick_events(float seconds)
             m_levels.empty();
             m_current_level = 0;
 
-            for (bool found = true; found;)
+            array<String> levelfiles;
+            array<String> listfiles = System::GetPathList("data/levels.txt");
+            for (String candidate : listfiles)
             {
-                found = false;
+                File f;
+                f.Open(candidate, FileAccess::Read);
+                if (!f.IsValid())
+                    continue;
+                String list = f.ReadString();
+                for (char const *line = list.C(); *line; )
+                {
+                    char const *eol = line;
+                    while (*eol && *eol != '\n' && *eol != '\r')
+                        ++eol;
+                    if (*line != '#')
+                        levelfiles.push(String(line, eol - line));
+                    while (*eol == '\n' || *eol == '\r')
+                        ++eol;
+                    line = eol;
+                }
+                f.Close();
+            }
 
-                String name = String::Printf("data/level%d.txt", (int)m_levels.count() + 1);
-                array<String> datafiles = System::GetPathList(name);
+            for (String level : levelfiles)
+            {
+                String fullname = String::Printf("data/%s", level.C());
+                array<String> datafiles = System::GetPathList(fullname);
                 for (String candidate : datafiles)
                 {
                     File f;
@@ -314,7 +338,7 @@ void sot3000_game::tick_events(float seconds)
                     m_levels.push(level_description());
                     m_levels.last().load_data(f.ReadString().C());
                     f.Close();
-                    found = true;
+                    break;
                 }
             }
 
