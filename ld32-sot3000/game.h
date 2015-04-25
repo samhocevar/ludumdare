@@ -17,7 +17,7 @@ extern class sot3000_game *g_game;
 
 enum input
 {
-    pause,
+    do_pause,
     go_left,
     go_right,
     jump,
@@ -63,7 +63,6 @@ private:
     Camera *m_camera;
     Controller *m_controller;
     InputProfile m_input;
-    float m_input_cooldown;
 
     Text *m_start_text;
     Text *m_game_text;

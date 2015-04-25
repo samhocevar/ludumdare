@@ -15,6 +15,6 @@ sot3000_CPPFLAGS = $(AM_CPPFLAGS)
 sot3000_DEPENDENCIES = @LOL_DEPS@
 sot3000_LDFLAGS = $(AM_LDFLAGS)
 if USE_EMSCRIPTEN
-sot3000_LDFLAGS += --preload-file data
+sot3000_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
 endif
 

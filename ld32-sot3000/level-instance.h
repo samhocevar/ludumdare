@@ -56,6 +56,5 @@ private:
     vec3 m_player_impulse, m_player_effective_impulse;
     thing_type m_active_ammo;
     bool m_exit_reached, m_player_killed, m_player_fell;
-    double m_timer;
 };
 

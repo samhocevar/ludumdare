@@ -80,7 +80,8 @@ void level_instance::tick_player(float seconds)
 
         // Check how long we can apply player impulse before we hit something
         float impulse_time = collide_thing(m_player, m_player_effective_impulse, seconds);
-        m_player->m_position += m_player_effective_impulse * impulse_time;
+        if (impulse_time > EPSILON)
+            m_player->m_position += m_player_effective_impulse * (impulse_time - EPSILON);
         m_player_impulse = vec3(0.0f);
     }
     else
@@ -108,28 +109,30 @@ void level_instance::tick_player(float seconds)
 
     float force_time;
     force_time = collide_thing(m_player, m_player->m_velocity, seconds);
-    m_player->m_position += m_player->m_velocity * force_time;
+    if (force_time > EPSILON)
+        m_player->m_position += m_player->m_velocity * (force_time - EPSILON);
 
     // If not all forces were applied, try to slide horizontally or vertically
-    if (force_time < seconds)
+    float remaining_time = seconds - force_time;
+    if (remaining_time > EPSILON)
     {
-        float remaining_time = seconds - force_time;
         vec3 x_velocity(m_player->m_velocity.x, 0.f, 0.f);
-        vec3 y_velocity(0.f, m_player->m_velocity.y, 0.f);
         float x_force_time = collide_thing(m_player, x_velocity, remaining_time);
-        float y_force_time = collide_thing(m_player, y_velocity, remaining_time);
 
-        // If gravity isn’t strong enough to move us downwards, we’re grounded
-        if (m_player->m_velocity.y < 0.f && y_force_time == 0.f)
-            m_player->m_grounded = true;
-
-        if (x_force_time > 0)
-            m_player->m_position += x_velocity * x_force_time;
+        if (x_force_time > EPSILON)
+            m_player->m_position += x_velocity * (x_force_time - EPSILON);
         else
             m_player->m_velocity.x = 0.f;
 
-        if (y_force_time > 0)
-            m_player->m_position += y_velocity * y_force_time;
+        vec3 y_velocity(0.f, m_player->m_velocity.y, 0.f);
+        float y_force_time = collide_thing(m_player, y_velocity, remaining_time);
+
+        // If gravity isn’t strong enough to move us downwards, we’re grounded
+        if (m_player->m_velocity.y < -EPSILON && y_force_time < EPSILON)
+            m_player->m_grounded = true;
+
+        if (y_force_time > EPSILON)
+            m_player->m_position += y_velocity * (y_force_time - EPSILON);
         else
             m_player->m_velocity.y = 0.f;
     }
@@ -187,7 +190,7 @@ void level_instance::tick_player(float seconds)
     for (thing *t : m_things)
     {
         if (t->can_kill()
-             && collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) < seconds)
+             && collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) < seconds - EPSILON)
         {
             m_player_killed = true;
             m_player->m_position.z = 90.f;
@@ -220,8 +223,9 @@ void level_instance::tick_living(thing *t, float seconds)
 
     // Check how long we can apply impulse before we hit something
     float impulse_time = collide_thing(t, impulse, seconds);
-    t->m_position += impulse * impulse_time;
-    if (impulse_time < seconds)
+    if (impulse_time > EPSILON)
+        t->m_position += impulse * (impulse_time - EPSILON);
+    if (impulse_time < seconds - EPSILON)
         t->m_facing_left = !t->m_facing_left;
 
     // We have gravity (most of the time)
@@ -238,28 +242,30 @@ void level_instance::tick_living(thing *t, float seconds)
 
     // Apply as much velocity from forces as possible
     float force_time = collide_thing(t, t->m_velocity, seconds);
-    t->m_position += t->m_velocity * force_time;
+    if (force_time > EPSILON)
+        t->m_position += t->m_velocity * (force_time - EPSILON);
 
     // If not all forces were applied, try to slide horizontally or vertically
-    if (force_time < seconds)
+    float remaining_time = seconds - force_time;
+    if (remaining_time > EPSILON)
     {
-        float remaining_time = seconds - force_time;
         vec3 x_velocity(t->m_velocity.x, 0.f, 0.f);
-        vec3 y_velocity(0.f, t->m_velocity.y, 0.f);
         float x_force_time = collide_thing(t, x_velocity, remaining_time);
-        float y_force_time = collide_thing(t, y_velocity, remaining_time);
 
-        // If gravity isn’t strong enough to move us downwards, we’re grounded
-        if (t->m_velocity.y < 0.f && y_force_time == 0.f)
-            t->m_grounded = true;
-
-        if (x_force_time > 0)
-            t->m_position += x_velocity * x_force_time;
+        if (x_force_time > EPSILON)
+            t->m_position += x_velocity * (x_force_time - EPSILON);
         else
             t->m_velocity.x = 0.f;
 
-        if (y_force_time > 0)
-            t->m_position += y_velocity * y_force_time;
+        vec3 y_velocity(0.f, t->m_velocity.y, 0.f);
+        float y_force_time = collide_thing(t, y_velocity, remaining_time);
+
+        // If gravity isn’t strong enough to move us downwards, we’re grounded
+        if (t->m_velocity.y < 0.f && y_force_time < EPSILON)
+            t->m_grounded = true;
+
+        if (y_force_time > EPSILON)
+            t->m_position += y_velocity * (y_force_time - EPSILON);
         else
             t->m_velocity.y = 0.f;
     }
@@ -276,7 +282,7 @@ void level_instance::tick_living(thing *t, float seconds)
             if (t2->m_target_scale > t->m_target_scale)
                 continue;
 
-            if (collide(t, vec3(0), t2, vec3(0), 0.f, seconds) >= seconds)
+            if (collide(t, vec3(0), t2, vec3(0), 0.f, seconds) > seconds - EPSILON)
                 continue;
 
             /* If we pressed a button, switch off all lasers */
@@ -298,7 +304,7 @@ void level_instance::tick_projectile(thing *t, float seconds)
         auto check = [&](thing *t2)
         {
             if (t2->can_scale() &&
-                 collide(t, vec3(0), t2, vec3(0), 0.f, seconds) < seconds)
+                 collide(t, vec3(0), t2, vec3(0), 0.f, seconds) < seconds - EPSILON)
             {
                 t->m_hidden = true;
                 if (m_active_ammo == thing_type::plus_ammo)
@@ -478,8 +484,8 @@ void level_instance::init(level_description const &desc)
         thing *t = new thing(layout[i][j]);
         t->m_position = vec3(i * 0.5f, j, 0) * float(TILE_SIZE);
         t->m_velocity = vec3(0.f);
-        t->m_original_aabb.aa = vec3(0);
-        t->m_original_aabb.bb = vec3(float(TILE_SIZE));
+        t->m_original_aabb.aa = vec3(TILE_SIZE * EPSILON);
+        t->m_original_aabb.bb = vec3(TILE_SIZE - TILE_SIZE * EPSILON);
 
         int b = 0;
 
@@ -523,8 +529,8 @@ void level_instance::init(level_description const &desc)
             break;
         case thing_type::spikes:
             t->m_tile_index = Tiles::Spikes;
-            t->m_original_aabb.aa.x += TILE_SIZE * 0.2f;
-            t->m_original_aabb.bb.x -= TILE_SIZE * 0.2f;
+            t->m_original_aabb.aa.x += TILE_SIZE * 0.25f;
+            t->m_original_aabb.bb.x -= TILE_SIZE * 0.25f;
             t->m_original_aabb.bb.y -= TILE_SIZE * 0.5f;
             break;
         case thing_type::button:
@@ -533,8 +539,8 @@ void level_instance::init(level_description const &desc)
             m_items.push(t);
             break;
         case thing_type::boulder:
-            t->m_original_aabb.aa.x += TILE_SIZE * 0.1f;
-            t->m_original_aabb.bb.x -= TILE_SIZE * 0.1f;
+            t->m_original_aabb.aa.x += TILE_SIZE * 0.2f;
+            t->m_original_aabb.bb.x -= TILE_SIZE * 0.2f;
             t->m_tile_index = Tiles::Boulder;
             m_monsters.push(t);
             break;
@@ -578,8 +584,8 @@ void level_instance::init(level_description const &desc)
     // Now the moving parts
     m_player = new thing(thing_type::player);
     m_player->m_position = vec3(vec2(desc.get_start()) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
-    m_player->m_original_aabb.aa = vec3(0.f);
-    m_player->m_original_aabb.bb = vec3(float(TILE_SIZE));
+    m_player->m_original_aabb.aa = vec3(TILE_SIZE * EPSILON);
+    m_player->m_original_aabb.bb = vec3(TILE_SIZE - TILE_SIZE * EPSILON);
     m_player->m_tile_index = Tiles::Player;
     m_things.push(m_player);
     Ticker::Ref(m_player);
@@ -619,7 +625,7 @@ float level_instance::collide_thing(thing const *t, vec3 velocity,
             continue;
 
         float collision_time = collide(t, velocity, t2, vec3(0), 0.f, seconds);
-        if (collision_time < seconds)
+        if (collision_time < seconds - EPSILON)
         {
             // There will be a collision, but we might also be encroached in a current
             // collision. Check again with a different start time to check whether we

@@ -13,8 +13,8 @@
 static int const TILE_SIZE = 64;
 
 /* The size of the window we create */
-static int const WINDOW_SIZE_X = 1024;
-static int const WINDOW_SIZE_Y = 720;
+static int const WINDOW_SIZE_X = 900;
+static int const WINDOW_SIZE_Y = 600;
 
 /* The minimum and maximum sizes of the playing area, in world coordinates */
 static int const MIN_VIEWPORT_X = TILE_SIZE * 15;
@@ -23,6 +23,9 @@ static int const MAX_VIEWPORT_X = TILE_SIZE * 20;
 /* Player runs at 12 tiles per second, monsters are slower */
 static float const PLAYER_RUN_SPEED = TILE_SIZE * 12.f;
 static float const MONSTER_RUN_SPEED = TILE_SIZE * 4.f;
+
+/* Use this for physics */
+static float const EPSILON = 1.e-5f;
 
 /* 30 / 120 are good values to prevent player from jumping
  * on 4-block platforms. For 3-block platforms, use 24 / 100. */

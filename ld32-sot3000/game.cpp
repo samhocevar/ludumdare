@@ -54,7 +54,7 @@ sot3000_game::sot3000_game()
     m_input << InputProfile::Keyboard(input::fire, "S");
     m_input << InputProfile::Keyboard(input::fire, "Down");
     m_input << InputProfile::Keyboard(input::fire, "Return");
-    m_input << InputProfile::Keyboard(input::pause, "P");
+    m_input << InputProfile::Keyboard(input::do_pause, "P");
     m_input << InputProfile::Keyboard(input::reset, "R");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
 
@@ -69,7 +69,7 @@ sot3000_game::sot3000_game()
     m_input << InputProfile::JoystickKey(1, input::jump, "LeftShoulder");
     m_input << InputProfile::JoystickKey(1, input::fire, "RightShoulder");
     m_input << InputProfile::JoystickKey(1, input::reset, "Back");
-    m_input << InputProfile::JoystickKey(1, input::pause, "Start");
+    m_input << InputProfile::JoystickKey(1, input::do_pause, "Start");
 
     m_controller->Init(m_input);
 
@@ -292,7 +292,7 @@ void sot3000_game::tick_events(float seconds)
     }
 #endif
 
-    if (m_controller->WasKeyPressedThisFrame(input::pause)
+    if (m_controller->WasKeyPressedThisFrame(input::do_pause)
          || m_controller->WasKeyPressedThisFrame(input::fire)
          || m_controller->WasKeyPressedThisFrame(input::jump))
     {
@@ -366,7 +366,7 @@ void sot3000_game::tick_events(float seconds)
     }
 
     // Allow to pause the game
-    if (m_controller->WasKeyPressedThisFrame(input::pause))
+    if (m_controller->WasKeyPressedThisFrame(input::do_pause))
     {
         if (m_state == game_state::in_game)
         {
