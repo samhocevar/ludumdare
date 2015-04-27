@@ -231,8 +231,8 @@ void sot3000_game::tick_camera(float seconds)
 
     if (m_state == game_state::next_level && m_current_level < m_levels.count())
     {
-        m_level_text->SetText(String::Printf("Level %d/%d", 1 + m_current_level, (int)m_levels.count()));
-        m_level_name_text->SetText(String::Printf("%s", m_levels[m_current_level].get_name().C()));
+        m_level_text->SetText(String::format("Level %d/%d", 1 + m_current_level, (int)m_levels.count()));
+        m_level_name_text->SetText(String::format("%s", m_levels[m_current_level].get_name().C()));
     }
     else if (m_state == game_state::you_win)
     {
@@ -327,7 +327,7 @@ void sot3000_game::tick_events(float seconds)
 
             for (String level : levelfiles)
             {
-                String fullname = String::Printf("data/%s", level.C());
+                String fullname = String::format("data/%s", level.C());
                 array<String> datafiles = System::GetPathList(fullname);
                 for (String candidate : datafiles)
                 {

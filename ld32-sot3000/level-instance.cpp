@@ -472,7 +472,7 @@ void level_instance::init(level_description const &desc)
     clear();
 
     auto const &layout = desc.get_layout();
-    m_layout_size = (ivec2)layout.get_size();
+    m_layout_size = (ivec2)layout.size();
 
     // First, the solid parts of the map
     for (int i = 0; i < m_layout_size.x; ++i)

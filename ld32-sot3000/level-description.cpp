@@ -92,7 +92,7 @@ void level_description::load_data(char const *data)
 
     m_layout.m_size = ivec2(0);
     basic_parse_string<r_level>(data, m_layout);
-    m_layout.m_tiles.set_size(m_layout.m_size);
+    m_layout.m_tiles.resize(m_layout.m_size);
 
     for (int j = 0; j < m_layout.m_size.y; ++j)
     {

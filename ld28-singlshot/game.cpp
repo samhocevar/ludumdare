@@ -98,19 +98,19 @@ Game::~Game()
 
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
-    for (int i = 0; i < m_explosions.Count(); ++i)
-        Ticker::Unref(m_explosions[i]);
-    for (int i = 0; i < m_powerups.Count(); ++i)
-        Ticker::Unref(m_powerups[i]);
-    for (int i = 0; i < m_rockets.Count(); ++i)
-        Ticker::Unref(m_rockets[i]);
-    for (int i = 0; i < m_bullets.Count(); ++i)
-        Ticker::Unref(m_bullets[i]);
-    for (int i = 0; i < m_waves.Count(); ++i)
-        Ticker::Unref(m_waves[i]);
+    for (auto explosion : m_explosions)
+        Ticker::Unref(explosion);
+    for (auto powerup : m_powerups)
+        Ticker::Unref(powerup);
+    for (auto rocket : m_rockets)
+        Ticker::Unref(rocket);
+    for (auto bullet : m_bullets)
+        Ticker::Unref(bullet);
+    for (auto wave : m_waves)
+        Ticker::Unref(wave);
 
-    for (int i = 0; i < m_score_texts.Count(); ++i)
-        Ticker::Unref(m_score_texts[i]);
+    for (auto score_text : m_score_texts)
+        Ticker::Unref(score_text);
     if (m_hint_text)
         Ticker::Unref(m_hint_text);
 
@@ -150,19 +150,19 @@ void Game::TickGame(float seconds)
     }
 
     /* Advance rockets */
-    for (int i = m_rockets.Count(); i--; )
+    for (int i = m_rockets.count(); i--; )
     {
         m_rockets[i]->m_position.y += ROCKET_SPEED * seconds;
 
         if (m_rockets[i]->m_dead)
         {
             Ticker::Unref(m_rockets[i]);
-            m_rockets.Remove(i);
+            m_rockets.remove(i);
         }
         else if (m_rockets[i]->m_position.y > ARENA.y * 0.5f + 15.f)
         {
             Ticker::Unref(m_rockets[i]);
-            m_rockets.Remove(i);
+            m_rockets.remove(i);
 
             /* Rocket is lost: reset combo to minimum */
             m_combo = 100;
@@ -170,7 +170,7 @@ void Game::TickGame(float seconds)
     }
 
     /* Advance bullets */
-    for (int i = m_bullets.Count(); i--; )
+    for (int i = m_bullets.count(); i--; )
     {
         m_bullets[i]->m_position += m_bullets[i]->m_velocity * seconds;
 
@@ -182,7 +182,7 @@ void Game::TickGame(float seconds)
             KillPlayer();
 
             Ticker::Unref(m_bullets[i]);
-            m_bullets.Remove(i);
+            m_bullets.remove(i);
         }
         else if (m_bullets[i]->m_position.y > ARENA.y
                   || m_bullets[i]->m_position.y < -ARENA.y
@@ -190,17 +190,17 @@ void Game::TickGame(float seconds)
                   || m_bullets[i]->m_position.x < -ARENA.x)
         {
             Ticker::Unref(m_bullets[i]);
-            m_bullets.Remove(i);
+            m_bullets.remove(i);
         }
     }
 
     /* Advance explosions */
-    for (int i = m_explosions.Count(); i--; )
+    for (int i = m_explosions.count(); i--; )
     {
         if (m_explosions[i]->m_time > 5.f)
         {
             Ticker::Unref(m_explosions[i]);
-            m_explosions.Remove(i);
+            m_explosions.remove(i);
         }
     }
 
@@ -209,15 +209,15 @@ void Game::TickGame(float seconds)
     {
         Sampler::PlaySample(m_snd_missile);
 
-        m_rockets.Push(new Thing(this, 5));
-        m_rockets.Last()->m_position = m_ship->m_position;
-        Ticker::Ref(m_rockets.Last());
+        m_rockets.push(new Thing(this, 5));
+        m_rockets.last()->m_position = m_ship->m_position;
+        Ticker::Ref(m_rockets.last());
 
         m_power = 0;
     }
 
     /* Advance powerups */
-    for (int i = m_powerups.Count(); i--; )
+    for (int i = m_powerups.count(); i--; )
     {
         m_powerups[i]->m_position.y -= POWERUP_SPEED * seconds;
 
@@ -235,10 +235,10 @@ void Game::TickGame(float seconds)
 
             if (m_power)
             {
-                m_score_texts.Push(new Text("1000", "data/font.png"));
-                m_score_texts.Last()->SetAlign(TextAlign::Center);
-                m_score_texts.Last()->SetPos(vec3(m_powerups[i]->m_position.xy, 50.f));
-                Ticker::Ref(m_score_texts.Last());
+                m_score_texts.push(new Text("1000", "data/font.png"));
+                m_score_texts.last()->SetAlign(TextAlign::Center);
+                m_score_texts.last()->SetPos(vec3(m_powerups[i]->m_position.xy, 50.f));
+                Ticker::Ref(m_score_texts.last());
 
                 m_score += 1000;
             }
@@ -252,7 +252,7 @@ void Game::TickGame(float seconds)
             }
 
             Ticker::Unref(m_powerups[i]);
-            m_powerups.Remove(i);
+            m_powerups.remove(i);
         }
         else if (m_powerups[i]->m_position.y < -ARENA.y * 0.5f - 15.f)
         {
@@ -263,12 +263,12 @@ void Game::TickGame(float seconds)
             }
 
             Ticker::Unref(m_powerups[i]);
-            m_powerups.Remove(i);
+            m_powerups.remove(i);
         }
     }
 
     /* Advance text */
-    for (int i = m_score_texts.Count(); i--; )
+    for (int i = m_score_texts.count(); i--; )
     {
         vec3 pos = m_score_texts[i]->GetPos();
         pos.y += POWERUP_SPEED * seconds;
@@ -277,7 +277,7 @@ void Game::TickGame(float seconds)
         if (pos.y > ARENA.y)
         {
             Ticker::Unref(m_score_texts[i]);
-            m_score_texts.Remove(i);
+            m_score_texts.remove(i);
         }
     }
 }
@@ -291,9 +291,9 @@ void Game::KillPlayer()
 {
     if (!m_ship->m_dead)
     {
-        m_explosions.Push(new Explosion(this));
-        m_explosions.Last()->m_position = m_ship->m_position;
-        Ticker::Ref(m_explosions.Last());
+        m_explosions.push(new Explosion(this));
+        m_explosions.last()->m_position = m_ship->m_position;
+        Ticker::Ref(m_explosions.last());
     }
 
     m_ship->m_dead = true;
@@ -314,17 +314,17 @@ void Game::SpawnShit()
     /* Spawn a powerup every 8 seconds */
     if (HasPassed(8.0, 2.0))
     {
-        m_powerups.Push(new Thing(this, 6));
-        m_powerups.Last()->m_position = vec3(rand(-0.4f, 0.4f) * ARENA.x,
+        m_powerups.push(new Thing(this, 6));
+        m_powerups.last()->m_position = vec3(rand(-0.4f, 0.4f) * ARENA.x,
                                              ARENA.y * 0.5f + 10.f, 0.f);
-        Ticker::Ref(m_powerups.Last());
+        Ticker::Ref(m_powerups.last());
 
         if (!m_hint)
         {
             m_hint = 1;
             m_hint_text = new Text("Pick Me Up!!", "data/font.png");
             m_hint_text->SetAlign(TextAlign::Center);
-            m_hint_text->SetPos(m_powerups.Last()->m_position
+            m_hint_text->SetPos(m_powerups.last()->m_position
                                  + vec3(0.f, 20.f, 0.f));
             Ticker::Ref(m_hint_text);
         }
@@ -335,8 +335,8 @@ void Game::SpawnShit()
     {
         int type = HasPassed(32.0) ? 0 : 1;
 
-        m_waves.Push(new Wave(this, type));
-        Ticker::Ref(m_waves.Last());
+        m_waves.push(new Wave(this, type));
+        Ticker::Ref(m_waves.last());
     }
 }
 

@@ -58,46 +58,46 @@ public:
         m_tiles->AddTile(ibox2(0, 80, 100, 100));  /* 14: title screen */
 
         /* Default text */
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[0]->SetPos(vec3(0.f, 30.f, 50.f));
         m_menu[0]->SetAlign(TextAlign::Center);
 
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[1]->SetPos(vec3(0.f, 0.f, 50.f));
         m_menu[1]->SetAlign(TextAlign::Center);
 
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[2]->SetPos(vec3(0.f, -23.5f, 50.f));
         m_menu[2]->SetAlign(TextAlign::Center);
 
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[3]->SetPos(vec3(0.f, -46.5f, 50.f));
         m_menu[3]->SetAlign(TextAlign::Center);
 
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[4]->SetPos(vec3(0.f, -70.f, 50.f));
         m_menu[4]->SetAlign(TextAlign::Center);
 
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[5]->SetPos(vec3(0.f, -90.f, 50.f));
         m_menu[5]->SetAlign(TextAlign::Center);
 
-        m_menu.Push(new Text("", "data/font.png"));
+        m_menu.push(new Text("", "data/font.png"));
         m_menu[6]->SetPos(vec3(0.f, -110.f, 50.f));
         m_menu[6]->SetAlign(TextAlign::Center);
 
-        for (int i = 0; i < m_menu.Count(); ++i)
+        for (int i = 0; i < m_menu.count(); ++i)
             Ticker::Ref(m_menu[i]);
 
         /* In-game text */
-        m_score.Push(new Text("", "data/font.png"));
+        m_score.push(new Text("", "data/font.png"));
         m_score[0]->SetPos(vec3(-ARENA.x / 2 + 5.f, ARENA.y / 2 - 20.f, 50.f));
 
-        m_score.Push(new Text("", "data/font.png"));
+        m_score.push(new Text("", "data/font.png"));
         m_score[1]->SetPos(vec3(ARENA.x / 2 - 5.f, ARENA.y / 2 - 20.f, 50.f));
         m_score[1]->SetAlign(TextAlign::Right);
 
-        for (int i = 0; i < m_score.Count(); ++i)
+        for (int i = 0; i < m_score.count(); ++i)
             Ticker::Ref(m_score[i]);
     }
 
@@ -106,9 +106,9 @@ public:
         if (m_game)
             Ticker::Unref(m_game);
 
-        for (int i = 0; i < m_menu.Count(); ++i)
+        for (int i = 0; i < m_menu.count(); ++i)
             Ticker::Unref(m_menu[i]);
-        for (int i = 0; i < m_score.Count(); ++i)
+        for (int i = 0; i < m_score.count(); ++i)
             Ticker::Unref(m_score[i]);
 
         Scene& scene = Scene::GetScene();
@@ -164,7 +164,7 @@ private:
         case TitleScreen:
             if (m_controller->WasKeyPressedThisFrame(KEY_FIRE))
             {
-                for (int i = 0; i < m_menu.Count(); ++i)
+                for (int i = 0; i < m_menu.count(); ++i)
                     m_menu[i]->SetText("");
 
                 m_game = new Game();
@@ -228,8 +228,8 @@ private:
         if (m_game && m_game->m_score > m_hiscore)
             m_hiscore = m_game->m_score;
 
-        m_score[0]->SetText(String::Printf("SCORE %08d", m_game ? m_game->m_score : 0));
-        m_score[1]->SetText(String::Printf("HIGH %08d", m_hiscore));
+        m_score[0]->SetText(String::format("SCORE %08d", m_game ? m_game->m_score : 0));
+        m_score[1]->SetText(String::format("HIGH %08d", m_hiscore));
     }
 
 private:
