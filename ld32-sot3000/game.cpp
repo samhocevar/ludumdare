@@ -1,11 +1,12 @@
 ﻿//
-// Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
+//  Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
 //
-// Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the Do What The Fuck You Want To
-//   Public License, Version 2, as published by Sam Hocevar. See
-//   http://www.wtfpl.net/ for more details.
+//  Copyright: © 2015 Sam Hocevar <sam@hocevar.net>
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the Do What The Fuck You Want To
+//  Public License, Version 2, as published by Sam Hocevar. See
+//  http://www.wtfpl.net/ for more details.
 //
 
 #if HAVE_CONFIG_H
@@ -104,7 +105,7 @@ sot3000_game::~sot3000_game()
     // Just in case; but this should not happen!
     if (m_instance)
     {
-        Log::Error("there’s still a level active…\n");
+        msg::error("there’s still a level active…\n");
         Ticker::Unref(m_instance);
     }
 
