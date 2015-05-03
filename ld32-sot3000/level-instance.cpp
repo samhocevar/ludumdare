@@ -77,7 +77,9 @@ void level_instance::tick_player(float seconds)
             m_player->m_facing_left = false;
 
         // lerping speed for inertia -- braking is faster than accelerating
-        float s = m_player_impulse.x ? 8.f * seconds : 20.f * seconds;
+        float s = m_player_impulse.x ? 8.f * seconds
+                : m_player->m_grounded ? 1.f
+                : 20.f * seconds;
         m_player_effective_impulse = lerp(m_player_effective_impulse, m_player_impulse, s);
 
         // Check how long we can apply player impulse before we hit something
