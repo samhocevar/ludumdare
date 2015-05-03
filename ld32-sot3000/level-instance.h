@@ -21,7 +21,7 @@ public:
     ~level_instance();
 
     virtual void TickGame(float seconds);
-    void tick_player(float seconds);
+    void tick_hero(float seconds);
     void tick_projectile(thing *t, float seconds);
     void tick_living(thing *t, float seconds);
 
@@ -34,8 +34,8 @@ public:
 
     vec3 get_poi() const;
     inline bool get_exit_reached() const { return m_exit_reached; }
-    inline bool get_player_fell() const { return m_player_fell; }
-    inline bool get_player_killed() const { return m_player_killed; }
+    inline bool get_hero_fell() const { return m_hero_fell; }
+    inline bool get_hero_killed() const { return m_hero_killed; }
     inline thing_type get_active_ammo() const { return m_active_ammo; }
 
     float collide_thing(thing const *t, vec3 velocity, float seconds) const;
@@ -47,14 +47,14 @@ public:
 private:
     ivec2 m_layout_size;
 
-    thing *m_player, *m_exit;
+    thing *m_hero, *m_exit;
     array<thing *> m_things;
     array<thing *> m_monsters;
     array<thing *> m_projectiles;
     array<thing *> m_items;
 
-    vec3 m_player_impulse, m_player_effective_impulse;
+    vec3 m_hero_impulse, m_hero_effective_impulse;
     thing_type m_active_ammo;
-    bool m_exit_reached, m_player_killed, m_player_fell;
+    bool m_exit_reached, m_hero_killed, m_hero_fell;
 };
 

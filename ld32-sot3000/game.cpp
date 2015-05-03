@@ -206,7 +206,7 @@ void sot3000_game::tick_camera(float seconds)
 
         mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
 
-        /* Try to center the camera around the player but don’t show stuff outside the
+        /* Try to center the camera around the hero but don’t show stuff outside the
          * level boundaries if possible. */
         m_poi = m_instance->get_poi().xy;
         m_poi = max(m_poi, 0.5f * m_viewport_size + vec2(0.5f * TILE_SIZE));
@@ -222,7 +222,7 @@ void sot3000_game::tick_camera(float seconds)
         m_game_text->SetText("PAUSED");
     }
     else if (m_state == game_state::in_game
-              && m_instance->get_player_killed())
+              && m_instance->get_hero_killed())
     {
         m_game_text->SetText("YOU DIED");
     }
@@ -396,7 +396,7 @@ void sot3000_game::tick_events(float seconds)
 
         // Escape restarts the level when not paused
         if (m_controller->WasKeyPressedThisFrame(input::reset)
-             || m_instance->get_player_fell())
+             || m_instance->get_hero_fell())
         {
             Ticker::Unref(m_instance);
             m_instance = new level_instance();
@@ -412,7 +412,7 @@ void sot3000_game::tick_events(float seconds)
         if (m_controller->WasKeyPressedThisFrame(input::jump))
             m_instance->jump();
         if (m_controller->IsKeyPressed(input::jump))
-            m_instance->continue_jump(PLAYER_JUMP_SPEED, seconds);
+            m_instance->continue_jump(HERO_JUMP_SPEED, seconds);
 
         if (m_controller->WasKeyPressedThisFrame(input::fire))
             m_instance->fire();

@@ -24,13 +24,13 @@ using namespace lol;
 #include "thing.h"
 
 level_instance::level_instance()
-  : m_player(nullptr),
-    m_player_impulse(0.f),
-    m_player_effective_impulse(0.f),
+  : m_hero(nullptr),
+    m_hero_impulse(0.f),
+    m_hero_effective_impulse(0.f),
     m_active_ammo(thing_type::none),
     m_exit_reached(false),
-    m_player_killed(false),
-    m_player_fell(false)
+    m_hero_killed(false),
+    m_hero_fell(false)
 {
 }
 
@@ -45,7 +45,7 @@ void level_instance::TickGame(float seconds)
 
     if (!g_game->is_paused())
     {
-        tick_player(seconds);
+        tick_hero(seconds);
         for (thing *t : m_projectiles)
             tick_projectile(t, seconds);
         for (thing *t : m_items)
@@ -55,90 +55,90 @@ void level_instance::TickGame(float seconds)
     }
 }
 
-void level_instance::tick_player(float seconds)
+void level_instance::tick_hero(float seconds)
 {
     // Check whether we fell out of the map
-    if (m_player->m_position.y < -2.f * TILE_SIZE)
-        m_player_killed = true;
+    if (m_hero->m_position.y < -2.f * TILE_SIZE)
+        m_hero_killed = true;
 
-    if (m_player->m_position.y < -35.f * TILE_SIZE)
+    if (m_hero->m_position.y < -35.f * TILE_SIZE)
     {
-        m_player_fell = true;
+        m_hero_fell = true;
         return;
     }
 
-    if (!m_player_killed)
+    if (!m_hero_killed)
     {
-        // If there is an impulse, fix player orientation
+        // If there is an impulse, fix hero orientation
         // Otherwise, don’t touch the sprite.
-        if (m_player_impulse.x < 0)
-            m_player->m_facing_left = true;
-        if (m_player_impulse.x > 0)
-            m_player->m_facing_left = false;
+        if (m_hero_impulse.x < 0)
+            m_hero->m_facing_left = true;
+        if (m_hero_impulse.x > 0)
+            m_hero->m_facing_left = false;
 
         // lerping speed for inertia -- braking is faster than accelerating
-        float s = m_player_impulse.x ? 8.f * seconds
-                : m_player->m_grounded ? 1.f
+        float s = m_hero_impulse.x ? 8.f * seconds
+                : m_hero->m_grounded ? 1.f
                 : 20.f * seconds;
-        m_player_effective_impulse = lerp(m_player_effective_impulse, m_player_impulse, s);
+        m_hero_effective_impulse = lerp(m_hero_effective_impulse, m_hero_impulse, s);
 
-        // Check how long we can apply player impulse before we hit something
-        float impulse_time = collide_thing(m_player, m_player_effective_impulse, seconds);
+        // Check how long we can apply hero impulse before we hit something
+        float impulse_time = collide_thing(m_hero, m_hero_effective_impulse, seconds);
         if (impulse_time > EPSILON)
-            m_player->m_position += m_player_effective_impulse * (impulse_time - EPSILON);
-        m_player_impulse = vec3(0.0f);
+            m_hero->m_position += m_hero_effective_impulse * (impulse_time - EPSILON);
+        m_hero_impulse = vec3(0.0f);
     }
     else
     {
         // FIXME: delta-time this shit!
-        m_player->m_target_scale = m_player->m_target_scale + 8.f * seconds;
-        //m_player->m_target_scale = min(8.f, m_player->m_target_scale * (1.f + 4.f * seconds));
+        m_hero->m_target_scale = m_hero->m_target_scale + 8.f * seconds;
+        //m_hero->m_target_scale = min(8.f, m_hero->m_target_scale * (1.f + 4.f * seconds));
     }
 
     // We have gravity (most of the time)
-    m_player->m_velocity.y -= GRAVITY * seconds;
+    m_hero->m_velocity.y -= GRAVITY * seconds;
 
     // If the play was killed, we have no collision or air friction
-    if (m_player_killed)
+    if (m_hero_killed)
     {
-        m_player->m_position += m_player->m_velocity * seconds;
+        m_hero->m_position += m_hero->m_velocity * seconds;
         return;
     }
 
     // We have air friction which prevents our speed to reach
     // dangerous values… make this naive for now
-    float y_speed = lol::abs(m_player->m_velocity.y);
-    if (y_speed > PLAYER_MAX_SPEED)
-        m_player->m_velocity.y *= (PLAYER_MAX_SPEED / y_speed);
+    float y_speed = lol::abs(m_hero->m_velocity.y);
+    if (y_speed > HERO_MAX_SPEED)
+        m_hero->m_velocity.y *= (HERO_MAX_SPEED / y_speed);
 
     float force_time;
-    force_time = collide_thing(m_player, m_player->m_velocity, seconds);
+    force_time = collide_thing(m_hero, m_hero->m_velocity, seconds);
     if (force_time > EPSILON)
-        m_player->m_position += m_player->m_velocity * (force_time - EPSILON);
+        m_hero->m_position += m_hero->m_velocity * (force_time - EPSILON);
 
     // If not all forces were applied, try to slide horizontally or vertically
     float remaining_time = seconds - force_time;
     if (remaining_time > EPSILON)
     {
-        vec3 x_velocity(m_player->m_velocity.x, 0.f, 0.f);
-        float x_force_time = collide_thing(m_player, x_velocity, remaining_time);
+        vec3 x_velocity(m_hero->m_velocity.x, 0.f, 0.f);
+        float x_force_time = collide_thing(m_hero, x_velocity, remaining_time);
 
         if (x_force_time > EPSILON)
-            m_player->m_position += x_velocity * (x_force_time - EPSILON);
+            m_hero->m_position += x_velocity * (x_force_time - EPSILON);
         else
-            m_player->m_velocity.x = 0.f;
+            m_hero->m_velocity.x = 0.f;
 
-        vec3 y_velocity(0.f, m_player->m_velocity.y, 0.f);
-        float y_force_time = collide_thing(m_player, y_velocity, remaining_time);
+        vec3 y_velocity(0.f, m_hero->m_velocity.y, 0.f);
+        float y_force_time = collide_thing(m_hero, y_velocity, remaining_time);
 
         // If gravity isn’t strong enough to move us downwards, we’re grounded
-        if (m_player->m_velocity.y < -EPSILON && y_force_time < EPSILON)
-            m_player->m_grounded = true;
+        if (m_hero->m_velocity.y < -EPSILON && y_force_time < EPSILON)
+            m_hero->m_grounded = true;
 
         if (y_force_time > EPSILON)
-            m_player->m_position += y_velocity * (y_force_time - EPSILON);
+            m_hero->m_position += y_velocity * (y_force_time - EPSILON);
         else
-            m_player->m_velocity.y = 0.f;
+            m_hero->m_velocity.y = 0.f;
     }
 
     // Check whether we can pick up an item
@@ -154,7 +154,7 @@ void level_instance::tick_player(float seconds)
         if (!is_minus && !is_plus && !is_button)
             continue;
 
-        if (collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) >= seconds)
+        if (collide(m_hero, vec3(0), t, vec3(0), 0.f, seconds) >= seconds)
             continue;
 
         if (is_minus || is_plus)
@@ -174,7 +174,7 @@ void level_instance::tick_player(float seconds)
         }
 
         /* If we pressed a button not larger than us, switch off all lasers */
-        if (is_button && m_player->m_target_scale >= t->m_target_scale)
+        if (is_button && m_hero->m_target_scale >= t->m_target_scale)
         {
             for (thing *t2 : m_items)
             {
@@ -187,18 +187,18 @@ void level_instance::tick_player(float seconds)
     // Check whether we reached the exit; FIXME: use standard collisions instead
     if (m_exit)
         m_exit_reached = distance(m_exit->m_position.xy,
-                                  m_player->m_position.xy)
-                   < TILE_SIZE * (m_player->m_scale + m_exit->m_scale) / 2;
+                                  m_hero->m_position.xy)
+                   < TILE_SIZE * (m_hero->m_scale + m_exit->m_scale) / 2;
 
     // Check whether we were killed
     for (thing *t : m_things)
     {
         if (t->can_kill()
-             && collide(m_player, vec3(0), t, vec3(0), 0.f, seconds) < seconds - EPSILON)
+             && collide(m_hero, vec3(0), t, vec3(0), 0.f, seconds) < seconds - EPSILON)
         {
-            m_player_killed = true;
-            m_player->m_position.z = 90.f;
-            m_player->m_velocity = vec3(0.f, PLAYER_JUMP_SPEED, 0.f);
+            m_hero_killed = true;
+            m_hero->m_position.z = 90.f;
+            m_hero->m_velocity = vec3(0.f, HERO_JUMP_SPEED, 0.f);
             break;
         }
     }
@@ -344,7 +344,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
         /* Some scaling tweaks */
         switch (t->get_type())
         {
-        case thing_type::player:
+        case thing_type::hero:
             scale *= 1.5f;
             pos.x -= TILE_SIZE / 3.f;
             break;
@@ -398,7 +398,7 @@ void level_instance::TickDraw(float seconds, Scene &scene)
             pos.z += 50.f;
             pos.y += TILE_SIZE * 0.5f * lol::abs(lol::sin(6.f * t->m_time));
             break;
-        case thing_type::player:
+        case thing_type::hero:
         case thing_type::projectile:
         case thing_type::flying_monster:
         case thing_type::walking_monster:
@@ -429,15 +429,15 @@ void level_instance::TickDraw(float seconds, Scene &scene)
 
         switch (t->get_type())
         {
-        case thing_type::player:
-            if (m_player_killed)
-                tid = Tiles::DeadPlayer + (lol::sin(20.0 * t->m_time) > 0);
+        case thing_type::hero:
+            if (m_hero_killed)
+                tid = Tiles::DeadHero + (lol::sin(20.0 * t->m_time) > 0);
             else if (!t->m_grounded)
-                tid = Tiles::Player + 3;
-            else if (lol::abs(m_player_effective_impulse.x) < 0.1 * TILE_SIZE)
-                tid = Tiles::Player + 6;
+                tid = Tiles::Hero + 3;
+            else if (lol::abs(m_hero_effective_impulse.x) < 0.1 * TILE_SIZE)
+                tid = Tiles::Hero + 6;
             else
-                tid = Tiles::Player + int(lol::fmod(8.0 * t->m_time, 6.0));
+                tid = Tiles::Hero + int(lol::fmod(8.0 * t->m_time, 6.0));
             break;
         default:
             break;
@@ -586,13 +586,13 @@ void level_instance::init(level_description const &desc)
     }
 
     // Now the moving parts
-    m_player = new thing(thing_type::player);
-    m_player->m_position = vec3(vec2(desc.get_start()) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
-    m_player->m_original_aabb.aa = vec3(TILE_SIZE * EPSILON);
-    m_player->m_original_aabb.bb = vec3(TILE_SIZE - TILE_SIZE * EPSILON);
-    m_player->m_tile_index = Tiles::Player;
-    m_things.push(m_player);
-    Ticker::Ref(m_player);
+    m_hero = new thing(thing_type::hero);
+    m_hero->m_position = vec3(vec2(desc.get_start()) * vec2(TILE_SIZE * 0.5f, TILE_SIZE), 0.f);
+    m_hero->m_original_aabb.aa = vec3(TILE_SIZE * EPSILON);
+    m_hero->m_original_aabb.bb = vec3(TILE_SIZE - TILE_SIZE * EPSILON);
+    m_hero->m_tile_index = Tiles::Hero;
+    m_things.push(m_hero);
+    Ticker::Ref(m_hero);
 
     thing *t = new thing(thing_type::projectile);
     m_projectiles.push(t);
@@ -606,8 +606,8 @@ void level_instance::init(level_description const &desc)
 
 vec3 level_instance::get_poi() const
 {
-    // Get the level instance’s Point of Interest — for now, just the player
-    return m_player->m_position + 0.5f * m_player->m_original_aabb.extent();
+    // Get the level instance’s Point of Interest — for now, just the hero
+    return m_hero->m_position + 0.5f * m_hero->m_original_aabb.extent();
 }
 
 float level_instance::collide_thing(thing const *t, vec3 velocity,
@@ -647,59 +647,59 @@ float level_instance::collide_thing(thing const *t, vec3 velocity,
 
 void level_instance::impulse_x(float impulse)
 {
-    if (!m_player_killed)
+    if (!m_hero_killed)
     {
         // FIXME: left/right commands should affect velocity directly so
         // that we can do more appealing air control.
         // FIXME: decide whether we run faster when scaled up; I don’t think
         // it looks cool, but maybe it makes sense for the gameplay?
-        m_player_impulse += vec3(impulse * PLAYER_RUN_SPEED, 0.f, 0.f);
-        //m_player_impulse += vec3(impulse * m_player->m_scale, 0.f, 0.f);
-        //m_player->m_velocity.x += impulse;
+        m_hero_impulse += vec3(impulse * HERO_RUN_SPEED, 0.f, 0.f);
+        //m_hero_impulse += vec3(impulse * m_hero->m_scale, 0.f, 0.f);
+        //m_hero->m_velocity.x += impulse;
 
-        m_player->m_facing_left = impulse < 0.0f;
+        m_hero->m_facing_left = impulse < 0.0f;
     }
 }
 
 void level_instance::jump()
 {
-    if (!m_player_killed && m_player->m_grounded)
+    if (!m_hero_killed && m_hero->m_grounded)
     {
-        m_player->m_grounded = false;
-        m_player->m_can_impulse = true;
-        m_player->m_jump_time = PLAYER_JUMP_TIME;
+        m_hero->m_grounded = false;
+        m_hero->m_can_impulse = true;
+        m_hero->m_jump_time = HERO_JUMP_TIME;
     }
 }
 
 void level_instance::continue_jump(float velocity, float seconds)
 {
-    if (!m_player_killed && m_player->m_can_impulse)
+    if (!m_hero_killed && m_hero->m_can_impulse)
     {
         // We can jump higher when scaled up!
-        if (m_player->m_jump_time == PLAYER_JUMP_TIME)
-            m_player->m_velocity.y = velocity * m_player->m_scale;
+        if (m_hero->m_jump_time == HERO_JUMP_TIME)
+            m_hero->m_velocity.y = velocity * m_hero->m_scale;
 
-        m_player->m_jump_time -= seconds;
-        if (m_player->m_jump_time < 0.0f)
-            m_player->m_can_impulse = false;
+        m_hero->m_jump_time -= seconds;
+        if (m_hero->m_jump_time < 0.0f)
+            m_hero->m_can_impulse = false;
 
 #if 0
         // FIXME: does not work well; I’m cancelling the short/long jump feature
-        m_player->m_velocity.y += 1.0f * velocity * seconds / PLAYER_JUMP_TIME;
+        m_hero->m_velocity.y += 1.0f * velocity * seconds / HERO_JUMP_TIME;
 #endif
     }
 }
 
 void level_instance::fire()
 {
-    if (!m_player_killed && m_active_ammo != thing_type::none)
+    if (!m_hero_killed && m_active_ammo != thing_type::none)
     {
         thing *projecile = m_projectiles[0];
 
-        float dir = m_player->m_facing_left ? -1.f : 1.f;
+        float dir = m_hero->m_facing_left ? -1.f : 1.f;
 
         projecile->m_hidden = false;
-        projecile->m_position = m_player->m_position + vec3(TILE_SIZE * 1.2f * dir, TILE_SIZE * 0.5f, 0.f);
+        projecile->m_position = m_hero->m_position + vec3(TILE_SIZE * 1.2f * dir, TILE_SIZE * 0.5f, 0.f);
         projecile->m_velocity = vec3(PROJECTILE_MAX_SPEED * dir, 0.f, 0.f);
     }
 }

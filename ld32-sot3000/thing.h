@@ -14,7 +14,7 @@ enum class thing_type : int
 {
     none = -1,
     /* Living things */
-    player,
+    hero,
     sitting_monster,
     walking_monster,
     boulder,
@@ -61,7 +61,7 @@ public:
     int m_tile_index;
     bool m_hidden;
 
-    /* Player-specific (for now) */
+    /* Hero-specific (for now) */
     bool m_grounded, m_can_impulse, m_facing_left;
     float m_jump_time;
 

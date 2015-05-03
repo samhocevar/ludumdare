@@ -72,7 +72,7 @@ bool thing::can_fall()
     {
     case thing_type::none:
         return false;
-    case thing_type::player:
+    case thing_type::hero:
     case thing_type::platform:
     case thing_type::blocker:
     case thing_type::monster_blocker:
@@ -101,7 +101,7 @@ bool thing::can_kill()
     {
     case thing_type::none:
         return false;
-    case thing_type::player:
+    case thing_type::hero:
     case thing_type::ground:
     case thing_type::door:
     case thing_type::platform:
@@ -144,7 +144,7 @@ bool thing::can_block()
     case thing_type::sitting_monster:
     case thing_type::flying_monster:
         return false;
-    case thing_type::player:
+    case thing_type::hero:
     case thing_type::platform:
     case thing_type::ground:
     case thing_type::blocker:
@@ -159,7 +159,7 @@ bool thing::can_block_monster()
     {
     case thing_type::none:
         return false;
-    case thing_type::player:
+    case thing_type::hero:
     case thing_type::door:
     case thing_type::projectile:
     case thing_type::minus_ammo:
@@ -199,7 +199,7 @@ bool thing::can_scale()
     case thing_type::plus_ammo:
     case thing_type::laser:
         return false;
-    case thing_type::player:
+    case thing_type::hero:
     case thing_type::blocker:
     case thing_type::button:
     case thing_type::boulder:
