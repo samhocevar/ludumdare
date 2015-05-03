@@ -54,11 +54,9 @@ void thing::TickGame(float seconds)
 
     m_aabb = m_original_aabb * m_scale - delta;
 
-    // FIXME: delta-time this shit!
-    if (lol::abs(m_scale - m_target_scale) > 0.01f)
-        m_scale = lerp(m_scale, m_target_scale, seconds * 15.0f);
-    else
-        m_scale = m_target_scale;
+    float const s = lol::abs(m_scale - m_target_scale) > 0.01f ? 15.f : 60.f;
+    float const t = 1.f - pow(1.f - s / 60.f, 60.f * seconds);
+    m_scale = lerp(m_scale, m_target_scale, t);
 }
 
 void thing::TickDraw(float seconds, Scene &scene)
