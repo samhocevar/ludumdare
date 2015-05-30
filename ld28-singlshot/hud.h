@@ -1,11 +1,13 @@
+﻿//
+//  Singlshot — A shooter developed for Ludum Dare 28
 //
-// Lol Engine - Noise tutorial
+//  Copyright © 2013 Sam Hocevar <sam@hocevar.net>
 //
-// Copyright: (c) 2012-2013 Sam Hocevar <sam@hocevar.net>
-//   This program is free software; you can redistribute it and/or
-//   modify it under the terms of the Do What The Fuck You Want To
-//   Public License, Version 2, as published by Sam Hocevar. See
-//   http://www.wtfpl.net/ for more details.
+//  This program is free software. It comes without any warranty, to
+//  the extent permitted by applicable law. You can redistribute it
+//  and/or modify it under the terms of the Do What the Fuck You Want
+//  to Public License, Version 2, as published by the WTFPL Task Force.
+//  See http://www.wtfpl.net/ for more details.
 //
 
 #if defined HAVE_CONFIG_H
@@ -41,21 +43,21 @@ public:
 
         /* TileSet */
         m_tiles = Tiler::Register("data/tiles.png");
-        m_tiles->AddTile(ibox2(0, 0, 20, 20));     /* 0: ship */
-        m_tiles->AddTile(ibox2(20, 0, 40, 20));    /* ship */
-        m_tiles->AddTile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
-        m_tiles->AddTile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
-        m_tiles->AddTile(ibox2(0, 20, 20, 40));    /* 4: rocket */
-        m_tiles->AddTile(ibox2(20, 20, 40, 40));   /* 5: rocket */
-        m_tiles->AddTile(ibox2(40, 20, 60, 40));   /* 6: powerup */
-        m_tiles->AddTile(ibox2(60, 20, 80, 40));   /* 7: powerup */
-        m_tiles->AddTile(ibox2(80, 20, 100, 40));  /* 8: bullet */
-        m_tiles->AddTile(ibox2(100, 20, 120, 40)); /* 9: bullet */
-        m_tiles->AddTile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
-        m_tiles->AddTile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
-        m_tiles->AddTile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
-        m_tiles->AddTile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
-        m_tiles->AddTile(ibox2(0, 80, 100, 100));  /* 14: title screen */
+        m_tiles->define_tile(ibox2(0, 0, 20, 20));     /* 0: ship */
+        m_tiles->define_tile(ibox2(20, 0, 40, 20));    /* ship */
+        m_tiles->define_tile(ibox2(40, 0, 60, 20));    /* 2: alien 1 */
+        m_tiles->define_tile(ibox2(60, 0, 80, 20));    /* 3: alien 1 */
+        m_tiles->define_tile(ibox2(0, 20, 20, 40));    /* 4: rocket */
+        m_tiles->define_tile(ibox2(20, 20, 40, 40));   /* 5: rocket */
+        m_tiles->define_tile(ibox2(40, 20, 60, 40));   /* 6: powerup */
+        m_tiles->define_tile(ibox2(60, 20, 80, 40));   /* 7: powerup */
+        m_tiles->define_tile(ibox2(80, 20, 100, 40));  /* 8: bullet */
+        m_tiles->define_tile(ibox2(100, 20, 120, 40)); /* 9: bullet */
+        m_tiles->define_tile(ibox2(80, 0, 100, 20));   /* 10: alien 2 */
+        m_tiles->define_tile(ibox2(100, 0, 120, 20));  /* 11: alien 2 */
+        m_tiles->define_tile(ibox2(120, 0, 140, 20));  /* 12: ship 2 */
+        m_tiles->define_tile(ibox2(140, 0, 160, 20));  /* 13: ship 2 */
+        m_tiles->define_tile(ibox2(0, 80, 100, 100));  /* 14: title screen */
 
         /* Default text */
         m_menu.push(new Text("", "data/font.png"));

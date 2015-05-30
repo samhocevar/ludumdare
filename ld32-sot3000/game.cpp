@@ -29,13 +29,13 @@ sot3000_game::sot3000_game()
     m_instance(nullptr)
 {
     m_tiles = Tiler::Register("data/tiles.png");
-    m_tiles->AddTile(ivec2(8, 8));
+    m_tiles->define_tile(ivec2(8, 8));
 
     m_title = Tiler::Register("data/title.png");
-    m_title->AddTile(ibox2(0, 0, 1024, 768));
+    m_title->define_tile(ibox2(0, 0, 1024, 768));
 
     m_background = Tiler::Register("data/background.png");
-    m_background->AddTile(ibox2(0, 0, 1024, 1024));
+    m_background->define_tile(ibox2(0, 0, 1024, 1024));
 
     m_camera = new Camera();
     Scene& scene = Scene::GetScene();
