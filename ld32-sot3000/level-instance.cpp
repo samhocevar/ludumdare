@@ -78,7 +78,7 @@ void level_instance::tick_hero(float seconds)
 
         // lerping speed for inertia -- braking is faster than accelerating
         float s = m_hero_impulse.x ? 8.f : m_hero->m_grounded ? 60.f : 20.f;
-        float t = 1.f - pow(1.f - s / 60.f, 60.f * seconds);
+        float t = 1.f - lol::pow(1.f - s / 60.f, 60.f * seconds);
         m_hero_effective_impulse = lerp(m_hero_effective_impulse, m_hero_impulse, t);
 
         // Check how long we can apply hero impulse before we hit something
