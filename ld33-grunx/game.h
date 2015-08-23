@@ -73,5 +73,7 @@ private:
 
     levelmap *m_level;
     actor *m_monster, *m_hero;
+
+    vec2 m_poi; // point of interest (i.e. player)
 };
 

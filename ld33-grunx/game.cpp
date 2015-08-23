@@ -149,11 +149,17 @@ void ld33_game::tick_camera(float seconds)
     UNUSED(seconds);
 
     ivec2 m_viewport_size = ivec2(300, 200);
-    mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
-    mat4 view = mat4::translate(vec3(TILE_SIZE_X * -7.f, TILE_SIZE_Y * 3.f, 0.f));
 
-    m_camera->SetView(view);
-    m_camera->SetProjection(proj);
+    if (m_monster)
+    {
+        mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
+
+        m_poi = m_monster->m_position.xy;
+        mat4 view = mat4::translate(-vec3(m_poi.xy, 0.0f));
+
+        m_camera->SetView(view);
+        m_camera->SetProjection(proj);
+    }
 }
 
 void ld33_game::tick_events(float seconds)

@@ -59,6 +59,8 @@ void actor::TickDraw(float seconds, Scene &scene)
     anim += seconds;
 #endif
 
+    vec2 pos = m_position.xy + vec2(-0.5f * TILE_SIZE_X, 1.f * TILE_SIZE_Y);
+
     for (int y = 0; y < 2; ++y)
     for (int x = 0; x < 2; ++x)
     {
@@ -70,7 +72,7 @@ void actor::TickDraw(float seconds, Scene &scene)
         tid += anim_debug < 0.2 ? 0 : anim_debug < 0.4 ? 2 : anim_debug < 0.6 ? 4 : 2;
 #endif
 
-        scene.AddTile(g_game->m_tiles, tid, m_position + vec3(x * TILE_SIZE_X, y * -TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid, vec3(pos.x + x * TILE_SIZE_X, pos.y + y * -TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
     }
 }
 
