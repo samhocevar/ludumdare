@@ -41,18 +41,62 @@ void actor::TickGame(float seconds)
 
     m_timer += seconds;
 
-    m_position = vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f);
-    m_position += vec3(m_delta, 0.f);
-
+    /* Try to move left and right depending on our state */
     switch (m_state)
     {
     case actorstate::go_left:
-        m_delta.x += -MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        m_delta.x -= MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        switch (g_game->m_level->m_map[m_tile + ivec2(-1, 0)])
+        {
+            case tileid::empty:
+                break;
+            default:
+                if (m_delta.x < 0.f)
+                    m_delta.x = 0.f;
+                break;
+        }
         break;
     case actorstate::go_right:
         m_delta.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        switch (g_game->m_level->m_map[m_tile + ivec2(1, 0)])
+        {
+            case tileid::empty:
+                break;
+            default:
+                if (m_delta.x > 0.f)
+                    m_delta.x = 0.f;
+                break;
+        }
         break;
     }
+
+    /* If movement was successful, we may arrive on a new tile */
+    while (m_delta.x > TILE_SIZE_X / 2)
+    {
+        m_tile.x += 1;
+        m_delta.x -= TILE_SIZE_X;
+    }
+
+    while (m_delta.x < -TILE_SIZE_X / 2)
+    {
+        m_tile.x -= 1;
+        m_delta.x += TILE_SIZE_X;
+    }
+
+    while (m_delta.y > TILE_SIZE_Y / 2)
+    {
+        m_tile.y += 1;
+        m_delta.y -= TILE_SIZE_Y;
+    }
+
+    while (m_delta.y < -TILE_SIZE_Y / 2)
+    {
+        m_tile.y -= 1;
+        m_delta.y += TILE_SIZE_Y;
+    }
+
+    m_position = vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f);
+    m_position += vec3(m_delta, 0.f);
 }
 
 void actor::TickDraw(float seconds, Scene &scene)

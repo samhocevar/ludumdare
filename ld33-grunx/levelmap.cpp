@@ -76,12 +76,11 @@ void levelmap::TickDraw(float seconds, Scene &scene)
         scene.AddTile(g_game->m_tiles, id + 0x41, orig + pos + vec3(TILE_SIZE_X, -TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
     }
 
-    /* Render the foreground tiles, with z == 0, 1, 2... */
-    int z = 0;
+    /* Render the foreground tiles, with z == -1 (ground), 0, 1, 2... */
+    int z = -1;
     for (array2d<tileid> const &layer : m_layers)
     {
         ivec2 const size = layer.size();
-        ++z;
         for (int y = 0; y < size.y; ++y)
         {
             for (int x = 0; x < size.x; ++x)
@@ -91,6 +90,7 @@ void levelmap::TickDraw(float seconds, Scene &scene)
                     scene.AddTile(g_game->m_tiles, int(t), vec3(TILE_SIZE_X * x, - TILE_SIZE_Y * y, z), 0, vec2(1.f), 0.f);
             }
         }
+        ++z;
     }
 }
 
@@ -185,7 +185,7 @@ void levelmap::load_data(char const *data)
                 else
                 {
                     m_layers.last()[x][y] = tileid::empty;
-                    m_map[x][y] = tileid::empty;
+                    //m_map[x][y] = tileid::empty; // don’t override other layers!
                 }
                 tmp = strchr(tmp, ',');
                 if (!tmp)

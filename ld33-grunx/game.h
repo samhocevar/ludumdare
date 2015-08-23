@@ -59,6 +59,7 @@ private:
 public:
     TileSet *m_tiles;
 
+    levelmap *m_level; // current level
     vec2 m_poi; // point of interest (i.e. player)
 
 private:
@@ -73,7 +74,6 @@ private:
     Text *m_level_text;
     Text *m_level_name_text;
 
-    levelmap *m_level;
     actor *m_monster, *m_hero;
 };
 

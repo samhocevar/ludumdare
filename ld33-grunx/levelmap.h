@@ -29,14 +29,14 @@ public:
 
     ivec2 m_hero_start, m_monster_start;
 
+    /* The more compact gameplay array, for use by everyone */
+    array2d<tileid> m_map;
+
 private:
     /* The graphics layer */
     array<array2d<tileid>> m_layers;
 
     /* The background */
     array2d<int> m_background;
-
-    /* The more compact gameplay array */
-    array2d<tileid> m_map;
 };
 
