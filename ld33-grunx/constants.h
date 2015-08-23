@@ -16,3 +16,5 @@
 static int const WINDOW_SIZE_X = 900;
 static int const WINDOW_SIZE_Y = 600;
 
+static int const TILE_SIZE_X = 16;
+static int const TILE_SIZE_Y = 16;

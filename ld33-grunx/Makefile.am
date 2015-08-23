@@ -5,6 +5,8 @@ bin_PROGRAMS = ld33
 
 ld33_SOURCES = \
     ld33.cpp \
+    game.cpp game.h \
+    levelmap.cpp levelmap.h \
     constants.h
 
 ld33_CPPFLAGS = $(AM_CPPFLAGS)

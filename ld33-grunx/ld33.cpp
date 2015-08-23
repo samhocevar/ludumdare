@@ -16,9 +16,12 @@
 
 #include <lol/engine.h>
 
-#include "constants.h"
-
 using namespace lol;
+
+#include "constants.h"
+#include "game.h"
+
+ld33_game *g_game;
 
 int main(int argc, char **argv)
 {
@@ -27,7 +30,9 @@ int main(int argc, char **argv)
     Application app("LD33",
                     ivec2(WINDOW_SIZE_X, WINDOW_SIZE_Y), 60.0f);
 
+    g_game = new ld33_game();
     app.Run();
 
     return EXIT_SUCCESS;
 }
+
