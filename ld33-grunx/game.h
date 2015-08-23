@@ -58,6 +58,7 @@ private:
 
 public:
     TileSet *m_tiles;
+    int m_fx_step;
 
     levelmap *m_level; // current level
     vec2 m_poi; // point of interest (i.e. player)

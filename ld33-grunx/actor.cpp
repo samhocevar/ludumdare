@@ -39,7 +39,17 @@ void actor::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
+    double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
+
     m_timer += seconds;
+
+    double footstep_now = lol::fmod(m_timer / 0.35, 1.0);
+
+    if (footstep_now < footstep_then &&
+         (m_state == actorstate::go_left || m_state == actorstate::go_right))
+    {
+        Sampler::PlaySample(g_game->m_fx_step);
+    }
 
     /* Try to move left and right depending on our state */
     switch (m_state)
@@ -176,11 +186,15 @@ void actor::TickDraw(float seconds, Scene &scene)
 
 void actor::move_left()
 {
+    if (m_state != actorstate::go_left)
+        m_timer = 0.0;
     m_state = actorstate::go_left;
 }
 
 void actor::move_right()
 {
+    if (m_state != actorstate::go_right)
+        m_timer = 0.0;
     m_state = actorstate::go_right;
 }
 
