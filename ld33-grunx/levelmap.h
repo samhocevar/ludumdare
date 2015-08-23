@@ -12,22 +12,7 @@
 
 #pragma once
 
-enum class tileid : uint16_t
-{
-    empty = 0,
-
-    wall_gen = 0x40,
-    wall_box = 0x41,
-    wall_hole = 0x42,
-
-    stairs_up = 0x43,
-    stairs_down = 0x44,
-
-    skull = 0x80,
-    monster_idle_0 = 0x1c0,
-    monster_idle_1 = 0x1c2,
-    monster_idle_2 = 0x1c4,
-};
+#include "constants.h"
 
 /* The level is a world representation of a map */
 class levelmap : public WorldEntity
