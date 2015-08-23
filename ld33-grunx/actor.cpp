@@ -25,8 +25,8 @@ using namespace lol;
 actor::actor(actortype t)
   : m_tile(0, 0),
     m_delta(0.f, 0.f),
-    m_direction(0),
     m_type(t),
+    m_state(actorstate::idle),
     m_timer(0.0)
 {
 }
@@ -43,6 +43,16 @@ void actor::TickGame(float seconds)
 
     m_position = vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f);
     m_position += vec3(m_delta, 0.f);
+
+    switch (m_state)
+    {
+    case actorstate::go_left:
+        m_delta.x += -MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        break;
+    case actorstate::go_right:
+        m_delta.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        break;
+    }
 }
 
 void actor::TickDraw(float seconds, Scene &scene)
@@ -54,14 +64,15 @@ void actor::TickDraw(float seconds, Scene &scene)
     switch (m_type)
     {
     case actortype::monster:
-        switch (m_direction)
+        switch (m_state)
         {
-            case -1:
+            case actorstate::go_left:
                 body_tid = tileid::monster_left_body;
                 break;
-            case 1:
+            case actorstate::go_right:
                 body_tid = tileid::monster_right_body;
                 break;
+            case actorstate::idle:
             default:
                 body_tid = tileid::monster_idle;
                 break;
@@ -86,28 +97,31 @@ void actor::TickDraw(float seconds, Scene &scene)
     }
 
     /* Render feet and hand */
-    if (m_type == actortype::monster && m_direction != 0)
+    if (m_type == actortype::monster &&
+         (m_state == actorstate::go_left || m_state == actorstate::go_right))
     {
-        int tid_front, tid_back, tid_hand, anim_mul;
+        int dir, tid_front, tid_back, tid_hand, anim_mul;
 
-        switch (m_direction)
+        switch (m_state)
         {
-            case -1:
+            case actorstate::go_left:
                 tid_front = int(tileid::monster_left_foot);
                 tid_hand = int(tileid::monster_left_hand);
+                dir = -1;
                 break;
-            case 1:
+            case actorstate::go_right:
                 tid_front = int(tileid::monster_right_foot);
                 tid_hand = int(tileid::monster_right_hand);
+                dir = +1;
                 break;
         }
         tid_back = tid_front + 0x40;
         
         double anim_debug = lol::fmod(m_timer / 0.7, 1.0);
-        tid_front += (2 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
-        tid_back += (6 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
+        tid_front += (2 + 16 + dir * int(anim_debug * 8.0 + 2.0)) % 8;
+        tid_back += (6 + 16 + dir * int(anim_debug * 8.0 + 2.0)) % 8;
 
-        int hand_off = (4 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
+        int hand_off = (4 + 16 + dir * int(anim_debug * 8.0 + 2.0)) % 8;
         tid_hand += hand_off >= 4 ? 7 - hand_off : hand_off;
 
         scene.AddTile(g_game->m_tiles, tid_front, m_position + vec3(0.f, 0.f, 0.5f), 0, vec2(1.f), 0.f);
@@ -115,3 +129,19 @@ void actor::TickDraw(float seconds, Scene &scene)
         scene.AddTile(g_game->m_tiles, tid_hand, m_position + vec3(0.5, 0.f, 0.5f), 0, vec2(1.f), 0.f);
     }
 }
+
+void actor::move_left()
+{
+    m_state = actorstate::go_left;
+}
+
+void actor::move_right()
+{
+    m_state = actorstate::go_right;
+}
+
+void actor::move_idle()
+{
+    m_state = actorstate::idle;
+}
+

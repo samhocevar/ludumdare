@@ -169,17 +169,10 @@ void ld33_game::tick_camera(float seconds)
 void ld33_game::tick_events(float seconds)
 {
     if (m_controller->IsKeyPressed(input::go_left))
-    {
-        m_monster->m_position.x += -MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-        m_monster->m_direction = -1;
-    }
+        m_monster->move_left();
     else if (m_controller->IsKeyPressed(input::go_right))
-    {
-        m_monster->m_position.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-        m_monster->m_direction = 1;
-    }
+        m_monster->move_right();
     else
-    {
-        m_monster->m_direction = 0;
-    }
+        m_monster->move_idle();
 }
+

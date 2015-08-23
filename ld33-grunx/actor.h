@@ -18,6 +18,15 @@ enum class actortype : uint8_t
     monster = 1,
 };
 
+enum class actorstate : uint8_t
+{
+    idle = 0,
+    go_left = 1,
+    go_right = 2,
+    go_up = 3,
+    go_down = 4,
+};
+
 class actor : public WorldEntity
 {
 public:
@@ -29,10 +38,14 @@ public:
 
     ivec2 m_tile; /* Current tile in the map */
     vec2 m_delta; /* Current world delta from tile centre */
-    int m_direction; /* -1, 0, 1 */
+
+    void move_left();
+    void move_right();
+    void move_idle();
 
 private:
     actortype m_type;
+    actorstate m_state;
     double m_timer;
 };
 
