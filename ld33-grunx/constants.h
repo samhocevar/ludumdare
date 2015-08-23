@@ -57,15 +57,23 @@ enum class tileid : uint16_t
 
     /* Monster animations */
     monster_idle = 0x1c0,
+    monster_sqashed = 0x1c6,
 
-    monster_right_body = 0x240,
-    monster_right_foot = 0x24a,
-    monster_right_hand = 0x286,
+    monster_right_body = 0x1ca,
+    monster_right_foot = 0x1ca + 0x0a,
+    monster_right_hand = 0x1ca + 0x46,
 
-    monster_left_body = 0x2c0,
-    monster_left_foot = 0x2ca,
-    monster_left_hand = 0x306,
+    monster_left_body = 0x24a,
+    monster_left_foot = 0x24a + 0x0a,
+    monster_left_hand = 0x24a + 0x46,
 
     /* Hero animations */
+    hero_right_body = 0x1ca + 0x100,
+    hero_right_foot = 0x1ca + 0x10a,
+    hero_right_hand = 0x1ca + 0x146,
+
+    hero_left_body = 0x24a + 0x100,
+    hero_left_foot = 0x24a + 0x10a,
+    hero_left_hand = 0x24a + 0x146,
 };
 

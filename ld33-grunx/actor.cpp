@@ -140,7 +140,12 @@ void actor::TickGame(float seconds)
         case tileid::wall:
         case tileid::stairs_down:
         case tileid::stairs_up:
-            m_delta.y = min(m_delta.y, 0.f);
+            if (m_delta.y > 0.f)
+            {
+                m_jumping = false;
+                m_falling = true;
+                m_delta.y = 0.f;
+            }
             break;
     }
 
@@ -203,34 +208,27 @@ void actor::TickDraw(float seconds, Scene &scene)
 
     tileid body_tid;
 
-    switch (m_type)
+    int tile_offset = m_type == actortype::monster ? 0x000 : 0x100;
+
+    switch (m_state)
     {
-    case actortype::monster:
-        switch (m_state)
-        {
-            case actorstate::go_left:
-                body_tid = tileid::monster_left_body;
-                break;
-            case actorstate::go_right:
-                body_tid = tileid::monster_right_body;
-                break;
-            case actorstate::idle:
-            default:
-                body_tid = tileid::monster_idle;
-                break;
-        }
-        break;
-    default:
-        /* XXX: this is a test */
-        body_tid = tileid::monster_idle;
-        break;
+        case actorstate::go_left:
+            body_tid = tileid::monster_left_body;
+            break;
+        case actorstate::go_right:
+            body_tid = tileid::monster_right_body;
+            break;
+        case actorstate::idle:
+        default:
+            body_tid = tileid::monster_idle;
+            break;
     }
 
     /* Render body (4 sprites) */
     for (int y = 0; y < 2; ++y)
     for (int x = 0; x < 2; ++x)
     {
-        int tid = int(body_tid) + x + y * 0x40;
+        int tid = tile_offset + int(body_tid) + x + y * 0x40;
 
         double anim_debug = lol::fmod(m_timer / 0.35, 1.0);
         tid += anim_debug < 0.25 ? 0 : anim_debug < 0.5 ? 2 : anim_debug < 0.75 ? 4 : 2;
@@ -247,13 +245,13 @@ void actor::TickDraw(float seconds, Scene &scene)
         switch (m_state)
         {
             case actorstate::go_left:
-                tid_front = int(tileid::monster_left_foot);
-                tid_hand = int(tileid::monster_left_hand);
+                tid_front = tile_offset + int(tileid::monster_left_foot);
+                tid_hand = tile_offset + int(tileid::monster_left_hand);
                 dir = -1;
                 break;
             case actorstate::go_right:
-                tid_front = int(tileid::monster_right_foot);
-                tid_hand = int(tileid::monster_right_hand);
+                tid_front = tile_offset + int(tileid::monster_right_foot);
+                tid_hand = tile_offset + int(tileid::monster_right_hand);
                 dir = +1;
                 break;
         }
@@ -276,14 +274,16 @@ void actor::move(actorstate state)
 {
     if (m_state != state)
         m_timer = 0.0;
-    m_state = state;
+    if (!m_jumping)
+        m_state = state;
 }
 
 void actor::jump()
 {
-    if (!m_jumping && !m_falling)
+    if (!m_jumping && !m_falling && m_state != actorstate::idle)
     {
         m_jump_timer = 0.0;
         m_jumping = true;
     }
 }
+
