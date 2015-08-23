@@ -29,8 +29,7 @@ public:
 
     ivec2 m_hero_start, m_monster_start;
 
-    /* The more compact gameplay array, for use by everyone */
-    array2d<tileid> m_map;
+    tileid get_tile(ivec2 pos) const;
 
 private:
     /* The graphics layer */
@@ -38,5 +37,8 @@ private:
 
     /* The background */
     array2d<int> m_background;
+
+    /* The more compact gameplay array, for use by everyone */
+    array2d<tileid> m_map;
 };
 

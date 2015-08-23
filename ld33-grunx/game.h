@@ -68,6 +68,7 @@ private:
     Camera *m_camera;
     Controller *m_controller;
     InputProfile m_input;
+    int m_music;
 
     Text *m_start_text;
     Text *m_game_text;
@@ -75,5 +76,7 @@ private:
     Text *m_level_name_text;
 
     actor *m_monster, *m_hero;
+
+    double m_timer;
 };
 

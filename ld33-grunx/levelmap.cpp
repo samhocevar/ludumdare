@@ -200,3 +200,11 @@ void levelmap::load_data(char const *data)
     }
 }
 
+tileid levelmap::get_tile(ivec2 pos) const
+{
+    if (pos.x < 0 || pos.y < 0 || pos.x >= m_map.size().x || pos.y >= m_map.size().y)
+        return tileid::empty;
+
+    return m_map[pos];
+}
+

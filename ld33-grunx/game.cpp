@@ -24,7 +24,8 @@ using namespace lol;
 #include "game.h"
 
 ld33_game::ld33_game()
-  : m_level(nullptr)
+  : m_level(nullptr),
+    m_timer(0.0)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->define_tile(ivec2(64, 64));
@@ -97,11 +98,16 @@ ld33_game::ld33_game()
     m_hero = new actor(actortype::hero);
     m_hero->m_position.z = 1000.f; // hide hero for now
     Ticker::Ref(m_hero);
+
+    m_music = Sampler::Register("data/bu-a-castles-witches.ogg");
+    Sampler::LoopSample(m_music);
 }
 
 ld33_game::~ld33_game()
 {
     // Clean up after ourselves
+    Sampler::Deregister(m_music);
+
     Ticker::Unref(m_monster);
     Ticker::Unref(m_hero);
 
@@ -120,6 +126,8 @@ ld33_game::~ld33_game()
 void ld33_game::TickGame(float seconds)
 {
     Entity::TickGame(seconds);
+
+    m_timer += seconds;
 
     tick_events(seconds);
     tick_camera(seconds);
@@ -140,8 +148,7 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
 {
     Entity::TickDraw(seconds, scene);
 
-    //m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::LINEAR_TEXEL);
-    //m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::LINEAR_TEXEL_NO_MIPMAP);
+    // Make sure we’re using nearest neighbour, it’s pixel art after all!
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
 

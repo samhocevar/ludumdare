@@ -46,7 +46,7 @@ void actor::TickGame(float seconds)
     {
     case actorstate::go_left:
         m_delta.x -= MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-        switch (g_game->m_level->m_map[m_tile + ivec2(-1, 0)])
+        switch (g_game->m_level->get_tile(m_tile + ivec2(-1, 0)))
         {
             case tileid::empty:
                 break;
@@ -58,7 +58,7 @@ void actor::TickGame(float seconds)
         break;
     case actorstate::go_right:
         m_delta.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-        switch (g_game->m_level->m_map[m_tile + ivec2(1, 0)])
+        switch (g_game->m_level->get_tile(m_tile + ivec2(1, 0)))
         {
             case tileid::empty:
                 break;
