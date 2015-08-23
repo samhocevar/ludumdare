@@ -40,10 +40,12 @@ public:
     vec2 m_delta; /* Current world delta from tile centre */
 
     void move(actorstate desired);
+    void jump();
 
 private:
     actortype m_type;
     actorstate m_state;
-    double m_timer;
+    bool m_falling, m_jumping, m_dead;
+    double m_timer, m_jump_timer;
 };
 

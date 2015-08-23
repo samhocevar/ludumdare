@@ -27,6 +27,9 @@ actor::actor(actortype t)
     m_delta(0.f, 0.f),
     m_type(t),
     m_state(actorstate::idle),
+    m_falling(false),
+    m_jumping(false),
+    m_dead(false),
     m_timer(0.0)
 {
 }
@@ -48,6 +51,7 @@ void actor::TickGame(float seconds)
     double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
 
     m_timer += seconds;
+    m_jump_timer += seconds;
 
     double footstep_now = lol::fmod(m_timer / 0.35, 1.0);
 
@@ -64,7 +68,19 @@ void actor::TickGame(float seconds)
     auto tile_right = g_game->m_level->get_tile(m_tile + ivec2(1, 0));
 
     /* Handle falling */
-    if (tile_here == tileid::empty)
+    if (m_jump_timer > 0.5)
+    {
+        m_jumping = false;
+        m_falling = true;
+    }
+
+    if (m_jumping)
+    {
+        m_delta.y += 3.0f * (0.5f - float(m_jump_timer)) * seconds * MONSTER_SPEED_JUMP * TILE_SIZE_Y;
+        m_falling = true;
+        //m_delta.y += (1.0f - sq(float(m_jump_timer) - 1.0f)) * seconds * MONSTER_SPEED_FALL * TILE_SIZE_Y;
+    }
+    else if (tile_here == tileid::empty)
     {
         m_delta.y -= MONSTER_SPEED_FALL * TILE_SIZE_Y * seconds;
     }
@@ -94,6 +110,9 @@ void actor::TickGame(float seconds)
             while (sqlength(m_delta) < 0.5 * 0.5 * (TILE_SIZE_X * TILE_SIZE_Y))
                 m_delta *= 1.05f;
             break;
+        case tileid::ladder:
+            m_falling = false;
+            break;
         case tileid::stairs_down:
             m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y - m_delta.x);
             break;
@@ -105,21 +124,32 @@ void actor::TickGame(float seconds)
     switch (tile_left)
     {
         case tileid::wall:
-		    m_delta.x = max(m_delta.x, 0.f);
+            m_delta.x = max(m_delta.x, 0.f);
             break;
     }
 
     switch (tile_right)
     {
         case tileid::wall:
-		    m_delta.x = min(m_delta.x, 0.f);
+            m_delta.x = min(m_delta.x, 0.f);
+            break;
+    }
+
+    switch (tile_above)
+    {
+        case tileid::wall:
+        case tileid::stairs_down:
+        case tileid::stairs_up:
+            m_delta.y = min(m_delta.y, 0.f);
             break;
     }
 
     switch (tile_below)
     {
         case tileid::wall:
-		    m_delta.y = max(m_delta.y, 0.f);
+            if (m_delta.y < 0.f)
+                m_falling = false;
+            m_delta.y = max(m_delta.y, 0.f);
             break;
         case tileid::stairs_down:
             m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y - m_delta.x);
@@ -168,8 +198,8 @@ void actor::TickDraw(float seconds, Scene &scene)
         return;
     }
 
-	// debug cell
-    scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(TILE_SIZE_X * m_tile.x, - TILE_SIZE_Y * m_tile.y, 10.f), 0, vec2(1.f), 0.f);
+    // debug cell
+    //scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(TILE_SIZE_X * m_tile.x, - TILE_SIZE_Y * m_tile.y, 10.f), 0, vec2(1.f), 0.f);
 
     tileid body_tid;
 
@@ -247,4 +277,13 @@ void actor::move(actorstate state)
     if (m_state != state)
         m_timer = 0.0;
     m_state = state;
+}
+
+void actor::jump()
+{
+    if (!m_jumping && !m_falling)
+    {
+        m_jump_timer = 0.0;
+        m_jumping = true;
+    }
 }

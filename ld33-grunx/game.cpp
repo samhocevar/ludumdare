@@ -189,5 +189,7 @@ void ld33_game::tick_events(float seconds)
         m_monster->move(actorstate::go_right);
     else
         m_monster->move(actorstate::idle);
-}
 
+    if (m_controller->WasKeyPressedThisFrame(input::jump))
+        m_monster->jump();
+}

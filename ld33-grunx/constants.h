@@ -23,9 +23,10 @@ static int const TILE_SIZE_Y = 16;
 static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
-static float const MONSTER_SPEED_WALK = 4.f;
+static float const MONSTER_SPEED_WALK = 6.f;
 static float const MONSTER_SPEED_CLIMB = 4.f;
 static float const MONSTER_SPEED_FALL = 8.f;
+static float const MONSTER_SPEED_JUMP = 6.f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t
