@@ -25,7 +25,9 @@ using namespace lol;
 #include "actor.h"
 
 actor::actor(actortype t)
-  : m_direction(0),
+  : m_tile(0, 0),
+    m_delta(0.f, 0.f),
+    m_direction(0),
     m_type(t)
 {
 }

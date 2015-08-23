@@ -27,14 +27,12 @@ enum class tileid : uint16_t
 {
     empty = 0,
 
-    wall_gen = 0x40,
-    wall_box = 0x41,
-    wall_hole = 0x42,
+    wall = 0x80,
+    wall_start = wall,
+    wall_end = 0x100,
 
-    stairs_up = 0x43,
-    stairs_down = 0x44,
-
-    skull = 0x80,
+    stairs_up = 0x40,
+    stairs_down = 0x41,
 
     heart = 0x180,
     spikes = 0x181,

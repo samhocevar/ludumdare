@@ -105,6 +105,10 @@ void levelmap::load_data(char const *data)
 
         m_layers.push(array2d<tileid>());
         m_layers.last().resize(ivec2(width, height));
+
+        m_map.resize(ivec2(lol::max(width, m_map.size().x),
+                           lol::max(height, m_map.size().y)));
+
         tmp = parser;
         for (int y = 0; y < height; ++y)
         {
@@ -112,7 +116,27 @@ void levelmap::load_data(char const *data)
             {
                 int id = atoi(tmp);
                 if (id > 0)
+                {
                     m_layers.last()[x][y] = tileid(id - 1);
+
+                    // If this tile is important for gameplay, update m_map
+                    if (id == int(tileid::stairs_up) || id == int(tileid::stairs_up) + 2)
+                        m_map[x][y] = tileid::stairs_up;
+
+                    else if (id == int(tileid::stairs_down) || id == int(tileid::stairs_down) + 2)
+                        m_map[x][y] = tileid::stairs_down;
+
+                    else if (id >= int(tileid::wall_start) && id < int(tileid::wall_end))
+                        m_map[x][y] = tileid::wall;
+
+                    else if (id == int(tileid::spikes))
+                        m_map[x][y] = tileid::spikes;
+                }
+                else
+                {
+                    m_layers.last()[x][y] = tileid::empty;
+                    m_map[x][y] = tileid::empty;
+                }
                 tmp = strchr(tmp, ',');
                 if (!tmp)
                     break;

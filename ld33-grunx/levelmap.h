@@ -28,6 +28,10 @@ public:
     void load_data(char const *data);
 
 private:
+    /* The graphics layer */
     array<array2d<tileid>> m_layers;
+
+    /* The more compact gameplay array */
+    array2d<tileid> m_map;
 };
 

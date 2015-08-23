@@ -27,6 +27,8 @@ public:
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
+    ivec2 m_tile; /* Current tile in the map */
+    vec2 m_delta; /* Current world delta from tile centre */
     int m_direction; /* -1, 0, 1 */
 
 private:
