@@ -35,7 +35,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="actor.cpp" />
+    <ClCompile Include="game.cpp" />
     <ClCompile Include="ld33.cpp" />
+    <ClCompile Include="levelmap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(SolutionDir)\..\src\lolcore.vcxproj">
@@ -49,7 +52,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="actor.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="levelmap.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{775B46F7-03C4-4351-B78D-76088E028D14}</ProjectGuid>

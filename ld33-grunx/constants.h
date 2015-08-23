@@ -18,3 +18,6 @@ static int const WINDOW_SIZE_Y = 600;
 
 static int const TILE_SIZE_X = 16;
 static int const TILE_SIZE_Y = 16;
+
+static float const MONSTER_SPEED_X = 3.f;
+static float const MONSTER_SPEED_Y = 3.f;

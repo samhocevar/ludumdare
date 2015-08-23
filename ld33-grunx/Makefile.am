@@ -6,6 +6,7 @@ bin_PROGRAMS = ld33
 ld33_SOURCES = \
     ld33.cpp \
     game.cpp game.h \
+    actor.cpp actor.h \
     levelmap.cpp levelmap.h \
     constants.h
 

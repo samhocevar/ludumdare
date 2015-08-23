@@ -1,5 +1,5 @@
 ﻿//
-//  Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
+//  LD33
 //
 //  Copyright © 2015 Sam Hocevar <sam@hocevar.net>
 //
@@ -44,12 +44,11 @@ void levelmap::TickDraw(float seconds, Scene &scene)
     {
         ivec2 const size = layer.size();
         ++z;
-
         for (int y = 0; y < size.y; ++y)
         {
             for (int x = 0; x < size.x; ++x)
             {
-                tileid const &t = layer[x][y];
+                tileid t = layer[x][y];
                 if (t != tileid::empty)
                     scene.AddTile(g_game->m_tiles, int(t), vec3(TILE_SIZE_X * x, - TILE_SIZE_Y * y, z), 0, vec2(1.f), 0.f);
             }

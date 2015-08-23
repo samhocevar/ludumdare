@@ -1,5 +1,5 @@
 ﻿//
-//  Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
+//  LD33
 //
 //  Copyright © 2015 Sam Hocevar <sam@hocevar.net>
 //
@@ -13,6 +13,7 @@
 #pragma once
 
 #include "levelmap.h"
+#include "actor.h"
 
 extern class ld33_game *g_game;
 
@@ -71,5 +72,6 @@ private:
     Text *m_level_name_text;
 
     levelmap *m_level;
+    actor *m_monster, *m_hero;
 };
 

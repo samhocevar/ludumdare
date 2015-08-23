@@ -12,37 +12,22 @@
 
 #pragma once
 
-enum class tileid : uint16_t
+enum class actortype : uint8_t
 {
-    empty = 0,
-
-    wall_gen = 0x40,
-    wall_box = 0x41,
-    wall_hole = 0x42,
-
-    stairs_up = 0x43,
-    stairs_down = 0x44,
-
-    skull = 0x80,
-    monster_idle_0 = 0x1c0,
-    monster_idle_1 = 0x1c2,
-    monster_idle_2 = 0x1c4,
+    hero = 0,
+    monster = 1,
 };
 
-/* The level is a world representation of a map */
-class levelmap : public WorldEntity
+class actor : public WorldEntity
 {
 public:
-    levelmap();
-    ~levelmap();
+    actor(actortype t);
+    ~actor();
 
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
-    void load_file(char const *file);
-    void load_data(char const *data);
-
 private:
-    array<array2d<tileid>> m_layers;
+    actortype m_type;
 };
 

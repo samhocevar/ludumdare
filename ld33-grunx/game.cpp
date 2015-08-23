@@ -1,5 +1,5 @@
 ﻿//
-//  Size-o-Tron 3000 — A puzzle game developed for Ludum Dare 32
+//  LD33
 //
 //  Copyright © 2015 Sam Hocevar <sam@hocevar.net>
 //
@@ -91,16 +91,26 @@ ld33_game::ld33_game()
     m_start_text->SetScale(vec2(0.15f));
     m_start_text->SetSpacing(-0.1f);
     Ticker::Ref(m_start_text);
+
+    m_monster = new actor(actortype::monster);
+    Ticker::Ref(m_monster);
+    m_hero = new actor(actortype::hero);
+    Ticker::Ref(m_hero);
 }
 
 ld33_game::~ld33_game()
 {
     // Clean up after ourselves
+    Ticker::Unref(m_monster);
+    Ticker::Unref(m_hero);
+
     Ticker::Unref(m_game_text);
-    Ticker::Unref(m_start_text);
     Ticker::Unref(m_level_text);
     Ticker::Unref(m_level_name_text);
+    Ticker::Unref(m_start_text);
+
     Tiler::Deregister(m_tiles);
+
     Scene& scene = Scene::GetScene();
     scene.PopCamera(m_camera);
     Ticker::Unref(m_camera);
@@ -148,5 +158,8 @@ void ld33_game::tick_camera(float seconds)
 
 void ld33_game::tick_events(float seconds)
 {
+    if (m_controller->IsKeyPressed(input::go_left))
+        m_monster->m_position.x += -MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+    if (m_controller->IsKeyPressed(input::go_right))
+        m_monster->m_position.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
 }
-
