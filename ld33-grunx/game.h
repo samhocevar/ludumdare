@@ -22,6 +22,8 @@ enum input
     do_pause,
     go_left,
     go_right,
+    go_up,
+    go_down,
     jump,
     fire,
     escape,

@@ -170,6 +170,9 @@ void levelmap::load_data(char const *data)
                     else if (id == int(tileid::spikes))
                         m_map[x][y] = tileid::spikes;
 
+                    else if (id == int(tileid::ladder))
+                        m_map[x][y] = tileid::ladder;
+
                     else if (id == int(tileid::hero_start))
                     {
                         m_hero_start = ivec2(x, y);

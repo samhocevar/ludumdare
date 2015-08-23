@@ -66,17 +66,23 @@ void actor::TickGame(float seconds)
     /* Handle falling */
     if (tile_here == tileid::empty)
     {
-        m_delta.y -= MONSTER_SPEED_Y * TILE_SIZE_Y * seconds;
+        m_delta.y -= MONSTER_SPEED_FALL * TILE_SIZE_Y * seconds;
     }
 
     /* Try to move left and right depending on our state */
     switch (m_state)
     {
     case actorstate::go_left:
-        m_delta.x -= MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        m_delta.x -= MONSTER_SPEED_WALK * TILE_SIZE_X * seconds;
         break;
     case actorstate::go_right:
-        m_delta.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        m_delta.x += MONSTER_SPEED_WALK * TILE_SIZE_X * seconds;
+        break;
+    case actorstate::go_up:
+        m_delta.y += MONSTER_SPEED_CLIMB * TILE_SIZE_Y * seconds;
+        break;
+    case actorstate::go_down:
+        m_delta.y -= MONSTER_SPEED_CLIMB * TILE_SIZE_Y * seconds;
         break;
     }
 
@@ -236,22 +242,9 @@ void actor::TickDraw(float seconds, Scene &scene)
     }
 }
 
-void actor::move_left()
+void actor::move(actorstate state)
 {
-    if (m_state != actorstate::go_left)
+    if (m_state != state)
         m_timer = 0.0;
-    m_state = actorstate::go_left;
+    m_state = state;
 }
-
-void actor::move_right()
-{
-    if (m_state != actorstate::go_right)
-        m_timer = 0.0;
-    m_state = actorstate::go_right;
-}
-
-void actor::move_idle()
-{
-    m_state = actorstate::idle;
-}
-

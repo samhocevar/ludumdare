@@ -39,9 +39,7 @@ public:
     ivec2 m_tile; /* Current tile in the map */
     vec2 m_delta; /* Current world delta from tile centre */
 
-    void move_left();
-    void move_right();
-    void move_idle();
+    void move(actorstate desired);
 
 private:
     actortype m_type;
