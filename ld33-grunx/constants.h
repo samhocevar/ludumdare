@@ -40,10 +40,16 @@ enum class tileid : uint16_t
     stairs_up = 0x40,
     stairs_down = 0x41,
 
+    shoot_right = 0x44,
+    shoot_left = 0x45,
+
     heart = 0x180,
     spikes = 0x181,
     hero_start = 0x182,
     monster_start = 0x183,
+
+    arrow_right = 0x187,
+    arrow_left = 0x189,
 
     /* Monster animations */
     monster_idle = 0x1c0,
