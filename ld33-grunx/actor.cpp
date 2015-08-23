@@ -25,7 +25,8 @@ using namespace lol;
 #include "actor.h"
 
 actor::actor(actortype t)
-  : m_type(t)
+  : m_direction(0),
+    m_type(t)
 {
 }
 
@@ -42,37 +43,78 @@ void actor::TickDraw(float seconds, Scene &scene)
 {
     WorldEntity::TickDraw(seconds, scene);
 
-    tileid base_tid;
-
-    switch (m_type)
-    {
-    case actortype::monster:
-        base_tid = tileid::monster_idle_0;
-        break;
-    default:
-        base_tid = tileid(0);
-        break;
-    }
+    tileid body_tid;
 
 #if ANIM_DEBUG_CODE
     static double anim = 0.0;
     anim += seconds;
 #endif
 
-    vec2 pos = m_position.xy + vec2(-0.5f * TILE_SIZE_X, 1.f * TILE_SIZE_Y);
+    switch (m_type)
+    {
+    case actortype::monster:
+        switch (m_direction)
+        {
+            case -1:
+                body_tid = tileid::monster_left_body;
+                break;
+            case 1:
+                body_tid = tileid::monster_right_body;
+                break;
+            default:
+                body_tid = tileid::monster_idle;
+                break;
+        }
+        break;
+    default:
+        /* XXX: this is a test */
+        body_tid = tileid::monster_idle;
+        break;
+    }
 
+    /* Render body (4 sprites) */
     for (int y = 0; y < 2; ++y)
     for (int x = 0; x < 2; ++x)
     {
-        int tid = int(base_tid) + x + y * 0x40;
+        int tid = int(body_tid) + x + y * 0x40;
 
 #if ANIM_DEBUG_CODE
-        double anim_debug = lol::fmod(anim, 0.8);
-        //tid = tileid(int(tid) + (anim / 8 % 5 / 2) * 2);
-        tid += anim_debug < 0.2 ? 0 : anim_debug < 0.4 ? 2 : anim_debug < 0.6 ? 4 : 2;
+        double anim_debug = lol::fmod(anim / 0.7, 1.0);
+        tid += anim_debug < 0.25 ? 0 : anim_debug < 0.5 ? 2 : anim_debug < 0.75 ? 4 : 2;
 #endif
 
-        scene.AddTile(g_game->m_tiles, tid, vec3(pos.x + x * TILE_SIZE_X, pos.y + y * -TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid, m_position + vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+    }
+
+    /* Render feet and hand */
+    if (m_type == actortype::monster && m_direction != 0)
+    {
+        int tid_front, tid_back, tid_hand, anim_mul;
+
+        switch (m_direction)
+        {
+            case -1:
+                tid_front = int(tileid::monster_left_foot);
+                tid_hand = int(tileid::monster_left_hand);
+                break;
+            case 1:
+                tid_front = int(tileid::monster_right_foot);
+                tid_hand = int(tileid::monster_right_hand);
+                break;
+        }
+        tid_back = tid_front + 0x40;
+        
+#if ANIM_DEBUG_CODE
+        double anim_debug = lol::fmod(anim / 1.4, 1.0);
+        tid_front += (2 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
+        tid_back += (6 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
+
+		int hand_off = (4 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
+        tid_hand += hand_off >= 4 ? 7 - hand_off : hand_off;
+#endif
+
+        scene.AddTile(g_game->m_tiles, tid_front, m_position + vec3(0.5f * TILE_SIZE_X, -1.f * TILE_SIZE_Y, 0.5f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid_back, m_position + vec3(0.5f * TILE_SIZE_X, -1.f * TILE_SIZE_Y, -0.5f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid_hand, m_position + vec3(0.5f * TILE_SIZE_X, -1.f * TILE_SIZE_Y, 0.5f), 0, vec2(1.f), 0.f);
     }
 }
-

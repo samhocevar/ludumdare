@@ -39,8 +39,17 @@ enum class tileid : uint16_t
     heart = 0x180,
     spikes = 0x181,
 
-    monster_idle_0 = 0x1c0,
-    monster_idle_1 = 0x1c2,
-    monster_idle_2 = 0x1c4,
+    /* Monster animations */
+    monster_idle = 0x1c0,
+
+    monster_right_body = 0x240,
+    monster_right_foot = 0x24a,
+    monster_right_hand = 0x286,
+
+    monster_left_body = 0x2c0,
+    monster_left_foot = 0x2ca,
+    monster_left_hand = 0x306,
+
+    /* Hero animations */
 };
 

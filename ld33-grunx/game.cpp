@@ -95,6 +95,7 @@ ld33_game::ld33_game()
     m_monster = new actor(actortype::monster);
     Ticker::Ref(m_monster);
     m_hero = new actor(actortype::hero);
+    m_hero->m_position.z = 1000.f; // hide hero for now
     Ticker::Ref(m_hero);
 }
 
@@ -165,7 +166,17 @@ void ld33_game::tick_camera(float seconds)
 void ld33_game::tick_events(float seconds)
 {
     if (m_controller->IsKeyPressed(input::go_left))
+    {
         m_monster->m_position.x += -MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-    if (m_controller->IsKeyPressed(input::go_right))
+        m_monster->m_direction = -1;
+    }
+    else if (m_controller->IsKeyPressed(input::go_right))
+    {
         m_monster->m_position.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
+        m_monster->m_direction = 1;
+    }
+    else
+    {
+        m_monster->m_direction = 0;
+    }
 }

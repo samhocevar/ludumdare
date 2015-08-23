@@ -27,6 +27,8 @@ public:
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
+    int m_direction; /* -1, 0, 1 */
+
 private:
     actortype m_type;
 };
