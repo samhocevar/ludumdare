@@ -27,6 +27,8 @@ public:
     void load_file(char const *file);
     void load_data(char const *data);
 
+    ivec2 m_hero_start, m_monster_start;
+
 private:
     /* The graphics layer */
     array<array2d<tileid>> m_layers;

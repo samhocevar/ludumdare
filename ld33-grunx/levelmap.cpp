@@ -152,10 +152,10 @@ void levelmap::load_data(char const *data)
         {
             for (int x = 0; x < width; ++x)
             {
-                int id = atoi(tmp);
-                if (id > 0)
+                int id = atoi(tmp) - 1;
+                if (id >= 0)
                 {
-                    m_layers.last()[x][y] = tileid(id - 1);
+                    m_layers.last()[x][y] = tileid(id);
 
                     // If this tile is important for gameplay, update m_map
                     if (id == int(tileid::stairs_up) || id == int(tileid::stairs_up) + 2)
@@ -169,6 +169,18 @@ void levelmap::load_data(char const *data)
 
                     else if (id == int(tileid::spikes))
                         m_map[x][y] = tileid::spikes;
+
+                    else if (id == int(tileid::hero_start))
+                    {
+                        m_hero_start = ivec2(x, y);
+                        m_layers.last()[x][y] = tileid::empty;
+                    }
+
+                    else if (id == int(tileid::monster_start))
+                    {
+                        m_monster_start = ivec2(x, y);
+                        m_layers.last()[x][y] = tileid::empty;
+                    }
                 }
                 else
                 {

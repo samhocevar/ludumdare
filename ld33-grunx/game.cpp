@@ -129,6 +129,9 @@ void ld33_game::TickGame(float seconds)
     {
         m_level = new levelmap();
         m_level->load_file("data/testmap.tmx");
+
+        m_hero->m_tile = m_level->m_hero_start;
+        m_monster->m_tile = m_level->m_monster_start;
     }
 #endif
 }

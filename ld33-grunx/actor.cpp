@@ -18,8 +18,6 @@
 
 using namespace lol;
 
-#define ANIM_DEBUG_CODE 1
-
 #include "constants.h"
 #include "game.h"
 #include "actor.h"
@@ -28,7 +26,8 @@ actor::actor(actortype t)
   : m_tile(0, 0),
     m_delta(0.f, 0.f),
     m_direction(0),
-    m_type(t)
+    m_type(t),
+    m_timer(0.0)
 {
 }
 
@@ -39,6 +38,11 @@ actor::~actor()
 void actor::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
+
+    m_timer += seconds;
+
+    m_position = vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f);
+    m_position += vec3(m_delta, 0.f);
 }
 
 void actor::TickDraw(float seconds, Scene &scene)
@@ -46,11 +50,6 @@ void actor::TickDraw(float seconds, Scene &scene)
     WorldEntity::TickDraw(seconds, scene);
 
     tileid body_tid;
-
-#if ANIM_DEBUG_CODE
-    static double anim = 0.0;
-    anim += seconds;
-#endif
 
     switch (m_type)
     {
@@ -80,12 +79,10 @@ void actor::TickDraw(float seconds, Scene &scene)
     {
         int tid = int(body_tid) + x + y * 0x40;
 
-#if ANIM_DEBUG_CODE
-        double anim_debug = lol::fmod(anim / 0.7, 1.0);
+        double anim_debug = lol::fmod(m_timer / 0.35, 1.0);
         tid += anim_debug < 0.25 ? 0 : anim_debug < 0.5 ? 2 : anim_debug < 0.75 ? 4 : 2;
-#endif
 
-        scene.AddTile(g_game->m_tiles, tid, m_position + vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid, m_position + vec3((x - 0.5f) * TILE_SIZE_X, (1.f - y) * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
     }
 
     /* Render feet and hand */
@@ -106,17 +103,15 @@ void actor::TickDraw(float seconds, Scene &scene)
         }
         tid_back = tid_front + 0x40;
         
-#if ANIM_DEBUG_CODE
-        double anim_debug = lol::fmod(anim / 1.4, 1.0);
+        double anim_debug = lol::fmod(m_timer / 0.7, 1.0);
         tid_front += (2 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
         tid_back += (6 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
 
-		int hand_off = (4 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
+        int hand_off = (4 + 16 + m_direction * int(anim_debug * 8.0 + 2.0)) % 8;
         tid_hand += hand_off >= 4 ? 7 - hand_off : hand_off;
-#endif
 
-        scene.AddTile(g_game->m_tiles, tid_front, m_position + vec3(0.5f * TILE_SIZE_X, -1.f * TILE_SIZE_Y, 0.5f), 0, vec2(1.f), 0.f);
-        scene.AddTile(g_game->m_tiles, tid_back, m_position + vec3(0.5f * TILE_SIZE_X, -1.f * TILE_SIZE_Y, -0.5f), 0, vec2(1.f), 0.f);
-        scene.AddTile(g_game->m_tiles, tid_hand, m_position + vec3(0.5f * TILE_SIZE_X, -1.f * TILE_SIZE_Y, 0.5f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid_front, m_position + vec3(0.f, 0.f, 0.5f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid_back, m_position + vec3(0.f, 0.f, -0.5f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid_hand, m_position + vec3(0.5, 0.f, 0.5f), 0, vec2(1.f), 0.f);
     }
 }

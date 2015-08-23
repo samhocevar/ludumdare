@@ -33,5 +33,6 @@ public:
 
 private:
     actortype m_type;
+    double m_timer;
 };
 
