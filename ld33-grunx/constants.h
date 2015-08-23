@@ -19,13 +19,19 @@ static int const WINDOW_SIZE_Y = 600;
 static int const TILE_SIZE_X = 16;
 static int const TILE_SIZE_Y = 16;
 
-static float const MONSTER_SPEED_X = 3.f;
-static float const MONSTER_SPEED_Y = 3.f;
+/* How many tiles we use for the background layer before wrapping */
+static int const BG_SIZE_X = 12;
+static int const BG_SIZE_Y = 8;
+
+static float const MONSTER_SPEED_X = 4.f;
+static float const MONSTER_SPEED_Y = 4.f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t
 {
-    empty = 0,
+    empty = 0x00,
+
+    background = 0x08,
 
     wall = 0x80,
     wall_start = wall,

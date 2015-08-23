@@ -24,6 +24,14 @@ using namespace lol;
 
 levelmap::levelmap()
 {
+    /* Generate a random background */
+    m_background.resize(ivec2(BG_SIZE_X, BG_SIZE_Y));
+    for (int y = 0; y < BG_SIZE_Y; ++y)
+    for (int x = 0; x < BG_SIZE_X; ++x)
+    {
+        int r = lol::rand(4) == 0 ? lol::rand(5) : 0;
+        m_background[x][y] = int(tileid::background) + 2 * r;
+    }
 }
 
 levelmap::~levelmap()
@@ -39,6 +47,36 @@ void levelmap::TickDraw(float seconds, Scene &scene)
 {
     WorldEntity::TickDraw(seconds, scene);
 
+    /* Render the background layer, with z == -10 */
+    vec3 const orig(g_game->m_poi, -10.f);
+    vec2 delta(-0.5f * g_game->m_poi); // how much we deviate from camera
+
+    for (int y = 0; y < BG_SIZE_Y; ++y)
+    for (int x = 0; x < BG_SIZE_X; ++x)
+    {
+        /* Only render inside the camera */
+        vec3 pos = vec3(delta, 0.f) + vec3(2.f * x * TILE_SIZE_X, -2.f * y * TILE_SIZE_Y, 0.f);
+        while (pos.x > BG_SIZE_X * TILE_SIZE_X)
+        {
+            pos.x -= 2 * BG_SIZE_X * TILE_SIZE_X;
+            pos.y -= BG_SIZE_Y * TILE_SIZE_Y;
+        }
+        while (pos.x < -BG_SIZE_X * TILE_SIZE_X)
+        {
+            pos.x += 2 * BG_SIZE_X * TILE_SIZE_X;
+            pos.y -= BG_SIZE_Y * TILE_SIZE_Y;
+        }
+        while (pos.y > BG_SIZE_Y * TILE_SIZE_Y) pos.y -= 2 * BG_SIZE_Y * TILE_SIZE_Y;
+        while (pos.y < -BG_SIZE_Y * TILE_SIZE_Y) pos.y += 2 * BG_SIZE_Y * TILE_SIZE_Y;
+
+        int id = m_background[x][y];
+        scene.AddTile(g_game->m_tiles, id, orig + pos, 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, id + 0x01, orig + pos + vec3(TILE_SIZE_X, 0.f, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, id + 0x40, orig + pos + vec3(0.f, -TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, id + 0x41, orig + pos + vec3(TILE_SIZE_X, -TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+    }
+
+    /* Render the foreground tiles, with z == 0, 1, 2... */
     int z = 0;
     for (array2d<tileid> const &layer : m_layers)
     {

@@ -31,6 +31,9 @@ private:
     /* The graphics layer */
     array<array2d<tileid>> m_layers;
 
+    /* The background */
+    array2d<int> m_background;
+
     /* The more compact gameplay array */
     array2d<tileid> m_map;
 };

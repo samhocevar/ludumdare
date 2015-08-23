@@ -59,6 +59,8 @@ private:
 public:
     TileSet *m_tiles;
 
+    vec2 m_poi; // point of interest (i.e. player)
+
 private:
     game_state m_state;
 
@@ -73,7 +75,5 @@ private:
 
     levelmap *m_level;
     actor *m_monster, *m_hero;
-
-    vec2 m_poi; // point of interest (i.e. player)
 };
 
