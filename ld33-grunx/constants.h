@@ -24,12 +24,13 @@ static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
 static float const MONSTER_SPEED_X = 4.f;
-static float const MONSTER_SPEED_Y = 4.f;
+static float const MONSTER_SPEED_Y = 8.f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t
 {
     empty = 0x00,
+    select = 0x18b,
 
     background = 0x08,
 

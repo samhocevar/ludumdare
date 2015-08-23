@@ -39,6 +39,12 @@ void actor::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
+    if (!g_game->m_level)
+    {
+        /* No level yet; bail out */
+        return;
+    }
+
     double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
 
     m_timer += seconds;
@@ -51,36 +57,73 @@ void actor::TickGame(float seconds)
         Sampler::PlaySample(g_game->m_fx_step);
     }
 
+    auto tile_here = g_game->m_level->get_tile(m_tile);
+    auto tile_below = g_game->m_level->get_tile(m_tile + ivec2(0, 1));
+    auto tile_above = g_game->m_level->get_tile(m_tile + ivec2(0, -1));
+    auto tile_left = g_game->m_level->get_tile(m_tile + ivec2(-1, 0));
+    auto tile_right = g_game->m_level->get_tile(m_tile + ivec2(1, 0));
+
+    /* Handle falling */
+    if (tile_here == tileid::empty)
+    {
+        m_delta.y -= MONSTER_SPEED_Y * TILE_SIZE_Y * seconds;
+    }
+
     /* Try to move left and right depending on our state */
     switch (m_state)
     {
     case actorstate::go_left:
         m_delta.x -= MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-        switch (g_game->m_level->get_tile(m_tile + ivec2(-1, 0)))
-        {
-            case tileid::empty:
-                break;
-            default:
-                if (m_delta.x < 0.f)
-                    m_delta.x = 0.f;
-                break;
-        }
         break;
     case actorstate::go_right:
         m_delta.x += MONSTER_SPEED_X * TILE_SIZE_X * seconds;
-        switch (g_game->m_level->get_tile(m_tile + ivec2(1, 0)))
-        {
-            case tileid::empty:
-                break;
-            default:
-                if (m_delta.x > 0.f)
-                    m_delta.x = 0.f;
-                break;
-        }
         break;
     }
 
-    /* If movement was successful, we may arrive on a new tile */
+    /* Handle effects from surrounding tiles */
+    switch (tile_here)
+    {
+        case tileid::wall:
+            /* Inside a wall? Push actor outside! */
+            while (sqlength(m_delta) < 0.5 * 0.5 * (TILE_SIZE_X * TILE_SIZE_Y))
+                m_delta *= 1.05f;
+            break;
+        case tileid::stairs_down:
+            m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y - m_delta.x);
+            break;
+        case tileid::stairs_up:
+            m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y + m_delta.x);
+            break;
+    }
+
+    switch (tile_left)
+    {
+        case tileid::wall:
+		    m_delta.x = max(m_delta.x, 0.f);
+            break;
+    }
+
+    switch (tile_right)
+    {
+        case tileid::wall:
+		    m_delta.x = min(m_delta.x, 0.f);
+            break;
+    }
+
+    switch (tile_below)
+    {
+        case tileid::wall:
+		    m_delta.y = max(m_delta.y, 0.f);
+            break;
+        case tileid::stairs_down:
+            m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y - m_delta.x);
+            break;
+        case tileid::stairs_up:
+            m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y + m_delta.x);
+            break;
+    }
+
+    /* If movement was successful, we may have arrived on a new tile */
     while (m_delta.x > TILE_SIZE_X / 2)
     {
         m_tile.x += 1;
@@ -95,13 +138,13 @@ void actor::TickGame(float seconds)
 
     while (m_delta.y > TILE_SIZE_Y / 2)
     {
-        m_tile.y += 1;
+        m_tile.y -= 1;
         m_delta.y -= TILE_SIZE_Y;
     }
 
     while (m_delta.y < -TILE_SIZE_Y / 2)
     {
-        m_tile.y -= 1;
+        m_tile.y += 1;
         m_delta.y += TILE_SIZE_Y;
     }
 
@@ -112,6 +155,15 @@ void actor::TickGame(float seconds)
 void actor::TickDraw(float seconds, Scene &scene)
 {
     WorldEntity::TickDraw(seconds, scene);
+
+    if (!g_game->m_level)
+    {
+        /* No level yet; bail out */
+        return;
+    }
+
+	// debug cell
+    scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(TILE_SIZE_X * m_tile.x, - TILE_SIZE_Y * m_tile.y, 10.f), 0, vec2(1.f), 0.f);
 
     tileid body_tid;
 
