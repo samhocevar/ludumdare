@@ -119,6 +119,8 @@ void actor::TickGame(float seconds)
         case tileid::stairs_up:
             m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y + m_delta.x);
             break;
+        default:
+            break;
     }
 
     switch (tile_left)
@@ -126,12 +128,16 @@ void actor::TickGame(float seconds)
         case tileid::wall:
             m_delta.x = max(m_delta.x, 0.f);
             break;
+        default:
+            break;
     }
 
     switch (tile_right)
     {
         case tileid::wall:
             m_delta.x = min(m_delta.x, 0.f);
+            break;
+        default:
             break;
     }
 
@@ -147,6 +153,8 @@ void actor::TickGame(float seconds)
                 m_delta.y = 0.f;
             }
             break;
+        default:
+            break;
     }
 
     switch (tile_below)
@@ -161,6 +169,8 @@ void actor::TickGame(float seconds)
             break;
         case tileid::stairs_up:
             m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y + m_delta.x);
+            break;
+        default:
             break;
     }
 
@@ -218,7 +228,13 @@ void actor::TickDraw(float seconds, Scene &scene)
         case actorstate::go_right:
             body_tid = tileid::monster_right_body;
             break;
+        case actorstate::go_up:
+        case actorstate::go_down:
+            body_tid = tileid::monster_idle;
+            break;
         case actorstate::idle:
+            body_tid = tileid::monster_idle;
+            break;
         default:
             body_tid = tileid::monster_idle;
             break;
