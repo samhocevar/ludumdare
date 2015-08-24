@@ -48,6 +48,16 @@ void actor::TickGame(float seconds)
         return;
     }
 
+    if (m_type == actortype::hero)
+    {
+        if (m_timer > 5.0)
+        {
+            m_timer = 0.0;
+            move(actorstate(m_state == actorstate::go_right ? actorstate::go_left
+                                                            : actorstate::go_right));
+        }
+    }
+
     double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
 
     m_timer += seconds;
@@ -259,8 +269,7 @@ void actor::TickDraw(float seconds, Scene &scene)
     }
 
     /* Render feet and hand */
-    if (m_type == actortype::monster &&
-         (m_state == actorstate::go_left || m_state == actorstate::go_right))
+    if (m_state == actorstate::go_left || m_state == actorstate::go_right)
     {
         int dir, tid_front, tid_back, tid_hand, anim_mul;
 
@@ -278,7 +287,7 @@ void actor::TickDraw(float seconds, Scene &scene)
                 break;
         }
         tid_back = tid_front + 0x40;
-        
+
         double anim_debug = lol::fmod(m_timer / 0.7, 1.0);
         tid_front += (2 + 16 + dir * int(anim_debug * 8.0 + 2.0)) % 8;
         tid_back += (6 + 16 + dir * int(anim_debug * 8.0 + 2.0)) % 8;
