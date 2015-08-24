@@ -27,7 +27,7 @@ public:
     void load_file(char const *file);
     void load_data(char const *data);
 
-    ivec2 m_hero_start, m_monster_start;
+    ivec2 m_hero_start, m_monster_start, m_treasure;
 
     tileid get_tile(ivec2 pos) const;
 
