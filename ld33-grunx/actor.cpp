@@ -274,8 +274,9 @@ void actor::move(actorstate state)
 {
     if (m_state != state)
         m_timer = 0.0;
-    if (!m_jumping)
-        m_state = state;
+    if (m_jumping && state == actorstate::idle)
+        return;
+    m_state = state;
 }
 
 void actor::jump()
