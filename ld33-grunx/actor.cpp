@@ -95,10 +95,16 @@ void actor::TickGame(float seconds)
         m_delta.x += MONSTER_SPEED_WALK * TILE_SIZE_X * seconds;
         break;
     case actorstate::go_up:
-        m_delta.y += MONSTER_SPEED_CLIMB * TILE_SIZE_Y * seconds;
+        if (tile_here == tileid::ladder)
+            m_delta.y += MONSTER_SPEED_CLIMB * TILE_SIZE_Y * seconds;
+        else
+            m_state = actorstate::idle;
         break;
     case actorstate::go_down:
-        m_delta.y -= MONSTER_SPEED_CLIMB * TILE_SIZE_Y * seconds;
+        if (tile_here == tileid::ladder)
+            m_delta.y -= MONSTER_SPEED_CLIMB * TILE_SIZE_Y * seconds;
+        else
+            m_state = actorstate::idle;
         break;
     }
 
@@ -230,7 +236,7 @@ void actor::TickDraw(float seconds, Scene &scene)
             break;
         case actorstate::go_up:
         case actorstate::go_down:
-            body_tid = tileid::monster_idle;
+            body_tid = tileid::monster_climbing;
             break;
         case actorstate::idle:
             body_tid = tileid::monster_idle;
@@ -240,7 +246,7 @@ void actor::TickDraw(float seconds, Scene &scene)
             break;
     }
 
-    /* Render body (4 sprites) */
+    /* Render body (4 tiles) */
     for (int y = 0; y < 2; ++y)
     for (int x = 0; x < 2; ++x)
     {

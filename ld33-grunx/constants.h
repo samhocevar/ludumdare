@@ -58,7 +58,8 @@ enum class tileid : uint16_t
 
     /* Monster animations */
     monster_idle = 0x1c0,
-    monster_sqashed = 0x1c6,
+    monster_squashed = 0x1c6,
+    monster_climbing = 0x240,
 
     monster_right_body = 0x1ca,
     monster_right_foot = 0x1ca + 0x0a,
