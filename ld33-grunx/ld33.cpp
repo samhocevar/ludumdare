@@ -1,5 +1,5 @@
 ﻿//
-//  LD33
+//  Grunx — A puzzle platformer developed for Ludum Dare 33
 //
 //  Copyright © 2015 Sam Hocevar <sam@hocevar.net>
 //
@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 {
     System::Init(argc, argv);
 
-    Application app("LD33",
+    Application app("Grunx",
                     ivec2(WINDOW_SIZE_X, WINDOW_SIZE_Y), 60.0f);
 
     g_game = new ld33_game();

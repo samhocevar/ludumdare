@@ -1,5 +1,5 @@
 ﻿//
-//  LD33
+//  Grunx — A puzzle platformer developed for Ludum Dare 33
 //
 //  Copyright © 2015 Sam Hocevar <sam@hocevar.net>
 //

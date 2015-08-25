@@ -1,19 +1,19 @@
 
 include $(top_srcdir)/build/autotools/common.am
 
-bin_PROGRAMS = ld33
+bin_PROGRAMS = grunx
 
-ld33_SOURCES = \
+grunx_SOURCES = \
     ld33.cpp \
     game.cpp game.h \
     actor.cpp actor.h \
     levelmap.cpp levelmap.h \
     constants.h
 
-ld33_CPPFLAGS = $(AM_CPPFLAGS)
-ld33_DEPENDENCIES = @LOL_DEPS@
-ld33_LDFLAGS = $(AM_LDFLAGS)
+grunx_CPPFLAGS = $(AM_CPPFLAGS)
+grunx_DEPENDENCIES = @LOL_DEPS@
+grunx_LDFLAGS = $(AM_LDFLAGS)
 if USE_EMSCRIPTEN
-ld33_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
+grunx_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
 endif
 
