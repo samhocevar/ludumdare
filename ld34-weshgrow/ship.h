@@ -12,26 +12,19 @@
 
 #pragma once
 
-/* The size of the window we create */
-static int const WINDOW_SIZE_X = 900;
-static int const WINDOW_SIZE_Y = 600;
+#include "constants.h"
 
-static int const TILE_SIZE_X = 16;
-static int const TILE_SIZE_Y = 16;
-
-/* Tile IDs */
-enum class tileid : uint16_t
+/* The level is a world representation of a map */
+class ship : public WorldEntity
 {
-    empty = 0x00,
+public:
+    ship();
+    ~ship();
 
-    /* Special tiles */
-    special_start = 0x02,
+    virtual void TickGame(float seconds);
+    virtual void TickDraw(float seconds, Scene &scene);
 
-    /* Moving objects */
-    ship = 0x40,
-
-    /* Ground tiles */
-    ground_top = 0x80,
-    ground_full = 0xc0,
+private:
+    double m_timer;
 };
 

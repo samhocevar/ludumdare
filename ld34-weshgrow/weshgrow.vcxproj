@@ -27,6 +27,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="levelmap.cpp" />
+    <ClCompile Include="ship.cpp" />
     <ClCompile Include="weshgrow.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -43,6 +46,8 @@
   <ItemGroup>
     <ClInclude Include="constants.h" />
     <ClInclude Include="game.h" />
+    <ClInclude Include="levelmap.h" />
+    <ClInclude Include="ship.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{010bf56b-2d3a-4ebe-839c-0b734eb368ca}</ProjectGuid>

@@ -1,19 +1,19 @@
 
 include $(top_srcdir)/build/autotools/common.am
 
-bin_PROGRAMS = grunx
+bin_PROGRAMS = weshgrow
 
-grunx_SOURCES = \
-    ld33.cpp \
+weshgrow_SOURCES = \
+    weshgrow.cpp \
     game.cpp game.h \
-    actor.cpp actor.h \
     levelmap.cpp levelmap.h \
+    ship.cpp ship.h \
     constants.h
 
-grunx_CPPFLAGS = $(AM_CPPFLAGS)
-grunx_DEPENDENCIES = @LOL_DEPS@
-grunx_LDFLAGS = $(AM_LDFLAGS)
+weshgrow_CPPFLAGS = $(AM_CPPFLAGS)
+weshgrow_DEPENDENCIES = @LOL_DEPS@
+weshgrow_LDFLAGS = $(AM_LDFLAGS)
 if USE_EMSCRIPTEN
-grunx_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
+weshgrow_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
 endif
 
