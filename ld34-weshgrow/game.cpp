@@ -112,7 +112,7 @@ void weshgrow_game::tick_camera(float seconds)
 {
     UNUSED(seconds);
 
-    ivec2 m_viewport_size = ivec2(300, 200);
+    ivec2 m_viewport_size = ivec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
 
     /* TODO: if(m_ship) ... else if(m_level) ... */
     if (m_ship)
@@ -129,10 +129,10 @@ void weshgrow_game::tick_camera(float seconds)
 
 void weshgrow_game::tick_events(float seconds)
 {
-    if (m_controller->IsKeyPressed(input::thrust_left))
-        msg::debug("LEFT\n");
-
-    if (m_controller->IsKeyPressed(input::thrust_right))
-        msg::debug("RIGHT\n");
+    if (m_ship)
+    {
+        m_ship->m_thrust_left = m_controller->IsKeyPressed(input::thrust_left);
+        m_ship->m_thrust_right = m_controller->IsKeyPressed(input::thrust_right);
+    }
 }
 

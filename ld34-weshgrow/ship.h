@@ -24,7 +24,15 @@ public:
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
+    /* Can’t be bothered to make setters for this */
+    bool m_thrust_left, m_thrust_right;
+
 private:
     double m_timer;
+
+    float get_mass();
+    float get_thrust_left_force();
+    float get_thrust_right_force();
+    float get_thrust_middle_force();
 };
 

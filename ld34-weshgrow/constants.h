@@ -16,6 +16,9 @@
 static int const WINDOW_SIZE_X = 900;
 static int const WINDOW_SIZE_Y = 600;
 
+static int const VIEWPORT_SIZE_X = 320;
+static int const VIEWPORT_SIZE_Y = 240;
+
 static int const TILE_SIZE_X = 16;
 static int const TILE_SIZE_Y = 16;
 
@@ -29,6 +32,7 @@ enum class tileid : uint16_t
 
     /* Moving objects */
     ship = 0x40,
+    thrust_small = 0x41, // 4 frames
 
     /* Ground tiles */
     ground_top = 0x80,
