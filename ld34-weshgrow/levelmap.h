@@ -40,6 +40,7 @@ public:
     /* Special information */
     vec3 m_start;
     array<vec3> m_finish;
+    array<vec3, tileid> m_bonus;
     double m_timer;
 };
 

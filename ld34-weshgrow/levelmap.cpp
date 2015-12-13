@@ -77,11 +77,6 @@ void levelmap::TickDraw(float seconds, Scene &scene)
                         t = tileid(int(t) + int(m_timer * 5.0) % 2 * 0x40);
                     }
 
-                    if (is_bonus(t))
-                    {
-                        pos.y += sq((float)lol::sin(3.0 * m_timer)) * TILE_SIZE_Y * 0.4f;
-                    }
-
                     scene.AddTile(g_game->m_tiles, int(t), pos, 0, vec2(1.f), 0.f);
                     ++tilecount;
                 }
@@ -89,6 +84,12 @@ void levelmap::TickDraw(float seconds, Scene &scene)
         }
         if (!++z) ++z;
     }
+
+    /* Render the bonuses separately */
+    float bonus_dy = sq((float)lol::sin(3.0 * m_timer)) * TILE_SIZE_Y * 0.4f;
+
+    for (auto const &bonus : m_bonus)
+        scene.AddTile(g_game->m_tiles, int(bonus.m2), bonus.m1 + vec3(0.f, bonus_dy, 0.f), 0, vec2(1.f), 0.f);
 }
 
 void levelmap::load_file(char const *file)
@@ -157,8 +158,14 @@ void levelmap::load_data(char const *data)
                 case tileid::special_start:
                     m_start = vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f);
                     id = 0;
+                    break;
                 case tileid::special_finish:
                     m_finish << vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f);
+                    id = 0;
+                    break;
+                case tileid::bonus_cockpit:
+                case tileid::bonus_thruster:
+                    m_bonus.push(vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f), tileid(id));
                     id = 0;
                     break;
                 }
@@ -166,7 +173,7 @@ void levelmap::load_data(char const *data)
                 if (id >= 0)
                 {
                     m_layers.last()[x][y] = tileid(id);
-                    if (!is_decoration(tileid(id)))
+                    if (!is_decoration(tileid(id)) || is_bonus(tileid(id)))
                         m_map[x][y] = tileid(id);
                 }
                 else

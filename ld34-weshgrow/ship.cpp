@@ -25,8 +25,8 @@ using namespace lol;
 ship::ship()
   : m_thrust_left(false),
     m_thrust_right(false),
-    m_thruster_count(5),
-    m_cockpit_count(5),
+    m_thruster_count(0),
+    m_cockpit_count(1),
     m_timer(0.0)
 {
     setup_hull();
@@ -82,6 +82,10 @@ void ship::setup_hull()
             --layout[0], ++layout[2];
     }
 
+    // The original two thrusters are always here
+    m_thrusters << ivec3(-5, line * 10 - 14, -1);
+    m_thrusters << ivec3(5, line * 10 - 14, 1);
+
     //for (int n : layout) // XXX: this causes the MS compiler to crash
     for (int nn = 0; nn < 3; ++nn)
     {
@@ -94,12 +98,6 @@ void ship::setup_hull()
                 int y = line * 10;
                 m_hull << hull_piece { ivec2(x, y), x < 0 ? tileid::hull_4 : x > 0 ? tileid::hull_3 : tileid::ship };
 
-            }
-            if (line == 0)
-            {
-                // The original two thrusters are always here
-                m_thrusters << ivec3(-5, -14, -1);
-                m_thrusters << ivec3(5, -14, 1);
             }
             ++line;
         }
@@ -142,6 +140,9 @@ void ship::TickGame(float seconds)
 
     /* Step 2: detect collisions */
 
+    tileid bonus_tile = tileid::empty;
+    vec3 bonus_pos(0.f);
+
     vec3 right = m_rotation * vec3(1.f, 0.f, 0.f);
     vec3 front = m_rotation * vec3(0.f, 1.f, 0.f);
 
@@ -153,7 +154,7 @@ void ship::TickGame(float seconds)
 
         /* Tile coordinates, non-integer */
         vec2 ftile = pos / vec2(TILE_SIZE_X, -TILE_SIZE_Y);
-        /* Tile coordinates, integer */
+        /* Tile coordinates, integer (rounded) */
         ivec2 tile = ivec2(ftile + vec2(0.5f, 0.5f));
 
         auto tile_here = g_game->m_level->get_tile(tile);
@@ -161,6 +162,17 @@ void ship::TickGame(float seconds)
         auto tile_above = g_game->m_level->get_tile(tile + ivec2(0, -1));
         auto tile_left = g_game->m_level->get_tile(tile + ivec2(-1, 0));
         auto tile_right = g_game->m_level->get_tile(tile + ivec2(1, 0));
+
+        /* Are we close to a bonus tile? */
+        for (int n = g_game->m_level->m_bonus.count(); n--; )
+        {
+            if (distance(pos, g_game->m_level->m_bonus[n].m1.xy) < 0.7f * TILE_SIZE_X)
+            {
+                bonus_tile = g_game->m_level->m_bonus[n].m2;
+                bonus_pos = g_game->m_level->m_bonus[n].m1;
+                g_game->m_level->m_bonus.remove(n);
+            }
+        }
 
         if (blocks_n(tile_below))
         {
@@ -225,6 +237,16 @@ void ship::TickGame(float seconds)
                 m_exhausts.last().angle = rand(360.f);
             }
         }
+    }
+
+    /* Misc 2: bonus */
+    if (bonus_tile != tileid::empty)
+    {
+        if (bonus_tile == tileid::bonus_cockpit)
+            ++m_cockpit_count;
+        if (bonus_tile == tileid::bonus_thruster)
+            ++m_thruster_count;
+        setup_hull();
     }
 }
 
