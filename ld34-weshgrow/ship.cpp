@@ -142,34 +142,65 @@ void ship::TickGame(float seconds)
 
     /* Step 2: detect collisions */
 
-    /* Tile coordinates, non-integer */
-    vec2 ftile = m_position.xy / vec2(TILE_SIZE_X, -TILE_SIZE_Y);
-    /* Tile coordinates, integer */
-    ivec2 tile = ivec2(ftile + vec2(0.5f, 0.5f));
+    vec3 right = m_rotation * vec3(1.f, 0.f, 0.f);
+    vec3 front = m_rotation * vec3(0.f, 1.f, 0.f);
 
-    auto tile_here = g_game->m_level->get_tile(tile);
-    auto tile_below = g_game->m_level->get_tile(tile + ivec2(0, 1));
-    auto tile_above = g_game->m_level->get_tile(tile + ivec2(0, -1));
-    auto tile_left = g_game->m_level->get_tile(tile + ivec2(-1, 0));
-    auto tile_right = g_game->m_level->get_tile(tile + ivec2(1, 0));
+    float correct_n = 0.f, correct_s = 0.f, correct_w = 0.f, correct_e = 0.f;
 
-    if (blocks_n(tile_below))
+    for (auto const &hull : m_hull)
     {
-        if (m_position.y < float(tile.y * -TILE_SIZE_Y))
-            m_velocity.y = 0.0f;
-        m_position.y = max(m_position.y, float(tile.y * -TILE_SIZE_Y));
+        vec2 pos = m_position.xy + float(hull.pos.x) * right.xy + float(hull.pos.y) * front.xy;
+
+        /* Tile coordinates, non-integer */
+        vec2 ftile = pos / vec2(TILE_SIZE_X, -TILE_SIZE_Y);
+        /* Tile coordinates, integer */
+        ivec2 tile = ivec2(ftile + vec2(0.5f, 0.5f));
+
+        auto tile_here = g_game->m_level->get_tile(tile);
+        auto tile_below = g_game->m_level->get_tile(tile + ivec2(0, 1));
+        auto tile_above = g_game->m_level->get_tile(tile + ivec2(0, -1));
+        auto tile_left = g_game->m_level->get_tile(tile + ivec2(-1, 0));
+        auto tile_right = g_game->m_level->get_tile(tile + ivec2(1, 0));
+
+        if (blocks_n(tile_below))
+        {
+            if (pos.y < float(tile.y * -TILE_SIZE_Y))
+                correct_n = max(correct_n, float(tile.y * -TILE_SIZE_Y) - pos.y);
+        }
+
+        if (blocks_s(tile_above))
+        {
+            if (pos.y > float(tile.y * -TILE_SIZE_Y))
+                correct_s = min(correct_s, float(tile.y * -TILE_SIZE_Y) - pos.y);
+        }
+
+        if (blocks_e(tile_left))
+        {
+            if (pos.x < float(tile.x * TILE_SIZE_X))
+                correct_e = max(correct_e, float(tile.x * TILE_SIZE_X) - pos.x);
+        }
+
+        if (blocks_w(tile_right))
+        {
+            if (pos.x > float(tile.x * TILE_SIZE_X))
+                correct_w = min(correct_w, float(tile.x * TILE_SIZE_X) - pos.x);
+        }
     }
 
-    if (blocks_s(tile_above))
-        m_position.y = min(m_position.y, float(tile.y * -TILE_SIZE_Y));
+    if (correct_n || correct_s || correct_e || correct_w)
+    {
+        if (length(m_velocity) > 1.f)
+            g_game->m_shake_duration = SHAKE_DURATION;
+    }
 
-    if (blocks_e(tile_left))
-        m_position.x = max(m_position.x, float(tile.x * TILE_SIZE_X));
+    m_position.x += correct_w + correct_e;
+    m_position.y += correct_n + correct_s;
 
-    if (blocks_w(tile_right))
-        m_position.x = min(m_position.x, float(tile.x * TILE_SIZE_X));
+    if (correct_n > 0.f)
+        m_velocity.y = 0.0f;
 
     /* Misc 1: exhausts */
+
     for (int i = m_exhausts.count(); i--; )
     {
         m_exhausts[i].vel += gravity * seconds;
@@ -182,9 +213,6 @@ void ship::TickGame(float seconds)
 
     if (true)//m_exhausts.count() < 100)
     {
-        vec3 right = m_rotation * vec3(1.f, 0.f, 0.f);
-        vec3 front = m_rotation * vec3(0.f, 1.f, 0.f);
-
         for (auto &th : m_thrusters)
         {
             if ((th.z <= 0 && m_thrust_left) || (th.z >= 0 && m_thrust_right))

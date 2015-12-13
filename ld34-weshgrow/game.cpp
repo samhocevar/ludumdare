@@ -27,7 +27,8 @@ weshgrow_game::weshgrow_game()
   : m_level(nullptr),
     m_ship(nullptr),
     m_timer(0.0),
-	m_time_since_thrust(0.f),
+    m_time_since_thrust(0.f),
+    m_shake_duration(0.f),
     must_warp(false)
 {
     m_tiles = Tiler::Register("data/tiles.png");
@@ -54,6 +55,8 @@ weshgrow_game::weshgrow_game()
     m_input << InputProfile::JoystickKey(1, input::thrust_right, "A");
     m_input << InputProfile::JoystickKey(1, input::thrust_right, "RightShoulder");
     m_input << InputProfile::JoystickKey(1, input::thrust_right, "RightTrigger");
+
+    m_input << InputProfile::Keyboard(input::debug, "Space");
 
     m_controller->Init(m_input);
 
@@ -137,6 +140,15 @@ void weshgrow_game::tick_camera(float seconds)
 
     mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
     mat4 view = mat4::translate(-vec3(poi.xy, 0.0f));
+
+    if (m_shake_duration > 0.0f)
+    {
+        float shake_intensity = m_shake_duration / SHAKE_DURATION;
+        view = mat4::rotate(rand(-.1f, .1f) * shake_intensity, vec3::axis_z)
+             * mat4::translate(rand(-10.f, 10.f) * shake_intensity, rand(-10.f, 10.f) * shake_intensity, 0.f)
+             * view;
+        m_shake_duration -= seconds;
+    }
 
     m_camera->SetView(view);
     m_camera->SetProjection(proj);

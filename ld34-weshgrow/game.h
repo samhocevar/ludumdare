@@ -21,6 +21,7 @@ enum input
     thrust_right,
     escape,
     //start, // FIXME: apparently I can’t register the same key to several IDs
+    debug,
 };
 
 class weshgrow_game : public Entity
@@ -39,7 +40,9 @@ private:
 public:
     TileSet *m_tiles;
     int m_fx_thrust;
-	float m_time_since_thrust;
+    float m_time_since_thrust;
+
+    float m_shake_duration;
 
     levelmap *m_level; // current level
     vec2 m_poi; // point of interest (i.e. player)
