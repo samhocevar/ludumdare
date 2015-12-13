@@ -33,6 +33,7 @@ enum class tileid : uint16_t
 
     /* Special tiles */
     special_start = 0x02,
+    special_finish = 0x01,
 
     /* Animated tiles */
     arrow = 0x48, // 2 frames, 4 variants
@@ -43,7 +44,6 @@ enum class tileid : uint16_t
     thrust_small = 0x41, // 4 frames
 
     /* Ground tiles */
-    ground_top = 0x80,
     ground_full = 0xc0,
     ground_se = 0x100,
     ground_sw = 0x140,
@@ -51,33 +51,58 @@ enum class tileid : uint16_t
     ground_ne = 0x1c0,
 };
 
-static inline bool blocks_top(tileid id)
+static inline bool blocks_n(tileid id)
 {
     id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
     return id == tileid::ground_full || id == tileid::ground_nw || id == tileid::ground_ne;
 }
 
-static inline bool blocks_bottom(tileid id)
+static inline bool blocks_s(tileid id)
 {
-    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    id = tileid(int(id) / 0x40 * 0x40);
     return id == tileid::ground_full || id == tileid::ground_sw || id == tileid::ground_se;
 }
 
-static inline bool blocks_left(tileid id)
+static inline bool blocks_w(tileid id)
 {
-    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    id = tileid(int(id) / 0x40 * 0x40);
     return id == tileid::ground_full || id == tileid::ground_sw || id == tileid::ground_nw;
 }
 
-static inline bool blocks_right(tileid id)
+static inline bool blocks_e(tileid id)
 {
-    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    id = tileid(int(id) / 0x40 * 0x40);
     return id == tileid::ground_full || id == tileid::ground_se || id == tileid::ground_ne;
+}
+
+static inline bool blocks_ne(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40);
+    return id == tileid::ground_ne;
+}
+
+static inline bool blocks_nw(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40);
+    return id == tileid::ground_nw;
+}
+
+static inline bool blocks_se(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40);
+    return id == tileid::ground_se;
+}
+
+static inline bool blocks_sw(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40);
+    return id == tileid::ground_sw;
 }
 
 static inline bool is_decoration(tileid id)
 {
-    return !blocks_top(id) && !blocks_bottom(id) && !blocks_left(id) && !blocks_right(id);
+    return !blocks_n(id) && !blocks_s(id) && !blocks_e(id) && !blocks_w(id)
+        && !blocks_ne(id) && !blocks_nw(id) && !blocks_se(id) && !blocks_sw(id);
 }
 
 static inline bool is_arrow(tileid id)

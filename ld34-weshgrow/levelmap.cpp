@@ -150,6 +150,9 @@ void levelmap::load_data(char const *data)
                 case tileid::special_start:
                     m_start = vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f);
                     id = 0;
+                case tileid::special_finish:
+                    m_finish << vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f);
+                    id = 0;
                     break;
                 }
 

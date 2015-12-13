@@ -82,20 +82,20 @@ void ship::TickGame(float seconds)
     auto tile_left = g_game->m_level->get_tile(tile + ivec2(-1, 0));
     auto tile_right = g_game->m_level->get_tile(tile + ivec2(1, 0));
 
-    if (blocks_top(tile_below))
+    if (blocks_n(tile_below))
     {
         if (m_position.y < float(tile.y * -TILE_SIZE_Y))
             m_velocity.y = 0.0f;
         m_position.y = max(m_position.y, float(tile.y * -TILE_SIZE_Y));
     }
 
-    if (blocks_bottom(tile_above))
+    if (blocks_s(tile_above))
         m_position.y = min(m_position.y, float(tile.y * -TILE_SIZE_Y));
 
-    if (blocks_right(tile_left))
+    if (blocks_e(tile_left))
         m_position.x = max(m_position.x, float(tile.x * TILE_SIZE_X));
 
-    if (blocks_left(tile_right))
+    if (blocks_w(tile_right))
         m_position.x = min(m_position.x, float(tile.x * TILE_SIZE_X));
 
     /* Misc 1: exhausts */

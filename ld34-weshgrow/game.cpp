@@ -27,6 +27,7 @@ weshgrow_game::weshgrow_game()
   : m_level(nullptr),
     m_ship(nullptr),
     m_timer(0.0),
+	m_time_since_thrust(0.f),
     must_warp(false)
 {
     m_tiles = Tiler::Register("data/tiles.png");
@@ -56,7 +57,7 @@ weshgrow_game::weshgrow_game()
 
     m_controller->Init(m_input);
 
-    //m_fx_step = Sampler::Register("data/fx_step.wav");
+    m_fx_thrust = Sampler::Register("data/fx_thrust.wav");
     m_music = Sampler::Register("data/bu-a-castles-witches.ogg");
     Sampler::LoopSample(m_music);
 }
@@ -64,7 +65,7 @@ weshgrow_game::weshgrow_game()
 weshgrow_game::~weshgrow_game()
 {
     // Clean up after ourselves
-    //Sampler::Deregister(m_fx_step);
+    Sampler::Deregister(m_fx_thrust);
     Sampler::Deregister(m_music);
 
     Tiler::Deregister(m_tiles);
@@ -145,8 +146,19 @@ void weshgrow_game::tick_events(float seconds)
 {
     if (m_ship)
     {
+        bool had_thrust = m_ship->m_thrust_left || m_ship->m_thrust_right;
+
         m_ship->m_thrust_left = m_controller->IsKeyPressed(input::thrust_left);
         m_ship->m_thrust_right = m_controller->IsKeyPressed(input::thrust_right);
+
+        bool has_thrust = m_ship->m_thrust_left || m_ship->m_thrust_right;
+
+        m_time_since_thrust -= seconds;
+        if (has_thrust && (!had_thrust || m_time_since_thrust <= 0.0f))
+        {
+            m_time_since_thrust = rand(0.2f, 0.4f);
+            Sampler::PlaySample(g_game->m_fx_thrust);
+        }
     }
 }
 

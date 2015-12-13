@@ -39,6 +39,7 @@ private:
 public:
     /* Special information */
     vec3 m_start;
+    array<vec3> m_finish;
     double m_timer;
 };
 

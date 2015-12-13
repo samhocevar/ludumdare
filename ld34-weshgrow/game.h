@@ -38,7 +38,8 @@ private:
 
 public:
     TileSet *m_tiles;
-    int m_fx_step;
+    int m_fx_thrust;
+	float m_time_since_thrust;
 
     levelmap *m_level; // current level
     vec2 m_poi; // point of interest (i.e. player)
