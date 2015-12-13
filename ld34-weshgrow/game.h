@@ -40,7 +40,7 @@ private:
 public:
     TileSet *m_tiles;
     int m_fx_engine_start, m_fx_engine_loop;
-    int m_fx_bonus;
+    int m_fx_bonus, m_fx_crash;
     float m_time_since_thrust;
 
     float m_shake_duration;
@@ -56,7 +56,7 @@ private:
     Camera *m_camera;
     Controller *m_controller;
     InputProfile m_input;
-    int m_music;
+    int m_music_title, m_music_game;
 
     bool must_warp;
 };

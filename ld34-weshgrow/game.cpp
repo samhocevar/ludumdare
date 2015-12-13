@@ -63,8 +63,10 @@ weshgrow_game::weshgrow_game()
     m_fx_engine_start = Sampler::Register("data/fx_engine_start.wav");
     m_fx_engine_loop = Sampler::Register("data/fx_engine_loop.wav");
     m_fx_bonus = Sampler::Register("data/fx_bonus.wav");
-    m_music = Sampler::Register("data/bu-a-castles-witches.ogg");
-    Sampler::LoopSample(m_music);
+    m_fx_crash = Sampler::Register("data/fx_crash.wav");
+    m_music_title = Sampler::Register("data/bu-blue-and-crazed.ogg");
+    m_music_game = Sampler::Register("bu-legs-of-heads.ogg");
+    Sampler::LoopSample(m_music_title);
 }
 
 weshgrow_game::~weshgrow_game()
@@ -73,7 +75,9 @@ weshgrow_game::~weshgrow_game()
     Sampler::Deregister(m_fx_engine_start);
     Sampler::Deregister(m_fx_engine_loop);
     Sampler::Deregister(m_fx_bonus);
-    Sampler::Deregister(m_music);
+    Sampler::Deregister(m_fx_crash);
+    Sampler::Deregister(m_music_title);
+    Sampler::Deregister(m_music_game);
 
     Tiler::Deregister(m_tiles);
 
@@ -92,12 +96,14 @@ void weshgrow_game::TickGame(float seconds)
     if (!m_level)
     {
         m_level = new levelmap();
+        Ticker::Ref(m_level);
         m_level->load_file("data/testmap.tmx");
     }
 
     if (!m_ship)
     {
         m_ship = new ship();
+        Ticker::Ref(m_ship);
         m_ship->m_position = m_level->m_start;
         must_warp = true;
     }
@@ -160,23 +166,41 @@ void weshgrow_game::tick_camera(float seconds)
 
 void weshgrow_game::tick_events(float seconds)
 {
+    if (m_controller->IsKeyPressed(input::escape))
+    {
+        if (m_ship)
+        {
+            // XXX: we need to be careful with running sounds
+            Sampler::StopSample(m_fx_engine_loop);
+
+            Ticker::Unref(m_ship);
+            m_ship = nullptr;
+        }
+
+        if (m_level)
+        {
+            Ticker::Unref(m_level);
+            m_level = nullptr;
+        }
+    }
+
     if (m_ship)
     {
-        bool had_thrust = m_ship->m_thrust_left || m_ship->m_thrust_right;
+        int had_thrust = int(m_ship->m_thrust_left) + 2 * int(m_ship->m_thrust_right);
 
         m_ship->m_thrust_left = m_controller->IsKeyPressed(input::thrust_left);
         m_ship->m_thrust_right = m_controller->IsKeyPressed(input::thrust_right);
 
-        bool has_thrust = m_ship->m_thrust_left || m_ship->m_thrust_right;
+        int has_thrust = int(m_ship->m_thrust_left) + 2 * int(m_ship->m_thrust_right);
 
-        m_time_since_thrust -= seconds;
-        if (has_thrust && (!had_thrust || m_time_since_thrust <= 0.0f))
-        {
-            if (!had_thrust)
-                Sampler::PlaySample(m_fx_engine_start);
-            m_time_since_thrust = rand(0.8f, 1.0f);
-            Sampler::PlaySample(m_fx_engine_loop);
-        }
+        if (has_thrust & ~had_thrust)
+            Sampler::PlaySample(m_fx_engine_start);
+
+        if (has_thrust && !had_thrust)
+            Sampler::LoopSample(m_fx_engine_loop);
+
+        if (!has_thrust && had_thrust)
+            Sampler::StopSample(m_fx_engine_loop);
     }
 }
 

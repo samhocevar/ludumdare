@@ -65,7 +65,7 @@ void ship::setup_hull()
             int x = 12 * i - 6 * n + 6;
             int y = line * 10;
             m_hull << hull_piece { ivec2(x, y), tileid::hull_2 };
-            m_thrusters << ivec3(x, y - 14, 1);
+            m_thrusters << ivec3(x, y - 14, 2);
         }
         ++line;
     }
@@ -107,6 +107,10 @@ void ship::setup_hull()
 void ship::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
+
+    /* FIXME: we shouldn’t be ticked here */
+    if (!g_game->m_level)
+        return;
 
     m_timer += seconds;
 
@@ -201,15 +205,40 @@ void ship::TickGame(float seconds)
 
     if (correct_n || correct_s || correct_e || correct_w)
     {
+        if (correct_n)
+        {
+            /* Special case: try to readjust along the vertical */
+            if (front.y > 0.95f)
+            {
+                m_velocity.y *= -0.2f;
+                m_rotation = slerp(m_rotation, quat::rotate(0.f, 0.f, 0.f, 0.f), 0.8f);
+            }
+            else
+            {
+                m_velocity.y *= -0.9f;
+            }
+        }
+
+        if (correct_s)
+            m_velocity.y *= front.y < -0.95f ? -0.2f : -0.9f;
+
+        if (correct_w)
+            m_velocity.x *= front.x > 0.95f ? -0.2f : -0.9f;
+
+        if (correct_e)
+            m_velocity.x *= front.x < -0.95f ? -0.2f : -0.9f;
+
         if (length(m_velocity) > 1.f)
+        {
+            if (g_game->m_shake_duration < 0.7f * SHAKE_DURATION)
+                Sampler::PlaySample(g_game->m_fx_crash);
+
             g_game->m_shake_duration = SHAKE_DURATION;
+        }
     }
 
     m_position.x += correct_w + correct_e;
     m_position.y += correct_n + correct_s;
-
-    if (correct_n > 0.f)
-        m_velocity.y = 0.0f;
 
     /* Misc 1: exhausts */
 

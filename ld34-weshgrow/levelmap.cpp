@@ -86,7 +86,7 @@ void levelmap::TickDraw(float seconds, Scene &scene)
     }
 
     /* Render the bonuses separately */
-    float bonus_dy = sq((float)lol::sin(3.0 * m_timer)) * TILE_SIZE_Y * 0.4f;
+    float bonus_dy = (sq((float)lol::sin(3.0 * m_timer)) - 0.5f) * TILE_SIZE_Y * 0.4f;
 
     for (auto const &bonus : m_bonus)
         scene.AddTile(g_game->m_tiles, int(bonus.m2), bonus.m1 + vec3(0.f, bonus_dy, 0.f), 0, vec2(1.f), 0.f);
