@@ -82,8 +82,10 @@ void ship::setup_hull()
             --layout[0], ++layout[2];
     }
 
-    for (int n : layout)
+    //for (int n : layout) // XXX: this causes the MS compiler to crash
+    for (int nn = 0; nn < 3; ++nn)
     {
+        int n = layout[nn];
         if (n > 0)
         {
             for (int i = 0; i < n; ++i)

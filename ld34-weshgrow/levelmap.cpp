@@ -69,13 +69,20 @@ void levelmap::TickDraw(float seconds, Scene &scene)
                 tileid t = layer[x][y];
                 if (t != tileid::empty)
                 {
+                    vec3 pos(TILE_SIZE_X * x, - TILE_SIZE_Y * y, z);
+
                     /* Special cases for animations */
                     if (is_arrow(t))
                     {
                         t = tileid(int(t) + int(m_timer * 5.0) % 2 * 0x40);
                     }
 
-                    scene.AddTile(g_game->m_tiles, int(t), vec3(TILE_SIZE_X * x, - TILE_SIZE_Y * y, z), 0, vec2(1.f), 0.f);
+                    if (is_bonus(t))
+                    {
+                        pos.y += sq((float)lol::sin(3.0 * m_timer)) * TILE_SIZE_Y * 0.4f;
+                    }
+
+                    scene.AddTile(g_game->m_tiles, int(t), pos, 0, vec2(1.f), 0.f);
                     ++tilecount;
                 }
             }
