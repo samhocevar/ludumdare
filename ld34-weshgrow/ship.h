@@ -28,6 +28,16 @@ public:
     bool m_thrust_left, m_thrust_right;
 
 private:
+    int m_thruster_count, m_cockpit_count;
+
+    struct hull_piece
+    {
+        ivec2 pos;
+        tileid id;
+    };
+
+    array<hull_piece> m_hull;
+
     struct exhaust
     {
         vec3 pos, vel;
@@ -39,6 +49,7 @@ private:
 
     double m_timer;
 
+    void setup_hull();
     float get_mass();
     float get_thrust_left_force();
     float get_thrust_right_force();

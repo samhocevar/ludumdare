@@ -25,16 +25,83 @@ using namespace lol;
 ship::ship()
   : m_thrust_left(false),
     m_thrust_right(false),
+    m_thruster_count(5),
+    m_cockpit_count(5),
     m_timer(0.0)
 {
-    m_thrusters << ivec3(-5, -14, -1);
-    m_thrusters << ivec3(5, -14, 1);
-    m_thrusters << ivec3(-13, -14, -1);
-    m_thrusters << ivec3(13, -14, 1);
+    setup_hull();
 }
 
 ship::~ship()
 {
+}
+
+void ship::setup_hull()
+{
+    m_hull.empty();
+    m_thrusters.empty();
+
+    int line = 0;
+
+    /* Build the thruster lines */
+    if (m_thruster_count > 0)
+    {
+        int n = m_thruster_count > 4 ? (m_thruster_count + 1) / 2 : m_thruster_count;
+        for (int i = 0; i < n; ++i)
+        {
+            int x = 12 * i - 6 * n + 6;
+            int y = line * 10;
+            m_hull << hull_piece { ivec2(x, y), tileid::hull_2 };
+            m_thrusters << ivec3(x, y - 14, x < 0 ? -2 : x > 0 ? +2 : 0);
+        }
+        ++line;
+    }
+
+    if (m_thruster_count > 4)
+    {
+        int n = m_thruster_count / 2;
+        for (int i = 0; i < m_thruster_count / 2; ++i)
+        {
+            int x = 12 * i - 6 * n + 6;
+            int y = line * 10;
+            m_hull << hull_piece { ivec2(x, y), tileid::hull_2 };
+            m_thrusters << ivec3(x, y - 14, x < 0 ? -1 : x > 0 ? +1 : 0);
+        }
+        ++line;
+    }
+
+    /* Build the cockpit lines */
+    ivec3 layout(m_cockpit_count, 0, 0);
+    for (int i = 0; i < m_cockpit_count; ++i)
+    {
+        if (layout[0] - layout[1] > 2)
+            --layout[0], ++layout[1];
+        if (layout[1] - layout[2] > 2)
+            --layout[1], ++layout[2];
+        if (layout[0] - layout[1] > 1 && layout[1] - layout[2] > 1)
+            --layout[0], ++layout[2];
+    }
+
+    for (int n : layout)
+    {
+        if (n > 0)
+        {
+            for (int i = 0; i < n; ++i)
+            {
+                int x = 12 * i - 6 * n + 6;
+                int y = line * 10;
+                m_hull << hull_piece { ivec2(x, y), x < 0 ? tileid::hull_4 : x > 0 ? tileid::hull_3 : tileid::ship };
+
+            }
+            if (line == 0)
+            {
+                // The original two thrusters are always here
+                m_thrusters << ivec3(-5, -14, -1);
+                m_thrusters << ivec3(5, -14, 1);
+            }
+            ++line;
+        }
+    }
 }
 
 void ship::TickGame(float seconds)
@@ -123,7 +190,7 @@ void ship::TickGame(float seconds)
                 m_exhausts.push(exhaust());
                 /* Slight shift up, so that it appears to come from the actual exhaust */
                 m_exhausts.last().pos = m_position + front * th.y + right * th.x + front * 0.4f * TILE_SIZE_Y;
-                m_exhausts.last().vel = m_velocity - front * rand(40.f, 60.f) + right * rand(-30.f, 30.f);
+                m_exhausts.last().vel = m_velocity - front * rand(60.f, 80.f) + right * rand(-60.f, 60.f);
                 m_exhausts.last().life = rand(0.5f, 1.f) * EXHAUST_LIFETIME;
                 m_exhausts.last().angle = rand(360.f);
             }
@@ -147,19 +214,20 @@ void ship::TickDraw(float seconds, Scene &scene)
     //pos.x = round(pos.x);
     //pos.y = round(pos.y);
 
-    scene.AddTile(g_game->m_tiles, int(tileid::ship), pos, 0, vec2(1.f), degrees(heading));
-
-    scene.AddTile(g_game->m_tiles, int(tileid::hull_4), pos - right * 0.8f * TILE_SIZE_X - vec3(0.f, 0.f, 0.1f), 0, vec2(1.f), degrees(heading));
-    scene.AddTile(g_game->m_tiles, int(tileid::hull_3), pos + right * 0.8f * TILE_SIZE_X - vec3(0.f, 0.f, 0.1f), 0, vec2(1.f), degrees(heading));
+    for (auto const &hull : m_hull)
+        scene.AddTile(g_game->m_tiles, int(hull.id), pos + right * hull.pos.x + front * hull.pos.y, 0, vec2(1.f), degrees(heading));
 
     int thrust_small_frame = int(tileid::thrust_small) + int(m_timer * 10.f) % 4;
+    int thrust_large_frame = int(tileid::thrust_large) + int(m_timer * 10.f) % 4;
 
+    /* Thrusters on/off sprite */
     for (auto &th : m_thrusters)
     {
         if ((th.z <= 0 && m_thrust_left) || (th.z >= 0 && m_thrust_right))
-            scene.AddTile(g_game->m_tiles, thrust_small_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
+            scene.AddTile(g_game->m_tiles, lol::abs(th.z) == 1 ? thrust_small_frame : thrust_large_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
     }
 
+    /* Exhaust particles */
     for (auto &ex : m_exhausts)
     {
         int frame = clamp(int(5.f * (EXHAUST_LIFETIME - ex.life) / EXHAUST_LIFETIME), 0, 5);

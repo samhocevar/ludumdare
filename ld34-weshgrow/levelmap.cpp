@@ -80,7 +80,7 @@ void levelmap::TickDraw(float seconds, Scene &scene)
                 }
             }
         }
-        ++z;
+        if (!++z) ++z;
     }
 }
 
