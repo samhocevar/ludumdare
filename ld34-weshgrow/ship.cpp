@@ -62,8 +62,8 @@ void ship::TickGame(float seconds)
     m_rotation_velocity.z += (thrust_power_right - thrust_power_left) * thrust_rotate_power * seconds;
 
     /* Air drag (FIXME: not delta-timed) */
-    m_velocity *= pow(1.f - 4.f / 60.f, 60.f * seconds);
-    m_rotation_velocity *= pow(1.f - 20.f / 60.f, 60.f * seconds);
+    m_velocity *= lol::pow(1.f - 4.f / 60.f, 60.f * seconds);
+    m_rotation_velocity *= lol::pow(1.f - 20.f / 60.f, 60.f * seconds);
 
     m_rotation *= slerp(quat(1.f), quat::fromeuler_xyz(m_rotation_velocity), 0.5f);
     m_position += 0.5f * (old_velocity + m_velocity);
