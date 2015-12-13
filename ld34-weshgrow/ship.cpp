@@ -27,6 +27,8 @@ ship::ship()
     m_thrust_right(false),
     m_timer(0.0)
 {
+    m_thrusters << ivec3(-5, -14, -1);
+    m_thrusters << ivec3(5, -14, 1);
 }
 
 ship::~ship()
@@ -61,7 +63,6 @@ void ship::TickGame(float seconds)
     float thrust_power_right = thrust_power * get_thrust_right_force();
     m_rotation_velocity.z += (thrust_power_right - thrust_power_left) * thrust_rotate_power * seconds;
 
-    /* Air drag (FIXME: not delta-timed) */
     m_velocity *= lol::pow(1.f - 4.f / 60.f, 60.f * seconds);
     m_rotation_velocity *= lol::pow(1.f - 20.f / 60.f, 60.f * seconds);
 
@@ -96,6 +97,36 @@ void ship::TickGame(float seconds)
 
     if (blocks_left(tile_right))
         m_position.x = min(m_position.x, float(tile.x * TILE_SIZE_X));
+
+    /* Misc 1: exhausts */
+    for (int i = m_exhausts.count(); i--; )
+    {
+        m_exhausts[i].vel += gravity * seconds;
+        m_exhausts[i].pos += m_exhausts[i].vel * seconds;
+
+        m_exhausts[i].life -= seconds;
+        if (m_exhausts[i].life < 0)
+            m_exhausts.remove(i);
+    }
+
+    if (true)//m_exhausts.count() < 100)
+    {
+        vec3 right = m_rotation * vec3(1.f, 0.f, 0.f);
+        vec3 front = m_rotation * vec3(0.f, 1.f, 0.f);
+
+        for (auto &th : m_thrusters)
+        {
+            if ((th.z <= 0 && m_thrust_left) || (th.z >= 0 && m_thrust_right))
+            {
+                m_exhausts.push(exhaust());
+                /* Slight shift up, so that it appears to come from the actual exhaust */
+                m_exhausts.last().pos = m_position + front * th.y + right * th.x + front * 0.4f * TILE_SIZE_Y;
+                m_exhausts.last().vel = m_velocity - front * 50.f;
+                m_exhausts.last().life = rand(0.5f, 1.f) * EXHAUST_LIFETIME;
+                m_exhausts.last().angle = rand(360.f);
+            }
+        }
+    }
 }
 
 void ship::TickDraw(float seconds, Scene &scene)
@@ -118,10 +149,25 @@ void ship::TickDraw(float seconds, Scene &scene)
 
     int thrust_small_frame = int(tileid::thrust_small) + int(m_timer * 10.f) % 4;
 
-    if (m_thrust_left)
-        scene.AddTile(g_game->m_tiles, thrust_small_frame, pos - front * 14 - right * 5, 0, vec2(1.f), degrees(heading));
-    if (m_thrust_right)
-        scene.AddTile(g_game->m_tiles, thrust_small_frame, pos - front * 14 + right * 5, 0, vec2(1.f), degrees(heading));
+    for (auto &th : m_thrusters)
+    {
+        if ((th.z <= 0 && m_thrust_left) || (th.z >= 0 && m_thrust_right))
+            scene.AddTile(g_game->m_tiles, thrust_small_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
+    }
+
+    for (auto &exhaust : m_exhausts)
+    {
+        int frame = clamp(int(5.f * (EXHAUST_LIFETIME - exhaust.life) / EXHAUST_LIFETIME), 0, 5);
+        scene.AddTile(g_game->m_tiles, int(tileid::exhaust) + frame, exhaust.pos, 0, vec2(1.f), exhaust.angle);
+    }
+
+    struct exhaust
+    {
+        vec3 pos, vel;
+        float life;
+    };
+
+    array<exhaust> m_exhausts;
 }
 
 float ship::get_mass()

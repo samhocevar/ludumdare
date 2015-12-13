@@ -51,8 +51,8 @@ void levelmap::TickDraw(float seconds, Scene &scene)
     int ycenter = orig.y / -TILE_SIZE_Y;
     int tilecount = 0;
 
-    /* Render the foreground tiles, with z == -1 (ground), 0, 1, 2... */
-    int z = -1;
+    /* Render the foreground tiles, with z == -2 (background), 0 (signs), 1, 2... */
+    int z = -2;
     for (array2d<tileid> const &layer : m_layers)
     {
         ivec2 const size = layer.size();

@@ -28,6 +28,15 @@ public:
     bool m_thrust_left, m_thrust_right;
 
 private:
+    struct exhaust
+    {
+        vec3 pos, vel;
+        float life, angle;
+    };
+
+    array<exhaust> m_exhausts;
+    array<ivec3> m_thrusters; // x, y, left/right
+
     double m_timer;
 
     float get_mass();

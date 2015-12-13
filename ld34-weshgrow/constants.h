@@ -22,6 +22,10 @@ static int const VIEWPORT_SIZE_Y = 200;
 static int const TILE_SIZE_X = 16;
 static int const TILE_SIZE_Y = 16;
 
+/* Stuff about the world */
+static float const EXHAUST_LIFETIME = 0.8f;
+
+
 /* Tile IDs */
 enum class tileid : uint16_t
 {
@@ -32,6 +36,7 @@ enum class tileid : uint16_t
 
     /* Animated tiles */
     arrow = 0x48, // 2 frames, 4 variants
+    exhaust = 0x03, // 3 frames
 
     /* Moving objects */
     ship = 0x40,
