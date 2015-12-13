@@ -60,7 +60,9 @@ weshgrow_game::weshgrow_game()
 
     m_controller->Init(m_input);
 
-    m_fx_thrust = Sampler::Register("data/fx_thrust.wav");
+    m_fx_engine_start = Sampler::Register("data/fx_engine_start.wav");
+    m_fx_engine_loop = Sampler::Register("data/fx_engine_loop.wav");
+    m_fx_bonus = Sampler::Register("data/fx_bonus.wav");
     m_music = Sampler::Register("data/bu-a-castles-witches.ogg");
     Sampler::LoopSample(m_music);
 }
@@ -68,7 +70,9 @@ weshgrow_game::weshgrow_game()
 weshgrow_game::~weshgrow_game()
 {
     // Clean up after ourselves
-    Sampler::Deregister(m_fx_thrust);
+    Sampler::Deregister(m_fx_engine_start);
+    Sampler::Deregister(m_fx_engine_loop);
+    Sampler::Deregister(m_fx_bonus);
     Sampler::Deregister(m_music);
 
     Tiler::Deregister(m_tiles);
@@ -168,8 +172,10 @@ void weshgrow_game::tick_events(float seconds)
         m_time_since_thrust -= seconds;
         if (has_thrust && (!had_thrust || m_time_since_thrust <= 0.0f))
         {
-            m_time_since_thrust = rand(0.2f, 0.4f);
-            Sampler::PlaySample(g_game->m_fx_thrust);
+            if (!had_thrust)
+                Sampler::PlaySample(m_fx_engine_start);
+            m_time_since_thrust = rand(0.8f, 1.0f);
+            Sampler::PlaySample(m_fx_engine_loop);
         }
     }
 }

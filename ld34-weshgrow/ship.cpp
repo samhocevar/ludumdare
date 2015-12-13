@@ -52,7 +52,7 @@ void ship::setup_hull()
             int x = 12 * i - 6 * n + 6;
             int y = line * 10;
             m_hull << hull_piece { ivec2(x, y), tileid::hull_2 };
-            m_thrusters << ivec3(x, y - 14, x < 0 ? -2 : x > 0 ? +2 : 0);
+            m_thrusters << ivec3(x, y - 14, 2);
         }
         ++line;
     }
@@ -65,10 +65,14 @@ void ship::setup_hull()
             int x = 12 * i - 6 * n + 6;
             int y = line * 10;
             m_hull << hull_piece { ivec2(x, y), tileid::hull_2 };
-            m_thrusters << ivec3(x, y - 14, x < 0 ? -1 : x > 0 ? +1 : 0);
+            m_thrusters << ivec3(x, y - 14, 1);
         }
         ++line;
     }
+
+    // The original two thrusters are always here
+    m_thrusters << ivec3(-5, line * 10 - 14, 1);
+    m_thrusters << ivec3(5, line * 10 - 14, 1);
 
     /* Build the cockpit lines */
     ivec3 layout(m_cockpit_count, 0, 0);
@@ -81,10 +85,6 @@ void ship::setup_hull()
         if (layout[0] - layout[1] > 1 && layout[1] - layout[2] > 1)
             --layout[0], ++layout[2];
     }
-
-    // The original two thrusters are always here
-    m_thrusters << ivec3(-5, line * 10 - 14, -1);
-    m_thrusters << ivec3(5, line * 10 - 14, 1);
 
     //for (int n : layout) // XXX: this causes the MS compiler to crash
     for (int nn = 0; nn < 3; ++nn)
@@ -227,7 +227,7 @@ void ship::TickGame(float seconds)
     {
         for (auto &th : m_thrusters)
         {
-            if ((th.z <= 0 && m_thrust_left) || (th.z >= 0 && m_thrust_right))
+            if ((th.x <= 0 && m_thrust_left) || (th.x >= 0 && m_thrust_right))
             {
                 m_exhausts.push(exhaust());
                 /* Slight shift up, so that it appears to come from the actual exhaust */
@@ -242,6 +242,7 @@ void ship::TickGame(float seconds)
     /* Misc 2: bonus */
     if (bonus_tile != tileid::empty)
     {
+        Sampler::PlaySample(g_game->m_fx_bonus);
         if (bonus_tile == tileid::bonus_cockpit)
             ++m_cockpit_count;
         if (bonus_tile == tileid::bonus_thruster)
@@ -275,8 +276,8 @@ void ship::TickDraw(float seconds, Scene &scene)
     /* Thrusters on/off sprite */
     for (auto &th : m_thrusters)
     {
-        if ((th.z <= 0 && m_thrust_left) || (th.z >= 0 && m_thrust_right))
-            scene.AddTile(g_game->m_tiles, lol::abs(th.z) == 1 ? thrust_small_frame : thrust_large_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
+        if ((th.x <= 0 && m_thrust_left) || (th.x >= 0 && m_thrust_right))
+            scene.AddTile(g_game->m_tiles, th.z == 1 ? thrust_small_frame : thrust_large_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
     }
 
     /* Exhaust particles */
@@ -289,24 +290,47 @@ void ship::TickDraw(float seconds, Scene &scene)
 
 float ship::get_mass()
 {
-    return 1.f;
+    /* Each hull piece contributes 0.7 units of mass except the first one */
+    return 1.0f + 0.7f * (m_hull.count() - 1);
 }
 
 float ship::get_thrust_left_force()
 {
-    /* FIXME: compute how many thrusters we have depending on the ship configuration! */
-    return m_thrust_left ? 1.f / get_mass() : 0.f;
+    int total = 0;
+    for (auto &th : m_thrusters)
+        if (th.x <= 0)
+            total += th.z;
+
+    return m_thrust_left ? total / get_mass() : 0.f;
 }
 
 float ship::get_thrust_right_force()
 {
-    return m_thrust_right ? 1.f / get_mass() : 0.f;
+    int total = 0;
+    for (auto &th : m_thrusters)
+        if (th.x >= 0)
+            total += th.z;
+
+    return m_thrust_right ? total / get_mass() : 0.f;
 }
 
 float ship::get_thrust_middle_force()
 {
-    /* If only one thrusters is on, it only contributes to 1/4 of the forward motion */
-    return (!m_thrust_left && !m_thrust_right) ? 0.f
-         : ((m_thrust_left && m_thrust_right) ? 2.f : 0.5f) / get_mass();
+    if (m_thrust_left && m_thrust_right)
+    {
+        int total = 0;
+        for (auto &th : m_thrusters)
+            total += th.z;
+        return total / get_mass();
+    }
+
+    /* If only one thruster is on, it only contributes to 1/4 of the forward motion */
+    if (m_thrust_left)
+        return 0.25f * get_thrust_left_force();
+
+    if (m_thrust_right)
+        return 0.25f * get_thrust_right_force();
+
+    return 0.f;
 }
 

@@ -39,7 +39,8 @@ private:
 
 public:
     TileSet *m_tiles;
-    int m_fx_thrust;
+    int m_fx_engine_start, m_fx_engine_loop;
+    int m_fx_bonus;
     float m_time_since_thrust;
 
     float m_shake_duration;
