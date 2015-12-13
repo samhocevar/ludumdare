@@ -43,18 +43,31 @@ void levelmap::TickDraw(float seconds, Scene &scene)
     vec3 const orig(g_game->m_poi, -10.f);
     vec2 delta(-0.5f * g_game->m_poi); // how much we deviate from camera
 
+    int xcenter = orig.x / TILE_SIZE_X;
+    int ycenter = orig.y / -TILE_SIZE_Y;
+    int tilecount = 0;
+
     /* Render the foreground tiles, with z == -1 (ground), 0, 1, 2... */
     int z = -1;
     for (array2d<tileid> const &layer : m_layers)
     {
         ivec2 const size = layer.size();
-        for (int y = 0; y < size.y; ++y)
+
+        int xstart = max(0, xcenter - VIEWPORT_SIZE_X / TILE_SIZE_X);
+        int ystart = max(0, ycenter - VIEWPORT_SIZE_Y / TILE_SIZE_Y);
+        int xend = min(size.x, xcenter + VIEWPORT_SIZE_X / TILE_SIZE_X + 1);
+        int yend = min(size.y, ycenter + VIEWPORT_SIZE_Y / TILE_SIZE_Y + 1);
+
+        for (int y = ystart; y < yend; ++y)
         {
-            for (int x = 0; x < size.x; ++x)
+            for (int x = xstart; x < xend; ++x)
             {
                 tileid t = layer[x][y];
                 if (t != tileid::empty)
+                {
                     scene.AddTile(g_game->m_tiles, int(t), vec3(TILE_SIZE_X * x, - TILE_SIZE_Y * y, z), 0, vec2(1.f), 0.f);
+                    ++tilecount;
+                }
             }
         }
         ++z;
