@@ -133,7 +133,8 @@ void levelmap::load_data(char const *data)
                 if (id >= 0)
                 {
                     m_layers.last()[x][y] = tileid(id);
-                    m_map[x][y] = tileid(id);
+                    if (!is_decoration(tileid(id)))
+                        m_map[x][y] = tileid(id);
                 }
                 else
                 {

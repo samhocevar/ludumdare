@@ -67,3 +67,8 @@ static bool blocks_right(tileid id)
     return id == tileid::ground_full || id == tileid::ground_se || id == tileid::ground_ne;
 }
 
+static bool is_decoration(tileid id)
+{
+    return !blocks_top(id) && !blocks_bottom(id) && !blocks_left(id) && !blocks_right(id);
+}
+
