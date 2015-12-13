@@ -37,5 +37,33 @@ enum class tileid : uint16_t
     /* Ground tiles */
     ground_top = 0x80,
     ground_full = 0xc0,
+    ground_se = 0x100,
+    ground_sw = 0x140,
+    ground_nw = 0x180,
+    ground_ne = 0x1c0,
 };
+
+static bool blocks_top(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    return id == tileid::ground_full || id == tileid::ground_nw || id == tileid::ground_ne;
+}
+
+static bool blocks_bottom(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    return id == tileid::ground_full || id == tileid::ground_sw || id == tileid::ground_se;
+}
+
+static bool blocks_left(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    return id == tileid::ground_full || id == tileid::ground_sw || id == tileid::ground_nw;
+}
+
+static bool blocks_right(tileid id)
+{
+    id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
+    return id == tileid::ground_full || id == tileid::ground_se || id == tileid::ground_ne;
+}
 
