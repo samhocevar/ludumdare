@@ -63,7 +63,7 @@ weshgrow_game::weshgrow_game()
 weshgrow_game::~weshgrow_game()
 {
     // Clean up after ourselves
-    Sampler::Deregister(m_fx_step);
+    //Sampler::Deregister(m_fx_step);
     Sampler::Deregister(m_music);
 
     Tiler::Deregister(m_tiles);
