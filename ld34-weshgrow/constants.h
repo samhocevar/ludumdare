@@ -41,7 +41,12 @@ enum class tileid : uint16_t
 
     /* Moving objects */
     ship = 0x40,
+    hull_1 = 0x08,
+    hull_2 = 0x09,
+    hull_3 = 0x0a,
+    hull_4 = 0x0b,
     thrust_small = 0x41, // 4 frames
+    thrust_large = 0x4c, // 4 frames
 
     /* Ground tiles */
     ground_full = 0xc0,

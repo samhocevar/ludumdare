@@ -29,6 +29,8 @@ ship::ship()
 {
     m_thrusters << ivec3(-5, -14, -1);
     m_thrusters << ivec3(5, -14, 1);
+    m_thrusters << ivec3(-13, -14, -1);
+    m_thrusters << ivec3(13, -14, 1);
 }
 
 ship::~ship()
@@ -121,7 +123,7 @@ void ship::TickGame(float seconds)
                 m_exhausts.push(exhaust());
                 /* Slight shift up, so that it appears to come from the actual exhaust */
                 m_exhausts.last().pos = m_position + front * th.y + right * th.x + front * 0.4f * TILE_SIZE_Y;
-                m_exhausts.last().vel = m_velocity - front * 50.f;
+                m_exhausts.last().vel = m_velocity - front * rand(40.f, 60.f) + right * rand(-30.f, 30.f);
                 m_exhausts.last().life = rand(0.5f, 1.f) * EXHAUST_LIFETIME;
                 m_exhausts.last().angle = rand(360.f);
             }
@@ -147,6 +149,9 @@ void ship::TickDraw(float seconds, Scene &scene)
 
     scene.AddTile(g_game->m_tiles, int(tileid::ship), pos, 0, vec2(1.f), degrees(heading));
 
+    scene.AddTile(g_game->m_tiles, int(tileid::hull_4), pos - right * 0.8f * TILE_SIZE_X - vec3(0.f, 0.f, 0.1f), 0, vec2(1.f), degrees(heading));
+    scene.AddTile(g_game->m_tiles, int(tileid::hull_3), pos + right * 0.8f * TILE_SIZE_X - vec3(0.f, 0.f, 0.1f), 0, vec2(1.f), degrees(heading));
+
     int thrust_small_frame = int(tileid::thrust_small) + int(m_timer * 10.f) % 4;
 
     for (auto &th : m_thrusters)
@@ -155,19 +160,11 @@ void ship::TickDraw(float seconds, Scene &scene)
             scene.AddTile(g_game->m_tiles, thrust_small_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
     }
 
-    for (auto &exhaust : m_exhausts)
+    for (auto &ex : m_exhausts)
     {
-        int frame = clamp(int(5.f * (EXHAUST_LIFETIME - exhaust.life) / EXHAUST_LIFETIME), 0, 5);
-        scene.AddTile(g_game->m_tiles, int(tileid::exhaust) + frame, exhaust.pos, 0, vec2(1.f), exhaust.angle);
+        int frame = clamp(int(5.f * (EXHAUST_LIFETIME - ex.life) / EXHAUST_LIFETIME), 0, 5);
+        scene.AddTile(g_game->m_tiles, int(tileid::exhaust) + frame, ex.pos, 0, vec2(1.f), ex.angle);
     }
-
-    struct exhaust
-    {
-        vec3 pos, vel;
-        float life;
-    };
-
-    array<exhaust> m_exhausts;
 }
 
 float ship::get_mass()
