@@ -26,7 +26,8 @@ using namespace lol;
 weshgrow_game::weshgrow_game()
   : m_level(nullptr),
     m_ship(nullptr),
-    m_timer(0.0)
+    m_timer(0.0),
+    must_warp(false)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->define_tile(ivec2(64, 64));
@@ -90,16 +91,18 @@ void weshgrow_game::TickGame(float seconds)
     {
         m_ship = new ship();
         m_ship->m_position = m_level->m_start;
+        must_warp = true;
     }
 #endif
 
-    tick_camera(seconds);
     tick_events(seconds);
 }
 
 void weshgrow_game::TickDraw(float seconds, Scene &scene)
 {
     Entity::TickDraw(seconds, scene);
+
+    tick_camera(seconds);
 
     // Make sure we’re using nearest neighbour, it’s pixel art after all!
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
@@ -114,14 +117,25 @@ void weshgrow_game::tick_camera(float seconds)
 
     ivec2 m_viewport_size = ivec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
 
-    /* TODO: if(m_ship) ... else if(m_level) ... */
     if (m_ship)
-        m_poi = m_ship->m_position.xy;
+    {
+        vec2 new_poi = m_ship->m_position.xy;
+        new_poi += 30.f * m_ship->m_velocity.xy;
+        if (must_warp)
+            m_poi = new_poi;
+        else
+            m_poi = lerp(m_poi, new_poi, 3.f * seconds);
+        must_warp = false;
+    }
     else if (m_level)
         m_poi = m_level->m_start.xy;
 
+    vec2 poi = m_poi;
+    //poi.x = round(poi.x);
+    //poi.y = round(poi.y);
+
     mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
-    mat4 view = mat4::translate(-vec3(m_poi.xy, 0.0f));
+    mat4 view = mat4::translate(-vec3(poi.xy, 0.0f));
 
     m_camera->SetView(view);
     m_camera->SetProjection(proj);

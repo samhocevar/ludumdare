@@ -82,7 +82,11 @@ void ship::TickGame(float seconds)
     auto tile_right = g_game->m_level->get_tile(tile + ivec2(1, 0));
 
     if (blocks_top(tile_below))
+    {
+        if (m_position.y < float(tile.y * -TILE_SIZE_Y))
+            m_velocity.y = 0.0f;
         m_position.y = max(m_position.y, float(tile.y * -TILE_SIZE_Y));
+    }
 
     if (blocks_bottom(tile_above))
         m_position.y = min(m_position.y, float(tile.y * -TILE_SIZE_Y));
@@ -98,20 +102,26 @@ void ship::TickDraw(float seconds, Scene &scene)
 {
     WorldEntity::TickDraw(seconds, scene);
 
-    float heading = -vec3::toeuler_xyz(m_rotation).z;
+    quat rot = m_rotation;
+    float heading = -vec3::toeuler_xyz(rot).z;
     /* XXX: test clamping rotation to 16 orientations */
     //heading = F_PI / 8.f * round(heading / (F_PI / 8.f));
-    vec3 right = quat::fromeuler_xyz(0.f, 0.f, -heading) * vec3(1.f, 0.f, 0.f);
-    vec3 front = quat::fromeuler_xyz(0.f, 0.f, -heading) * vec3(0.f, 1.f, 0.f);
+    //rot = quat::fromeuler_xyz(0.f, 0.f, -heading);
+    vec3 right = rot * vec3(1.f, 0.f, 0.f);
+    vec3 front = rot * vec3(0.f, 1.f, 0.f);
 
-    scene.AddTile(g_game->m_tiles, int(tileid::ship), m_position, 0, vec2(1.f), degrees(heading));
+    vec3 pos = m_position;
+    //pos.x = round(pos.x);
+    //pos.y = round(pos.y);
+
+    scene.AddTile(g_game->m_tiles, int(tileid::ship), pos, 0, vec2(1.f), degrees(heading));
 
     int thrust_small_frame = int(tileid::thrust_small) + int(m_timer * 10.f) % 4;
 
     if (m_thrust_left)
-        scene.AddTile(g_game->m_tiles, thrust_small_frame, m_position - front * 14 - right * 5, 0, vec2(1.f), degrees(heading));
+        scene.AddTile(g_game->m_tiles, thrust_small_frame, pos - front * 14 - right * 5, 0, vec2(1.f), degrees(heading));
     if (m_thrust_right)
-        scene.AddTile(g_game->m_tiles, thrust_small_frame, m_position - front * 14 + right * 5, 0, vec2(1.f), degrees(heading));
+        scene.AddTile(g_game->m_tiles, thrust_small_frame, pos - front * 14 + right * 5, 0, vec2(1.f), degrees(heading));
 }
 
 float ship::get_mass()

@@ -52,6 +52,8 @@ private:
     Controller *m_controller;
     InputProfile m_input;
     int m_music;
+
+    bool must_warp;
 };
 
 extern weshgrow_game *g_game;

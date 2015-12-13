@@ -39,5 +39,6 @@ private:
 public:
     /* Special information */
     vec3 m_start;
+    double m_timer;
 };
 

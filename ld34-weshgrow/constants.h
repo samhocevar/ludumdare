@@ -16,8 +16,8 @@
 static int const WINDOW_SIZE_X = 900;
 static int const WINDOW_SIZE_Y = 600;
 
-static int const VIEWPORT_SIZE_X = 320;
-static int const VIEWPORT_SIZE_Y = 240;
+static int const VIEWPORT_SIZE_X = 300;
+static int const VIEWPORT_SIZE_Y = 200;
 
 static int const TILE_SIZE_X = 16;
 static int const TILE_SIZE_Y = 16;
@@ -29,6 +29,9 @@ enum class tileid : uint16_t
 
     /* Special tiles */
     special_start = 0x02,
+
+    /* Animated tiles */
+    arrow = 0x48, // 2 frames, 4 variants
 
     /* Moving objects */
     ship = 0x40,
@@ -43,32 +46,37 @@ enum class tileid : uint16_t
     ground_ne = 0x1c0,
 };
 
-static bool blocks_top(tileid id)
+static inline bool blocks_top(tileid id)
 {
     id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
     return id == tileid::ground_full || id == tileid::ground_nw || id == tileid::ground_ne;
 }
 
-static bool blocks_bottom(tileid id)
+static inline bool blocks_bottom(tileid id)
 {
     id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
     return id == tileid::ground_full || id == tileid::ground_sw || id == tileid::ground_se;
 }
 
-static bool blocks_left(tileid id)
+static inline bool blocks_left(tileid id)
 {
     id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
     return id == tileid::ground_full || id == tileid::ground_sw || id == tileid::ground_nw;
 }
 
-static bool blocks_right(tileid id)
+static inline bool blocks_right(tileid id)
 {
     id = tileid(int(id) / 0x40 * 0x40); // Only check the line it belongs to
     return id == tileid::ground_full || id == tileid::ground_se || id == tileid::ground_ne;
 }
 
-static bool is_decoration(tileid id)
+static inline bool is_decoration(tileid id)
 {
     return !blocks_top(id) && !blocks_bottom(id) && !blocks_left(id) && !blocks_right(id);
+}
+
+static inline bool is_arrow(tileid id)
+{
+    return int(id) >= int(tileid::arrow) && int(id) < int(tileid::arrow) + 4;
 }
 
