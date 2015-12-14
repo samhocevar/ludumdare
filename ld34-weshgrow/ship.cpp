@@ -170,6 +170,11 @@ void ship::TickGame(float seconds)
         /* Are we close to a bonus tile? */
         for (int n = g_game->m_level->m_bonus.count(); n--; )
         {
+            /* Can only grab the “next level” tile if it’s the last one */
+            if (g_game->m_level->m_bonus[n].m2 == tileid::bonus_go
+                 && g_game->m_level->m_bonus.count() != 1)
+                continue;
+
             if (distance(pos, g_game->m_level->m_bonus[n].m1.xy) < 0.7f * TILE_SIZE_X)
             {
                 bonus_tile = g_game->m_level->m_bonus[n].m2;
@@ -276,6 +281,8 @@ void ship::TickGame(float seconds)
             ++m_cockpit_count;
         if (bonus_tile == tileid::bonus_thruster)
             ++m_thruster_count;
+        if (bonus_tile == tileid::bonus_go)
+            g_game->m_next_level = true;
         setup_hull();
     }
 }

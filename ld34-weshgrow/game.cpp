@@ -24,12 +24,14 @@ using namespace lol;
 #include "game.h"
 
 weshgrow_game::weshgrow_game()
-  : m_level(nullptr),
+  : m_level_id(0),
+    m_level(nullptr),
     m_ship(nullptr),
     m_timer(0.0),
     m_time_since_thrust(0.f),
     m_shake_duration(0.f),
-    must_warp(false)
+    m_next_level(false),
+    m_must_warp(false)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->define_tile(ivec2(64, 64));
@@ -65,8 +67,10 @@ weshgrow_game::weshgrow_game()
     m_fx_bonus = Sampler::Register("data/fx_bonus.wav");
     m_fx_crash = Sampler::Register("data/fx_crash.wav");
     m_music_title = Sampler::Register("data/bu-blue-and-crazed.ogg");
-    m_music_game = Sampler::Register("bu-legs-of-heads.ogg");
-    Sampler::LoopSample(m_music_title);
+    m_music_game = Sampler::Register("data/bu-legs-of-heads.ogg");
+	// FIXME: title music handling is broken
+    //Sampler::LoopSample(m_music_title);
+    Sampler::LoopSample(m_music_game);
 }
 
 weshgrow_game::~weshgrow_game()
@@ -92,12 +96,16 @@ void weshgrow_game::TickGame(float seconds)
 
     m_timer += seconds;
 
-#if DEBUG_CODE
     if (!m_level)
     {
         m_level = new levelmap();
         Ticker::Ref(m_level);
-        m_level->load_file("data/testmap.tmx");
+        String lvl = String::format("data/map%d.tmx", m_level_id);
+        if (!m_level->load_file(lvl.C()))
+        {
+            m_level_id = 0;
+            m_level->load_file("data/title.tmx");
+        }
     }
 
     if (!m_ship)
@@ -105,9 +113,8 @@ void weshgrow_game::TickGame(float seconds)
         m_ship = new ship();
         Ticker::Ref(m_ship);
         m_ship->m_position = m_level->m_start;
-        must_warp = true;
+        m_must_warp = true;
     }
-#endif
 
     tick_events(seconds);
 }
@@ -131,18 +138,24 @@ void weshgrow_game::tick_camera(float seconds)
 
     ivec2 m_viewport_size = ivec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
 
-    if (m_ship)
+    if (m_level && m_level->m_poi.z)
+    {
+        m_poi = m_level->m_poi.xy;
+    }
+    else if (m_ship)
     {
         vec2 new_poi = m_ship->m_position.xy;
         new_poi += 30.f * m_ship->m_velocity.xy;
-        if (must_warp)
+        if (m_must_warp)
             m_poi = new_poi;
         else
             m_poi = lerp(m_poi, new_poi, 3.f * seconds);
-        must_warp = false;
+        m_must_warp = false;
     }
     else if (m_level)
+    {
         m_poi = m_level->m_start.xy;
+    }
 
     vec2 poi = m_poi;
     //poi.x = round(poi.x);
@@ -166,7 +179,7 @@ void weshgrow_game::tick_camera(float seconds)
 
 void weshgrow_game::tick_events(float seconds)
 {
-    if (m_controller->IsKeyPressed(input::escape))
+    if (m_next_level || m_controller->IsKeyPressed(input::escape))
     {
         if (m_ship)
         {
@@ -182,6 +195,20 @@ void weshgrow_game::tick_events(float seconds)
             Ticker::Unref(m_level);
             m_level = nullptr;
         }
+    }
+
+    if (m_next_level)
+    {
+        m_next_level = false;
+
+        ++m_level_id;
+
+#if 0 // FIXME: this seems broken
+        /* Reset music */
+        Sampler::StopSample(m_music_title);
+        Sampler::StopSample(m_music_game);
+        Sampler::LoopSample(m_level_id ? m_music_game : m_music_title);
+#endif
     }
 
     if (m_ship)

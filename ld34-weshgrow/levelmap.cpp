@@ -24,6 +24,7 @@ using namespace lol;
 
 levelmap::levelmap()
   : m_start(vec3::zero),
+    m_poi(vec3::zero),
     m_timer(0.0)
 {
 }
@@ -89,10 +90,16 @@ void levelmap::TickDraw(float seconds, Scene &scene)
     float bonus_dy = (sq((float)lol::sin(3.0 * m_timer)) - 0.5f) * TILE_SIZE_Y * 0.4f;
 
     for (auto const &bonus : m_bonus)
+    {
+        /* Can only see the “next level” tile if it’s the last one */
+        if (bonus.m2 == tileid::bonus_go && m_bonus.count() > 1)
+            continue;
+
         scene.AddTile(g_game->m_tiles, int(bonus.m2), bonus.m1 + vec3(0.f, bonus_dy, 0.f), 0, vec2(1.f), 0.f);
+    }
 }
 
-void levelmap::load_file(char const *file)
+bool levelmap::load_file(char const *file)
 {
     msg::debug("loading level %s\n", file);
 
@@ -105,8 +112,10 @@ void levelmap::load_file(char const *file)
             continue;
         load_data(f.ReadString().C());
         f.Close();
-        break;
+        return true;
     }
+
+    return false;
 }
 
 void levelmap::load_data(char const *data)
@@ -159,12 +168,17 @@ void levelmap::load_data(char const *data)
                     m_start = vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f);
                     id = 0;
                     break;
+                case tileid::special_poi:
+                    m_poi = vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 1.f);
+                    id = 0;
+                    break;
                 case tileid::special_finish:
                     m_finish << vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f);
                     id = 0;
                     break;
                 case tileid::bonus_cockpit:
                 case tileid::bonus_thruster:
+                case tileid::bonus_go:
                     m_bonus.push(vec3(x * TILE_SIZE_X, -y * TILE_SIZE_Y, 0.f), tileid(id));
                     id = 0;
                     break;

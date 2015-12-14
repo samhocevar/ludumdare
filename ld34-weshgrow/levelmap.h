@@ -24,7 +24,7 @@ public:
     virtual void TickGame(float seconds);
     virtual void TickDraw(float seconds, Scene &scene);
 
-    void load_file(char const *file);
+    bool load_file(char const *file);
     void load_data(char const *data);
 
     tileid get_tile(ivec2 pos) const;
@@ -39,6 +39,7 @@ private:
 public:
     /* Special information */
     vec3 m_start;
+    vec3 m_poi;
     array<vec3> m_finish;
     array<vec3, tileid> m_bonus;
     double m_timer;

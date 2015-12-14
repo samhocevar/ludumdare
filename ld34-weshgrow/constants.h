@@ -35,12 +35,14 @@ enum class tileid : uint16_t
     /* Special tiles */
     special_start = 0x02,
     special_finish = 0x01,
+    special_poi = 0x0c,
 
     /* Animated tiles */
     arrow = 0x48, // 2 frames, 4 variants
     exhaust = 0x03, // 3 frames
     bonus_thruster = 0x8c,
     bonus_cockpit = 0x8d,
+    bonus_go = 0x8e,
 
     /* Moving objects */
     ship = 0x40,
@@ -120,6 +122,8 @@ static inline bool is_arrow(tileid id)
 
 static inline bool is_bonus(tileid id)
 {
-    return id == tileid::bonus_thruster || id == tileid::bonus_cockpit;
+    return id == tileid::bonus_thruster
+        || id == tileid::bonus_cockpit
+        || id == tileid::bonus_go;
 }
 

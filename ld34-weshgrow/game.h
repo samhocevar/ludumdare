@@ -44,7 +44,9 @@ public:
     float m_time_since_thrust;
 
     float m_shake_duration;
+    bool m_next_level;
 
+    int m_level_id;
     levelmap *m_level; // current level
     vec2 m_poi; // point of interest (i.e. player)
 
@@ -58,7 +60,7 @@ private:
     InputProfile m_input;
     int m_music_title, m_music_game;
 
-    bool must_warp;
+    bool m_must_warp;
 };
 
 extern weshgrow_game *g_game;
