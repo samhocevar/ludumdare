@@ -68,7 +68,7 @@ weshgrow_game::weshgrow_game()
     m_fx_crash = Sampler::Register("data/fx_crash.wav");
     m_music_title = Sampler::Register("data/bu-blue-and-crazed.ogg");
     m_music_game = Sampler::Register("data/bu-legs-of-heads.ogg");
-	// FIXME: title music handling is broken
+    // FIXME: title music handling is broken
     //Sampler::LoopSample(m_music_title);
     Sampler::LoopSample(m_music_game);
 }
