@@ -12,10 +12,13 @@
 
 #pragma once
 
-enum class actortype : uint8_t
+enum class animaltype : uint8_t
 {
-    hero = 0,
-    monster = 1,
+    cat = 0,
+    elephant = 1,
+    mouse = 2,
+    fish = 3,
+    bird = 4,
 };
 
 enum class actorstate : uint8_t
@@ -23,14 +26,13 @@ enum class actorstate : uint8_t
     idle = 0,
     go_left = 1,
     go_right = 2,
-    go_up = 3,
-    go_down = 4,
+    free = 3,
 };
 
 class actor : public WorldEntity
 {
 public:
-    actor(actortype t);
+    actor();
     ~actor();
 
     virtual void TickGame(float seconds);
@@ -41,13 +43,18 @@ public:
 
     void move(actorstate desired);
     void jump();
+    void morph(animaltype type);
 
 private:
     void subtick_game(float seconds);
 
-    actortype m_type;
+	float get_walk_speed() const;
+    float get_jump_speed() const;
+    float get_fall_speed() const;
+
+    animaltype m_type;
     actorstate m_state;
-    bool m_falling, m_jumping, m_dead;
+    bool m_eastward, m_falling, m_jumping, m_dead;
     double m_timer, m_jump_timer;
 };
 

@@ -22,11 +22,12 @@ using namespace lol;
 #include "game.h"
 #include "actor.h"
 
-actor::actor(actortype t)
+actor::actor()
   : m_tile(0, 0),
     m_delta(0.f, 0.f),
-    m_type(t),
+    m_type(animaltype::cat),
     m_state(actorstate::idle),
+    m_eastward(true),
     m_falling(false),
     m_jumping(false),
     m_dead(false),
@@ -82,29 +83,26 @@ void actor::subtick_game(float seconds)
 
     if (m_jumping)
     {
-        m_delta.y += 3.0f * (0.5f - float(m_jump_timer)) * seconds * PLAYER_SPEED_JUMP * TILE_SIZE_Y;
+        m_delta.y += 3.0f * (0.5f - float(m_jump_timer)) * seconds * get_jump_speed() * TILE_SIZE_Y;
         m_falling = true;
-        //m_delta.y += (1.0f - sq(float(m_jump_timer) - 1.0f)) * seconds * PLAYER_SPEED_FALL * TILE_SIZE_Y;
+        //m_delta.y += (1.0f - sq(float(m_jump_timer) - 1.0f)) * seconds * get_fall_speed() * TILE_SIZE_Y;
     }
     else if(tile_here != tileid::wall)
     {
-        m_delta.y -= PLAYER_SPEED_FALL * TILE_SIZE_Y * seconds;
+        m_delta.y -= get_fall_speed() * TILE_SIZE_Y * seconds;
     }
 
     /* Try to move left and right depending on our state */
     switch (m_state)
     {
     case actorstate::go_left:
-        m_delta.x -= PLAYER_SPEED_WALK * TILE_SIZE_X * seconds;
+        m_delta.x -= get_walk_speed() * TILE_SIZE_X * seconds;
         break;
     case actorstate::go_right:
-        m_delta.x += PLAYER_SPEED_WALK * TILE_SIZE_X * seconds;
+        m_delta.x += get_walk_speed() * TILE_SIZE_X * seconds;
         break;
-    case actorstate::go_up:
-	    /* FIXME: shark/fish mode? */
-        break;
-    case actorstate::go_down:
-	    /* FIXME: shark/fish mode? */
+    case actorstate::free:
+	    /* FIXME: fish and bird mode? */
         break;
     }
 
@@ -214,6 +212,60 @@ void actor::subtick_game(float seconds)
     m_position += vec3(m_delta, 0.f);
 }
 
+float actor::get_walk_speed() const
+{
+    switch (m_type)
+    {
+        case animaltype::cat:
+            return CAT_SPEED_WALK;
+        case animaltype::elephant:
+            return ELEPHANT_SPEED_WALK;
+        case animaltype::mouse:
+            return MOUSE_SPEED_WALK;
+        case animaltype::fish:
+            return FISH_SPEED_WALK;
+        case animaltype::bird:
+            return BIRD_SPEED_WALK;
+    }
+	return 0.0f;
+}
+
+float actor::get_jump_speed() const
+{
+    switch (m_type)
+    {
+        case animaltype::cat:
+            return CAT_SPEED_JUMP;
+        case animaltype::elephant:
+            return ELEPHANT_SPEED_JUMP;
+        case animaltype::mouse:
+            return MOUSE_SPEED_JUMP;
+        case animaltype::fish:
+            return FISH_SPEED_JUMP;
+        case animaltype::bird:
+            return BIRD_SPEED_JUMP;
+    }
+	return 0.0f;
+}
+
+float actor::get_fall_speed() const
+{
+    switch (m_type)
+    {
+        case animaltype::cat:
+            return CAT_SPEED_FALL;
+        case animaltype::elephant:
+            return ELEPHANT_SPEED_FALL;
+        case animaltype::mouse:
+            return MOUSE_SPEED_FALL;
+        case animaltype::fish:
+            return FISH_SPEED_FALL;
+        case animaltype::bird:
+            return BIRD_SPEED_FALL;
+    }
+	return 0.0f;
+}
+
 void actor::TickDraw(float seconds, Scene &scene)
 {
     WorldEntity::TickDraw(seconds, scene);
@@ -229,8 +281,6 @@ void actor::TickDraw(float seconds, Scene &scene)
 
     tileid body_tid;
 
-    int tile_offset = m_type == actortype::monster ? 0x000 : 0x100;
-
     switch (m_state)
     {
         case actorstate::go_left:
@@ -239,8 +289,7 @@ void actor::TickDraw(float seconds, Scene &scene)
         case actorstate::go_right:
             body_tid = tileid::player_idle; /* FIXME */
             break;
-        case actorstate::go_up:
-        case actorstate::go_down:
+        case actorstate::free:
             body_tid = tileid::player_idle; /* FIXME */
             break;
         case actorstate::idle:
@@ -251,16 +300,20 @@ void actor::TickDraw(float seconds, Scene &scene)
             break;
     }
 
+    /* Offset tile information depending on the animal type */
+    body_tid = tileid(int(body_tid) + 0x20 * int(m_type));
+
     /* Render body (4 tiles) */
     for (int y = 0; y < 2; ++y)
     for (int x = 0; x < 2; ++x)
     {
-        int tid = tile_offset + int(body_tid) + x + y * 0x10;
+        int tid = int(body_tid) + (m_eastward ? x : 1 - x) + y * 0x10;
+        vec2 scale(m_eastward ? 1.f : -1.f, 1.f);
 
         //double anim_debug = lol::fmod(m_timer / 0.35, 1.0);
         //tid += anim_debug < 0.25 ? 0 : anim_debug < 0.5 ? 2 : anim_debug < 0.75 ? 4 : 2;
 
-        scene.AddTile(g_game->m_tiles, tid, m_position + vec3((x - 0.5f) * TILE_SIZE_X, (1.f - y) * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_tiles, tid, m_position + vec3((x + (m_eastward ? -0.5f : 0.5f)) * TILE_SIZE_X, (1.f - y) * TILE_SIZE_Y, 0.f), 0, scale, 0.f);
     }
 
     // Debug stuff
@@ -272,6 +325,17 @@ void actor::move(actorstate state)
     if (m_state != state)
         m_timer = 0.0;
     m_state = state;
+
+    /* Correct facing direction */
+    if (state == actorstate::go_right)
+        m_eastward = true;
+    else if (state == actorstate::go_left)
+        m_eastward = false;
+}
+
+void actor::morph(animaltype type)
+{
+    m_type = type;
 }
 
 void actor::jump()

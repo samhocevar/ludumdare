@@ -25,7 +25,9 @@ enum input
     go_up,
     go_down,
     jump,
-    fire,
+    morph_1,
+    morph_2,
+    morph_3,
     escape,
     reset,
     //start, // FIXME: apparently I can’t register the same key to several IDs

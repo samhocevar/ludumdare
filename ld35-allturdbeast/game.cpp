@@ -43,7 +43,9 @@ ld33_game::ld33_game()
     m_input << InputProfile::Keyboard(input::go_right, "Right");
     m_input << InputProfile::Keyboard(input::go_right, "D");
     m_input << InputProfile::Keyboard(input::jump, "Space");
-    m_input << InputProfile::Keyboard(input::fire, "Return");
+    m_input << InputProfile::Keyboard(input::morph_1, "X");
+    m_input << InputProfile::Keyboard(input::morph_2, "C");
+    m_input << InputProfile::Keyboard(input::morph_3, "V");
     m_input << InputProfile::Keyboard(input::do_pause, "P");
     m_input << InputProfile::Keyboard(input::reset, "R");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
@@ -55,7 +57,9 @@ ld33_game::ld33_game()
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
     m_input << InputProfile::JoystickKey(1, input::jump, "A");
-    m_input << InputProfile::JoystickKey(1, input::fire, "X");
+    m_input << InputProfile::JoystickKey(1, input::morph_1, "X");
+    m_input << InputProfile::JoystickKey(1, input::morph_2, "Y");
+    m_input << InputProfile::JoystickKey(1, input::morph_3, "B");
     m_input << InputProfile::JoystickKey(1, input::do_pause, "Start");
     m_input << InputProfile::JoystickKey(1, input::reset, "Back");
 
@@ -86,7 +90,7 @@ ld33_game::ld33_game()
     m_start_text->SetSpacing(-0.1f);
     Ticker::Ref(m_start_text);
 
-    m_player = new actor(actortype::monster);
+    m_player = new actor();
     Ticker::Ref(m_player);
 
     m_fx_step = Sampler::Register("data/fx_step.wav");
@@ -165,6 +169,7 @@ void ld33_game::tick_camera(float seconds)
 
 void ld33_game::tick_events(float seconds)
 {
+    /* Handle directions */
     if (m_controller->IsKeyPressed(input::go_left))
         m_player->move(actorstate::go_left);
     else if (m_controller->IsKeyPressed(input::go_right))
@@ -172,6 +177,23 @@ void ld33_game::tick_events(float seconds)
     else
         m_player->move(actorstate::idle);
 
+    /* Handle morphing */
+    bool m1 = m_controller->IsKeyPressed(input::morph_1);
+    bool m2 = m_controller->IsKeyPressed(input::morph_2);
+    bool m3 = m_controller->IsKeyPressed(input::morph_3);
+
+    if (m1 && m2)
+        m_player->morph(animaltype::fish);
+    else if (m2 && m3)
+        m_player->morph(animaltype::bird);
+    else if (m1)
+        m_player->morph(animaltype::elephant);
+    else if (m2)
+        m_player->morph(animaltype::cat);
+    else if (m3)
+        m_player->morph(animaltype::mouse);
+
+    /* Handle jump */
     if (m_controller->WasKeyPressedThisFrame(input::jump))
         m_player->jump();
 }

@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 {
     System::Init(argc, argv);
 
-    Application app("Grunx",
+    Application app("LD35",
                     ivec2(WINDOW_SIZE_X, WINDOW_SIZE_Y), 60.0f);
 
     g_game = new ld33_game();
