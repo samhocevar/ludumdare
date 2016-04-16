@@ -18,15 +18,19 @@
 
 using namespace lol;
 
-#include "ld35.h"
+#include "constants.h"
+#include "game.h"
+
+ld33_game *g_game;
 
 int main(int argc, char **argv)
 {
     System::Init(argc, argv);
 
-    Application app("LD35",
+    Application app("Grunx",
                     ivec2(WINDOW_SIZE_X, WINDOW_SIZE_Y), 60.0f);
 
+    g_game = new ld33_game();
     app.Run();
 
     return EXIT_SUCCESS;

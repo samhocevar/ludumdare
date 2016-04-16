@@ -4,7 +4,10 @@ include $(top_srcdir)/build/autotools/common.am
 bin_PROGRAMS = ld35
 
 ld35_SOURCES = \
-    ld35.cpp ld35.h
+    ld35.cpp constants.h \
+    actor.cpp actor.h \
+    game.cpp game.h \
+    levelmap.cpp levelmap.h
 
 ld35_CPPFLAGS = $(AM_CPPFLAGS)
 ld35_DEPENDENCIES = @LOL_DEPS@
