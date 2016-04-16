@@ -42,20 +42,16 @@ void actor::TickGame(float seconds)
 {
     WorldEntity::TickGame(seconds);
 
+    for (int i = 0; i < 4; ++i)
+        subtick_game(seconds * 0.25f);
+}
+
+void actor::subtick_game(float seconds)
+{
     if (!g_game->m_level)
     {
         /* No level yet; bail out */
         return;
-    }
-
-    if (m_type == actortype::hero)
-    {
-        if (m_timer > 5.0)
-        {
-            m_timer = 0.0;
-            move(actorstate(m_state == actorstate::go_right ? actorstate::go_left
-                                                            : actorstate::go_right));
-        }
     }
 
     double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
@@ -90,7 +86,7 @@ void actor::TickGame(float seconds)
         m_falling = true;
         //m_delta.y += (1.0f - sq(float(m_jump_timer) - 1.0f)) * seconds * PLAYER_SPEED_FALL * TILE_SIZE_Y;
     }
-    else if (tile_here == tileid::empty)
+    else if(tile_here != tileid::wall)
     {
         m_delta.y -= PLAYER_SPEED_FALL * TILE_SIZE_Y * seconds;
     }
@@ -121,9 +117,13 @@ void actor::TickGame(float seconds)
                 m_delta *= 1.05f;
             break;
         case tileid::stairs_down:
+            if (m_delta.y <= 0.5f * TILE_SIZE_Y - m_delta.x)
+                m_falling = false;
             m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y - m_delta.x);
             break;
         case tileid::stairs_up:
+            if (m_delta.y <= 0.5f * TILE_SIZE_Y + m_delta.x)
+                m_falling = false;
             m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y + m_delta.x);
             break;
         default:
@@ -172,9 +172,13 @@ void actor::TickGame(float seconds)
             m_delta.y = max(m_delta.y, 0.f);
             break;
         case tileid::stairs_down:
+            if (m_delta.y <= -0.5f * TILE_SIZE_Y - m_delta.x)
+                m_falling = false;
             m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y - m_delta.x);
             break;
         case tileid::stairs_up:
+            if (m_delta.y <= -0.5f * TILE_SIZE_Y + m_delta.x)
+                m_falling = false;
             m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y + m_delta.x);
             break;
         default:
@@ -258,20 +262,21 @@ void actor::TickDraw(float seconds, Scene &scene)
 
         scene.AddTile(g_game->m_tiles, tid, m_position + vec3((x - 0.5f) * TILE_SIZE_X, (1.f - y) * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
     }
+
+    // Debug stuff
+    scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
 }
 
 void actor::move(actorstate state)
 {
     if (m_state != state)
         m_timer = 0.0;
-    if (m_jumping && state == actorstate::idle)
-        return;
     m_state = state;
 }
 
 void actor::jump()
 {
-    if (!m_jumping && !m_falling && m_state != actorstate::idle)
+    if (!m_jumping && !m_falling)
     {
         m_jump_timer = 0.0;
         m_jumping = true;

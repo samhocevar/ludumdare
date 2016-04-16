@@ -42,11 +42,6 @@ ld33_game::ld33_game()
     m_input << InputProfile::Keyboard(input::go_left, "A");
     m_input << InputProfile::Keyboard(input::go_right, "Right");
     m_input << InputProfile::Keyboard(input::go_right, "D");
-    m_input << InputProfile::Keyboard(input::go_up, "W");
-    m_input << InputProfile::Keyboard(input::go_up, "Z");
-    m_input << InputProfile::Keyboard(input::go_up, "Up");
-    m_input << InputProfile::Keyboard(input::go_down, "S");
-    m_input << InputProfile::Keyboard(input::go_down, "Down");
     m_input << InputProfile::Keyboard(input::jump, "Space");
     m_input << InputProfile::Keyboard(input::fire, "Return");
     m_input << InputProfile::Keyboard(input::do_pause, "P");
@@ -59,14 +54,10 @@ ld33_game::ld33_game()
 
     m_input << InputProfile::JoystickKey(1, input::go_left, "DPadLeft");
     m_input << InputProfile::JoystickKey(1, input::go_right, "DPadRight");
-    m_input << InputProfile::JoystickKey(1, input::go_up, "DPadUp");
-    m_input << InputProfile::JoystickKey(1, input::go_down, "DPadDown");
     m_input << InputProfile::JoystickKey(1, input::jump, "A");
     m_input << InputProfile::JoystickKey(1, input::fire, "X");
-    m_input << InputProfile::JoystickKey(1, input::jump, "LeftShoulder");
-    m_input << InputProfile::JoystickKey(1, input::fire, "RightShoulder");
-    m_input << InputProfile::JoystickKey(1, input::reset, "Back");
     m_input << InputProfile::JoystickKey(1, input::do_pause, "Start");
+    m_input << InputProfile::JoystickKey(1, input::reset, "Back");
 
     m_controller->Init(m_input);
 
@@ -174,11 +165,7 @@ void ld33_game::tick_camera(float seconds)
 
 void ld33_game::tick_events(float seconds)
 {
-    if (m_controller->IsKeyPressed(input::go_up))
-        m_player->move(actorstate::go_up);
-    else if (m_controller->IsKeyPressed(input::go_down))
-        m_player->move(actorstate::go_down);
-    else if (m_controller->IsKeyPressed(input::go_left))
+    if (m_controller->IsKeyPressed(input::go_left))
         m_player->move(actorstate::go_left);
     else if (m_controller->IsKeyPressed(input::go_right))
         m_player->move(actorstate::go_right);

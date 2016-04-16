@@ -23,17 +23,16 @@ static int const TILE_SIZE_Y = 16;
 static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
-static float const PLAYER_SPEED_WALK = 15.f;
-static float const PLAYER_SPEED_FALL = 20.f;
-static float const PLAYER_SPEED_JUMP = 20.f;
+static float const PLAYER_SPEED_WALK = 15.0f;
+static float const PLAYER_SPEED_FALL = 16.0f; // fall speed must be > walk speed
+static float const PLAYER_SPEED_JUMP = 15.0f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t
 {
     empty = 0x00,
-    select = 0x18b,
-
     player_start = 0x01,
+    select = 0x02,
 
     background = 0x40,
     /* ... and the following four 2×2 tiles (5 in total) */

@@ -43,6 +43,8 @@ public:
     void jump();
 
 private:
+    void subtick_game(float seconds);
+
     actortype m_type;
     actorstate m_state;
     bool m_falling, m_jumping, m_dead;
