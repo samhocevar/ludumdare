@@ -67,6 +67,8 @@ public:
     levelmap *m_level; // current level
     vec2 m_poi; // point of interest (i.e. player)
 
+    double m_timer;
+
 private:
     game_state m_state;
 
@@ -82,8 +84,6 @@ private:
 
     actor *m_player;
     class postprocess *m_postprocess;
-
-    double m_timer;
 };
 
 class postprocess : public Entity
@@ -97,9 +97,13 @@ public:
     virtual void TickDraw(float seconds, Scene &scene)
     {
         // Add some cheap “postprocess”
+        int frame = (int)lol::fmod(g_game->m_timer * 10.0, 8.0);
+        float angle = radians(90.f * frame);
+        int flip = frame < 4 ? 1 : -1;
+
         vec2 const viewport_size = vec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
-        scene.AddTile(g_game->m_gradient, 0, vec3(g_game->m_poi - 0.5f * viewport_size.xy, 10.f), 0,
-                      vec2(VIEWPORT_SIZE_X / 256.f, VIEWPORT_SIZE_Y / 256.f), 0.f);
+        scene.AddTile(g_game->m_gradient, 0, vec3(g_game->m_poi - vec2(flip * 0.5f, 0.5f) * viewport_size.xy, 10.f), 0,
+                      vec2(flip * VIEWPORT_SIZE_X / 256.f, VIEWPORT_SIZE_Y / 256.f), angle);
     }
 };
 
