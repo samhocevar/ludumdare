@@ -12,16 +12,17 @@
 
 #pragma once
 
-enum class animaltype : uint8_t
+enum class animaltype : int8_t
 {
+    none = -1,
     cat = 0,
     elephant = 1,
     mouse = 2,
-    fish = 3,
+    turd = 3,
     bird = 4,
 };
 
-enum class actorstate : uint8_t
+enum class actorstate : int8_t
 {
     idle = 0,
     go_left = 1,
@@ -55,9 +56,9 @@ private:
 
     tileid get_tile(ivec2 pos) const;
 
-    animaltype m_type;
+    animaltype m_type, m_target_type;
     actorstate m_state;
     bool m_eastward, m_moving, m_falling, m_jumping, m_dead;
-    double m_timer, m_jump_timer;
+    double m_timer, m_jump_timer, m_morph_timer;
 };
 

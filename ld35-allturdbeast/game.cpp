@@ -30,6 +30,12 @@ ld33_game::ld33_game()
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->define_tile(ivec2(16, 16));
 
+    m_bigtiles = Tiler::Register("data/./tiles.png");
+    m_bigtiles->define_tile(ivec2(8, 8));
+
+    m_supertiles = Tiler::Register("data/././tiles.png");
+    m_supertiles->define_tile(ivec2(2, 2));
+
     m_gradient = Tiler::Register("data/gradient.png");
     m_gradient->define_tile(ivec2(1, 1));
 
@@ -119,6 +125,8 @@ ld33_game::~ld33_game()
     Ticker::Unref(m_start_text);
 
     Tiler::Deregister(m_tiles);
+    Tiler::Deregister(m_bigtiles);
+    Tiler::Deregister(m_supertiles);
     Tiler::Deregister(m_gradient);
 
     Scene& scene = Scene::GetScene();
@@ -153,6 +161,10 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
     // Make sure we’re using nearest neighbour, it’s pixel art after all!
     m_tiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
+    m_bigtiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
+    m_bigtiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
+    m_supertiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
+    m_supertiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
 
     Renderer::Get()->SetClearColor(Color::white);
     Renderer::Get()->SetAlphaFunc(AlphaFunc::Greater, 0.f);
@@ -194,9 +206,9 @@ void ld33_game::tick_events(float seconds)
     bool m3 = m_controller->IsKeyPressed(input::morph_3);
 
     if (m1 && m2)
-        m_player->morph(animaltype::fish);
-    else if (m2 && m3)
         m_player->morph(animaltype::bird);
+    else if (m2 && m3)
+        m_player->morph(animaltype::turd);
     else if (m1)
         m_player->morph(animaltype::elephant);
     else if (m2)

@@ -61,7 +61,7 @@ private:
     void tick_events(float seconds);
 
 public:
-    TileSet *m_tiles, *m_gradient;
+    TileSet *m_tiles, *m_bigtiles, *m_supertiles, *m_gradient;
     int m_fx_step;
 
     levelmap *m_level; // current level

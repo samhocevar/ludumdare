@@ -26,13 +26,16 @@ actor::actor()
   : m_tile(0, 0),
     m_delta(0.f, 0.f),
     m_type(animaltype::cat),
+    m_target_type(animaltype::none),
     m_state(actorstate::idle),
     m_eastward(true),
     m_moving(false),
     m_falling(false),
     m_jumping(false),
     m_dead(false),
-    m_timer(0.0)
+    m_timer(0.0),
+    m_jump_timer(0.0),
+    m_morph_timer(0.0)
 {
 }
 
@@ -60,6 +63,7 @@ void actor::subtick_game(float seconds)
 
     m_timer += seconds;
     m_jump_timer += seconds;
+    m_morph_timer += seconds;
 
     double footstep_now = lol::fmod(m_timer / 0.35, 1.0);
 
@@ -67,6 +71,15 @@ void actor::subtick_game(float seconds)
          (m_state == actorstate::go_left || m_state == actorstate::go_right))
     {
         Sampler::PlaySample(g_game->m_fx_step);
+    }
+
+    if (m_target_type != animaltype::none)
+    {
+        if (m_morph_timer > MORPH_DURATION * 0.5f)
+            m_type = m_target_type;
+
+        if (m_morph_timer > MORPH_DURATION)
+            m_target_type = animaltype::none;
     }
 
     auto tile_here = get_tile(m_tile);
@@ -103,7 +116,7 @@ void actor::subtick_game(float seconds)
         m_delta.x += get_walk_speed() * TILE_SIZE_X * seconds;
         break;
     case actorstate::free:
-	    /* FIXME: fish and bird mode? */
+        /* FIXME: fish and bird mode? */
         break;
     }
 
@@ -223,12 +236,12 @@ float actor::get_walk_speed() const
             return ELEPHANT_SPEED_WALK;
         case animaltype::mouse:
             return MOUSE_SPEED_WALK;
-        case animaltype::fish:
-            return FISH_SPEED_WALK;
+        case animaltype::turd:
+            return TURD_SPEED_WALK;
         case animaltype::bird:
             return BIRD_SPEED_WALK;
     }
-	return 0.0f;
+    return 0.0f;
 }
 
 float actor::get_jump_speed() const
@@ -241,12 +254,12 @@ float actor::get_jump_speed() const
             return ELEPHANT_SPEED_JUMP;
         case animaltype::mouse:
             return MOUSE_SPEED_JUMP;
-        case animaltype::fish:
-            return FISH_SPEED_JUMP;
+        case animaltype::turd:
+            return TURD_SPEED_JUMP;
         case animaltype::bird:
             return BIRD_SPEED_JUMP;
     }
-	return 0.0f;
+    return 0.0f;
 }
 
 float actor::get_jump_time() const
@@ -259,12 +272,12 @@ float actor::get_jump_time() const
             return ELEPHANT_TIME_JUMP;
         case animaltype::mouse:
             return MOUSE_TIME_JUMP;
-        case animaltype::fish:
-            return FISH_TIME_JUMP;
+        case animaltype::turd:
+            return TURD_TIME_JUMP;
         case animaltype::bird:
             return BIRD_TIME_JUMP;
     }
-	return 0.0f;
+    return 0.0f;
 }
 
 float actor::get_fall_speed() const
@@ -277,12 +290,12 @@ float actor::get_fall_speed() const
             return ELEPHANT_SPEED_FALL;
         case animaltype::mouse:
             return MOUSE_SPEED_FALL;
-        case animaltype::fish:
-            return FISH_SPEED_FALL;
+        case animaltype::turd:
+            return TURD_SPEED_FALL;
         case animaltype::bird:
             return BIRD_SPEED_FALL;
     }
-	return 0.0f;
+    return 0.0f;
 }
 
 tileid actor::get_tile(ivec2 pos) const
@@ -308,97 +321,125 @@ void actor::TickDraw(float seconds, Scene &scene)
     // debug cell
     //scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(TILE_SIZE_X * m_tile.x, - TILE_SIZE_Y * m_tile.y, 10.f), 0, vec2(1.f), 0.f);
 
-    tileid body_tid;
-
-    switch (m_state)
-    {
-        case actorstate::go_left:
-            body_tid = tileid::player_idle; /* FIXME */
-            break;
-        case actorstate::go_right:
-            body_tid = tileid::player_idle; /* FIXME */
-            break;
-        case actorstate::free:
-            body_tid = tileid::player_idle; /* FIXME */
-            break;
-        case actorstate::idle:
-            body_tid = tileid::player_idle;
-            break;
-        default:
-            body_tid = tileid::player_idle; /* FIXME */
-            break;
-    }
+    bigtileid body_tid;
 
     /* Offset tile information depending on the animal type */
-    body_tid = tileid(int(body_tid) + 0x20 * int(m_type));
+    body_tid = bigtileid(int(bigtileid::player_idle) + 0x8 * int(m_type));
 
-    /* Render body (4 tiles) */
-    for (int y = 0; y < 2; ++y)
-    for (int x = 0; x < 2; ++x)
+    /* Birds never fall and always move */
+    if (m_type == animaltype::bird)
     {
-        int tid = int(body_tid) + (m_eastward ? x : 1 - x) + y * 0x10;
-        vec2 scale(m_eastward ? 1.f : -1.f, 1.f);
+        m_falling = m_jumping = false;
+        m_moving = true;
+    }
 
-        if (m_falling || m_jumping)
-        {
-            // jump pose
-			if (m_type == animaltype::cat)
-            {
-                tid += 4;
-            }
-			else if (m_type == animaltype::elephant)
-            {
-                tid += 4;
-            }
-			else if (m_type == animaltype::mouse)
-            {
-                tid += 2;
-            }
-			else if (m_type == animaltype::fish)
-            {
-            }
-			else if (m_type == animaltype::bird)
-            {
-            }
-        }
-        else if (m_moving)
-        {
-            // walk loop
-			if (m_type == animaltype::cat)
-            {
-                double anim_debug = lol::fmod(m_timer / .55, 1.0);
-                //tid += anim_debug < 0.5 ? 4 : 6;
-                tid += 4; // FIXME: set cat frames
-            }
-			else if (m_type == animaltype::elephant)
-            {
-                double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
-                tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 4 : 6;
-            }
-			else if (m_type == animaltype::mouse)
-            {
-                double anim_debug = lol::fmod(m_timer / 0.25, 1.0);
-                tid += anim_debug < 0.5 ? 0 : 2;
-            }
-			else if (m_type == animaltype::fish)
-            {
-                //double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
-                //tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 4 : 6;
-            }
-			else if (m_type == animaltype::bird)
-            {
-                //double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
-                //tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 4 : 6;
-            }
-        }
-        else
-        {
-            // idle loop
-            double anim_debug = lol::fmod(m_timer / 1.10, 1.0);
-            tid += anim_debug < 0.5 ? 0 : 2;
-        }
+    /* Render body (big tile) */
+    int tid = int(body_tid);
+    float delta = 0.f;
+    vec2 scale(m_eastward ? 1.f : -1.f, 1.f);
+    vec2 oldscale(m_eastward ? 1.f : -1.f, 1.f);
 
-        scene.AddTile(g_game->m_tiles, tid, m_position + vec3((x + (m_eastward ? -0.5f : 0.5f)) * TILE_SIZE_X, (1.f - y) * TILE_SIZE_Y, 0.f), 0, scale, 0.f);
+    if (m_target_type != animaltype::none)
+    {
+        float skew = (2.f / MORPH_DURATION) * lol::abs(0.5f * MORPH_DURATION - m_morph_timer);
+        scale.x *= skew;
+        scale.y /= skew + 1e-6f;
+        delta = 1.0f - skew;
+    }
+
+    if (m_falling || m_jumping)
+    {
+        // jump pose
+        if (m_type == animaltype::cat)
+        {
+            tid += 3;
+        }
+        else if (m_type == animaltype::elephant)
+        {
+            tid += 2;
+        }
+        else if (m_type == animaltype::mouse)
+        {
+            tid += 1;
+        }
+        else if (m_type == animaltype::turd)
+        {
+        }
+        else if (m_type == animaltype::bird)
+        {
+        }
+    }
+    else if (m_moving)
+    {
+        // walk loop
+        if (m_type == animaltype::cat)
+        {
+            double anim_debug = lol::fmod(m_timer / .35, 1.0);
+            tid += anim_debug < 0.333 ? 2 : anim_debug < 0.666 ? 3 : 4;
+        }
+        else if (m_type == animaltype::elephant)
+        {
+            double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
+            tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 2 : 3;
+        }
+        else if (m_type == animaltype::mouse)
+        {
+            double anim_debug = lol::fmod(m_timer / 0.25, 1.0);
+            tid += anim_debug < 0.5 ? 0 : 1;
+        }
+        else if (m_type == animaltype::turd)
+        {
+            //double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
+            //tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 2 : 3;
+        }
+        else if (m_type == animaltype::bird)
+        {
+            double anim_debug = lol::fmod(m_timer / 0.35, 1.0);
+            tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 1 : 2;
+        }
+    }
+    else
+    {
+        // idle loop
+        double anim_debug = lol::fmod(m_timer / 1.10, 1.0);
+        tid += anim_debug < 0.5 ? 0 : 1;
+    }
+
+    for (int i = 0; i < (1 + delta * 10); ++i)
+    {
+        vec3 pos = m_position + vec3(0.f, 0.f, 1.f);
+        pos.x += (0.5f - scale.x) * TILE_SIZE_X;
+
+        pos.x += rand(-delta, delta) * 0.3f * TILE_SIZE_X;
+        pos.y += rand(-delta, delta) * 0.2f * TILE_SIZE_Y;
+
+        scene.AddTile(g_game->m_bigtiles, tid, pos, 0, scale, 0.f);
+
+        // debug
+        //scene.AddTile(g_game->m_tiles, 0x10, vec3(pos.xy, 10.f), 0, vec2(0.1f), 0.f);
+    }
+
+#if 0 // shitty
+    if (m_target_type != animaltype::none)
+    {
+        vec3 pos = m_position;
+        pos.x += (0.5f - oldscale.x) * TILE_SIZE_X;
+        pos.y -= 0.5f * TILE_SIZE_X;
+
+        float skew = (2.f / MORPH_DURATION) * lol::abs(0.5f * MORPH_DURATION - m_morph_timer);
+        int frame = skew > 0.666 ? 0 : skew > 0.333 ? 1 : 2;
+        scene.AddTile(g_game->m_bigtiles, int(bigtileid::ball) + frame, pos, 0, oldscale, 0.f);
+    }
+#endif
+
+    if (m_type == animaltype::turd)
+    {
+        // Use morph timer because it’ll run forever
+        vec3 pos = m_position + vec3(-7.5f * TILE_SIZE_X, -7.5f * TILE_SIZE_Y, 0.f);
+        float angle = (float)radians(lol::fmod(m_morph_timer / 6.0, 1.0) * 360);
+        pos.x += 0.f * TILE_SIZE_X * lol::cos(angle);
+        pos.y += 0.f * TILE_SIZE_Y * lol::sin(angle);
+        scene.AddTile(g_game->m_supertiles, 3, pos, 0, vec2(2.f), -2.f * angle);
     }
 
     // Debug stuff
@@ -430,7 +471,22 @@ void actor::move(actorstate state)
 
 void actor::morph(animaltype type)
 {
-    m_type = type;
+    /* If we already have a two-button target, cancel */
+    if (m_target_type == animaltype::turd || m_target_type == animaltype::bird)
+        return;
+
+    /* If a transition is ongoing, cancel */
+    if (m_target_type != animaltype::none && m_morph_timer >= 0.5f * MORPH_DURATION)
+        return;
+
+    /* If no change, cancel */
+    if (type == m_type)
+        return;
+
+    if (m_target_type == animaltype::none)
+        m_morph_timer = 0.0;
+
+    m_target_type = type;
 }
 
 void actor::jump()

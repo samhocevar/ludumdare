@@ -26,6 +26,8 @@ static int const TILE_SIZE_Y = 16;
 static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
+static float const MORPH_DURATION = 0.4f;
+
 static float const CAT_SPEED_WALK = 12.0f;
 static float const CAT_SPEED_FALL = 18.0f; // fall speed must be > walk speed
 static float const CAT_SPEED_JUMP = 15.0f;
@@ -46,10 +48,10 @@ static float const BIRD_SPEED_FALL = 0.0f;
 static float const BIRD_SPEED_JUMP = 0.0f;
 static float const BIRD_TIME_JUMP = 0.0f;
 
-static float const FISH_SPEED_WALK = 0.0f;
-static float const FISH_SPEED_FALL = 18.0f;
-static float const FISH_SPEED_JUMP = 0.0f;
-static float const FISH_TIME_JUMP = 0.0f;
+static float const TURD_SPEED_WALK = 0.0f;
+static float const TURD_SPEED_FALL = 0.0f;
+static float const TURD_SPEED_JUMP = 0.0f;
+static float const TURD_TIME_JUMP = 0.0f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t
@@ -69,6 +71,11 @@ enum class tileid : uint16_t
 
     background = 0x40,
     /* ... and the following four 2×2 tiles (5 in total) */
+};
 
-    player_idle = 0x60,
+enum class bigtileid : uint16_t
+{
+    ray = 0x2,
+    ball = 0x15,
+    player_idle = 0x18,
 };
