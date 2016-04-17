@@ -24,7 +24,7 @@ static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
 static float const CAT_SPEED_WALK = 15.0f;
-static float const CAT_SPEED_FALL = 16.0f; // fall speed must be > walk speed
+static float const CAT_SPEED_FALL = 18.0f; // fall speed must be > walk speed
 static float const CAT_SPEED_JUMP = 15.0f;
 
 static float const ELEPHANT_SPEED_WALK = 5.0f;
@@ -33,15 +33,15 @@ static float const ELEPHANT_SPEED_JUMP = 1.0f;
 
 static float const MOUSE_SPEED_WALK = 10.0f;
 static float const MOUSE_SPEED_FALL = 10.0f;
-static float const MOUSE_SPEED_JUMP = 5.0f;
+static float const MOUSE_SPEED_JUMP = 0.0f;
 
 static float const BIRD_SPEED_WALK = 5.0f;
 static float const BIRD_SPEED_FALL = 0.0f;
 static float const BIRD_SPEED_JUMP = 0.0f;
 
 static float const FISH_SPEED_WALK = 5.0f;
-static float const FISH_SPEED_FALL = 5.0f;
-static float const FISH_SPEED_JUMP = 5.0f;
+static float const FISH_SPEED_FALL = 18.0f;
+static float const FISH_SPEED_JUMP = 0.0f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t
@@ -50,15 +50,17 @@ enum class tileid : uint16_t
     player_start = 0x01,
     select = 0x02,
 
-    background = 0x40,
-    /* ... and the following four 2×2 tiles (5 in total) */
-
     wall = 0x10,
     wall_start = wall,
     wall_end = 0x20,
 
-    stairs_up = 0x20,
-    stairs_down = 0x21,
+    slope_up = 0x20,
+    slope_down = 0x21,
+
+    mouse_passage = 0x24, // +6
+
+    background = 0x40,
+    /* ... and the following four 2×2 tiles (5 in total) */
 
     player_idle = 0x60,
 };

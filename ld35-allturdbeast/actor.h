@@ -48,9 +48,11 @@ public:
 private:
     void subtick_game(float seconds);
 
-	float get_walk_speed() const;
+    float get_walk_speed() const;
     float get_jump_speed() const;
     float get_fall_speed() const;
+
+    tileid get_tile(ivec2 pos) const;
 
     animaltype m_type;
     actorstate m_state;

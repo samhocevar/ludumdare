@@ -68,11 +68,11 @@ void actor::subtick_game(float seconds)
         Sampler::PlaySample(g_game->m_fx_step);
     }
 
-    auto tile_here = g_game->m_level->get_tile(m_tile);
-    auto tile_below = g_game->m_level->get_tile(m_tile + ivec2(0, 1));
-    auto tile_above = g_game->m_level->get_tile(m_tile + ivec2(0, -1));
-    auto tile_left = g_game->m_level->get_tile(m_tile + ivec2(-1, 0));
-    auto tile_right = g_game->m_level->get_tile(m_tile + ivec2(1, 0));
+    auto tile_here = get_tile(m_tile);
+    auto tile_below = get_tile(m_tile + ivec2(0, 1));
+    auto tile_above = get_tile(m_tile + ivec2(0, -1));
+    auto tile_left = get_tile(m_tile + ivec2(-1, 0));
+    auto tile_right = get_tile(m_tile + ivec2(1, 0));
 
     /* Handle falling */
     if (m_jump_timer > 0.5)
@@ -112,14 +112,14 @@ void actor::subtick_game(float seconds)
         case tileid::wall:
             /* Inside a wall? Push actor outside! */
             while (sqlength(m_delta) < 0.5 * 0.5 * (TILE_SIZE_X * TILE_SIZE_Y))
-                m_delta *= 1.05f;
+                m_delta = m_delta * 1.05f + vec2(rand(0.01f));
             break;
-        case tileid::stairs_down:
+        case tileid::slope_down:
             if (m_delta.y <= 0.5f * TILE_SIZE_Y - m_delta.x)
                 m_falling = false;
             m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y - m_delta.x);
             break;
-        case tileid::stairs_up:
+        case tileid::slope_up:
             if (m_delta.y <= 0.5f * TILE_SIZE_Y + m_delta.x)
                 m_falling = false;
             m_delta.y = max(m_delta.y, 0.5f * TILE_SIZE_Y + m_delta.x);
@@ -149,8 +149,8 @@ void actor::subtick_game(float seconds)
     switch (tile_above)
     {
         case tileid::wall:
-        case tileid::stairs_down:
-        case tileid::stairs_up:
+        case tileid::slope_down:
+        case tileid::slope_up:
             if (m_delta.y > 0.f)
             {
                 m_jumping = false;
@@ -169,12 +169,12 @@ void actor::subtick_game(float seconds)
                 m_falling = false;
             m_delta.y = max(m_delta.y, 0.f);
             break;
-        case tileid::stairs_down:
+        case tileid::slope_down:
             if (m_delta.y <= -0.5f * TILE_SIZE_Y - m_delta.x)
                 m_falling = false;
             m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y - m_delta.x);
             break;
-        case tileid::stairs_up:
+        case tileid::slope_up:
             if (m_delta.y <= -0.5f * TILE_SIZE_Y + m_delta.x)
                 m_falling = false;
             m_delta.y = max(m_delta.y, -0.5f * TILE_SIZE_Y + m_delta.x);
@@ -264,6 +264,16 @@ float actor::get_fall_speed() const
             return BIRD_SPEED_FALL;
     }
 	return 0.0f;
+}
+
+tileid actor::get_tile(ivec2 pos) const
+{
+    tileid tile = g_game->m_level->get_tile(pos);
+
+    if (tile == tileid::mouse_passage && m_type != animaltype::mouse)
+        tile = tileid::wall;
+
+    return tile;
 }
 
 void actor::TickDraw(float seconds, Scene &scene)

@@ -158,11 +158,14 @@ void levelmap::load_data(char const *data)
                     m_layers.last()[x][y] = tileid(id);
 
                     // If this tile is important for gameplay, update m_map
-                    if (id == int(tileid::stairs_up) || id == int(tileid::stairs_up) + 2)
-                        m_map[x][y] = tileid::stairs_up;
+                    if (id == int(tileid::slope_up) || id == int(tileid::slope_up) + 2)
+                        m_map[x][y] = tileid::slope_up;
 
-                    else if (id == int(tileid::stairs_down) || id == int(tileid::stairs_down) + 2)
-                        m_map[x][y] = tileid::stairs_down;
+                    else if (id == int(tileid::slope_down) || id == int(tileid::slope_down) + 2)
+                        m_map[x][y] = tileid::slope_down;
+
+                    else if (id >= int(tileid::mouse_passage) && id < int(tileid::mouse_passage) + 6)
+                        m_map[x][y] = tileid::mouse_passage;
 
                     else if (id >= int(tileid::wall_start) && id < int(tileid::wall_end))
                         m_map[x][y] = tileid::wall;
