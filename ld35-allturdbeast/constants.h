@@ -29,22 +29,27 @@ static int const BG_SIZE_Y = 8;
 static float const CAT_SPEED_WALK = 12.0f;
 static float const CAT_SPEED_FALL = 18.0f; // fall speed must be > walk speed
 static float const CAT_SPEED_JUMP = 15.0f;
+static float const CAT_TIME_JUMP = 0.5f;
 
 static float const ELEPHANT_SPEED_WALK = 3.0f;
 static float const ELEPHANT_SPEED_FALL = 20.0f;
 static float const ELEPHANT_SPEED_JUMP = 1.0f;
+static float const ELEPHANT_TIME_JUMP = 0.1f;
 
 static float const MOUSE_SPEED_WALK = 8.0f;
 static float const MOUSE_SPEED_FALL = 10.0f;
 static float const MOUSE_SPEED_JUMP = 0.0f;
+static float const MOUSE_TIME_JUMP = 0.0f;
 
 static float const BIRD_SPEED_WALK = 3.0f;
 static float const BIRD_SPEED_FALL = 0.0f;
 static float const BIRD_SPEED_JUMP = 0.0f;
+static float const BIRD_TIME_JUMP = 0.0f;
 
 static float const FISH_SPEED_WALK = 0.0f;
 static float const FISH_SPEED_FALL = 18.0f;
 static float const FISH_SPEED_JUMP = 0.0f;
+static float const FISH_TIME_JUMP = 0.0f;
 
 /* The IDs of our tiles */
 enum class tileid : uint16_t

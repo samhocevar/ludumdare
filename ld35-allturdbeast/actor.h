@@ -50,6 +50,7 @@ private:
 
     float get_walk_speed() const;
     float get_jump_speed() const;
+    float get_jump_time() const;
     float get_fall_speed() const;
 
     tileid get_tile(ivec2 pos) const;

@@ -76,7 +76,7 @@ void actor::subtick_game(float seconds)
     auto tile_right = get_tile(m_tile + ivec2(1, 0));
 
     /* Handle falling */
-    if (m_jump_timer > 0.5)
+    if (m_jump_timer > get_jump_time())
     {
         m_jumping = false;
         m_falling = true;
@@ -245,6 +245,24 @@ float actor::get_jump_speed() const
             return FISH_SPEED_JUMP;
         case animaltype::bird:
             return BIRD_SPEED_JUMP;
+    }
+	return 0.0f;
+}
+
+float actor::get_jump_time() const
+{
+    switch (m_type)
+    {
+        case animaltype::cat:
+            return CAT_TIME_JUMP;
+        case animaltype::elephant:
+            return ELEPHANT_TIME_JUMP;
+        case animaltype::mouse:
+            return MOUSE_TIME_JUMP;
+        case animaltype::fish:
+            return FISH_TIME_JUMP;
+        case animaltype::bird:
+            return BIRD_TIME_JUMP;
     }
 	return 0.0f;
 }
