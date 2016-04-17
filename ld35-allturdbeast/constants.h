@@ -13,8 +13,8 @@
 #pragma once
 
 /* The size of the window we create */
-static int const WINDOW_SIZE_X = 900;
-static int const WINDOW_SIZE_Y = 600;
+static int const WINDOW_SIZE_X = 800;
+static int const WINDOW_SIZE_Y = 466;
 
 static int const VIEWPORT_SIZE_X = 200;
 static int const VIEWPORT_SIZE_Y = 120;
@@ -26,8 +26,9 @@ static int const TILE_SIZE_Y = 16;
 static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
-static float const SHAKE_CHARGE_DURATION = 0.2f;
-static float const SHAKE_DURATION = 0.7f;
+static float const SHAKE_CHARGE_DURATION = 0.14f; // enough for a 3-level fall
+static float const SHAKE_DURATION = 0.4f;
+
 static float const MORPH_DURATION = 0.4f;
 
 static float const CAT_SPEED_WALK = 10.0f;
