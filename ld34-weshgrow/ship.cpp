@@ -268,7 +268,7 @@ void ship::TickGame(float seconds)
                 m_exhausts.last().pos = m_position + front * th.y + right * th.x + front * 0.4f * TILE_SIZE_Y;
                 m_exhausts.last().vel = m_velocity - front * rand(60.f, 80.f) + right * rand(-60.f, 60.f);
                 m_exhausts.last().life = rand(0.5f, 1.f) * EXHAUST_LIFETIME;
-                m_exhausts.last().angle = rand(360.f);
+                m_exhausts.last().angle = radians(rand(360.f));
             }
         }
     }
@@ -304,7 +304,7 @@ void ship::TickDraw(float seconds, Scene &scene)
     //pos.y = round(pos.y);
 
     for (auto const &hull : m_hull)
-        scene.AddTile(g_game->m_tiles, int(hull.id), pos + right * hull.pos.x + front * hull.pos.y, 0, vec2(1.f), degrees(heading));
+        scene.AddTile(g_game->m_tiles, int(hull.id), pos + right * hull.pos.x + front * hull.pos.y, 0, vec2(1.f), heading);
 
     int thrust_small_frame = int(tileid::thrust_small) + int(m_timer * 10.f) % 4;
     int thrust_large_frame = int(tileid::thrust_large) + int(m_timer * 10.f) % 4;
@@ -313,7 +313,7 @@ void ship::TickDraw(float seconds, Scene &scene)
     for (auto &th : m_thrusters)
     {
         if ((th.x <= 0 && m_thrust_left) || (th.x >= 0 && m_thrust_right))
-            scene.AddTile(g_game->m_tiles, th.z == 1 ? thrust_small_frame : thrust_large_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), degrees(heading));
+            scene.AddTile(g_game->m_tiles, th.z == 1 ? thrust_small_frame : thrust_large_frame, pos + front * th.y + right * th.x, 0, vec2(1.f), heading);
     }
 
     /* Exhaust particles */
