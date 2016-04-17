@@ -16,6 +16,9 @@
 static int const WINDOW_SIZE_X = 900;
 static int const WINDOW_SIZE_Y = 600;
 
+static int const VIEWPORT_SIZE_X = 200;
+static int const VIEWPORT_SIZE_Y = 120;
+
 static int const TILE_SIZE_X = 16;
 static int const TILE_SIZE_Y = 16;
 
@@ -23,23 +26,23 @@ static int const TILE_SIZE_Y = 16;
 static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
-static float const CAT_SPEED_WALK = 15.0f;
+static float const CAT_SPEED_WALK = 12.0f;
 static float const CAT_SPEED_FALL = 18.0f; // fall speed must be > walk speed
 static float const CAT_SPEED_JUMP = 15.0f;
 
-static float const ELEPHANT_SPEED_WALK = 5.0f;
+static float const ELEPHANT_SPEED_WALK = 3.0f;
 static float const ELEPHANT_SPEED_FALL = 20.0f;
 static float const ELEPHANT_SPEED_JUMP = 1.0f;
 
-static float const MOUSE_SPEED_WALK = 10.0f;
+static float const MOUSE_SPEED_WALK = 8.0f;
 static float const MOUSE_SPEED_FALL = 10.0f;
 static float const MOUSE_SPEED_JUMP = 0.0f;
 
-static float const BIRD_SPEED_WALK = 5.0f;
+static float const BIRD_SPEED_WALK = 3.0f;
 static float const BIRD_SPEED_FALL = 0.0f;
 static float const BIRD_SPEED_JUMP = 0.0f;
 
-static float const FISH_SPEED_WALK = 5.0f;
+static float const FISH_SPEED_WALK = 0.0f;
 static float const FISH_SPEED_FALL = 18.0f;
 static float const FISH_SPEED_JUMP = 0.0f;
 

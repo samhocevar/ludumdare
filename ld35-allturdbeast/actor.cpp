@@ -28,6 +28,7 @@ actor::actor()
     m_type(animaltype::cat),
     m_state(actorstate::idle),
     m_eastward(true),
+    m_moving(false),
     m_falling(false),
     m_jumping(false),
     m_dead(false),
@@ -131,7 +132,7 @@ void actor::subtick_game(float seconds)
     switch (tile_left)
     {
         case tileid::wall:
-            m_delta.x = max(m_delta.x, 0.f);
+            m_delta.x = max(m_delta.x, -0.01f);
             break;
         default:
             break;
@@ -140,7 +141,7 @@ void actor::subtick_game(float seconds)
     switch (tile_right)
     {
         case tileid::wall:
-            m_delta.x = min(m_delta.x, 0.f);
+            m_delta.x = min(m_delta.x, 0.01f);
             break;
         default:
             break;
@@ -320,14 +321,70 @@ void actor::TickDraw(float seconds, Scene &scene)
         int tid = int(body_tid) + (m_eastward ? x : 1 - x) + y * 0x10;
         vec2 scale(m_eastward ? 1.f : -1.f, 1.f);
 
-        //double anim_debug = lol::fmod(m_timer / 0.35, 1.0);
-        //tid += anim_debug < 0.25 ? 0 : anim_debug < 0.5 ? 2 : anim_debug < 0.75 ? 4 : 2;
+        if (m_falling || m_jumping)
+        {
+            // jump pose
+			if (m_type == animaltype::cat)
+            {
+                tid += 4;
+            }
+			else if (m_type == animaltype::elephant)
+            {
+                tid += 4;
+            }
+			else if (m_type == animaltype::mouse)
+            {
+                tid += 2;
+            }
+			else if (m_type == animaltype::fish)
+            {
+            }
+			else if (m_type == animaltype::bird)
+            {
+            }
+        }
+        else if (m_moving)
+        {
+            // walk loop
+			if (m_type == animaltype::cat)
+            {
+                double anim_debug = lol::fmod(m_timer / .55, 1.0);
+                //tid += anim_debug < 0.5 ? 4 : 6;
+                tid += 4; // FIXME: set cat frames
+            }
+			else if (m_type == animaltype::elephant)
+            {
+                double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
+                tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 4 : 6;
+            }
+			else if (m_type == animaltype::mouse)
+            {
+                double anim_debug = lol::fmod(m_timer / 0.25, 1.0);
+                tid += anim_debug < 0.5 ? 0 : 2;
+            }
+			else if (m_type == animaltype::fish)
+            {
+                //double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
+                //tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 4 : 6;
+            }
+			else if (m_type == animaltype::bird)
+            {
+                //double anim_debug = lol::fmod(m_timer / 0.55, 1.0);
+                //tid += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 4 : 6;
+            }
+        }
+        else
+        {
+            // idle loop
+            double anim_debug = lol::fmod(m_timer / 1.10, 1.0);
+            tid += anim_debug < 0.5 ? 0 : 2;
+        }
 
         scene.AddTile(g_game->m_tiles, tid, m_position + vec3((x + (m_eastward ? -0.5f : 0.5f)) * TILE_SIZE_X, (1.f - y) * TILE_SIZE_Y, 0.f), 0, scale, 0.f);
     }
 
     // Debug stuff
-    scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
+    //scene.AddTile(g_game->m_tiles, int(tileid::select), vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f), 0, vec2(1.f), 0.f);
 }
 
 void actor::move(actorstate state)
@@ -336,11 +393,21 @@ void actor::move(actorstate state)
         m_timer = 0.0;
     m_state = state;
 
-    /* Correct facing direction */
-    if (state == actorstate::go_right)
-        m_eastward = true;
-    else if (state == actorstate::go_left)
-        m_eastward = false;
+    /* Correct movement boolean and facing direction */
+    switch (state)
+    {
+        case actorstate::go_right:
+            m_moving = true;
+            m_eastward = true;
+            break;
+        case actorstate::go_left:
+            m_moving = true;
+            m_eastward = false;
+            break;
+        default:
+            m_moving = false;
+            break;
+    }
 }
 
 void actor::morph(animaltype type)

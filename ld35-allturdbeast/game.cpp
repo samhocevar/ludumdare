@@ -30,6 +30,9 @@ ld33_game::ld33_game()
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->define_tile(ivec2(16, 16));
 
+    m_gradient = Tiler::Register("data/gradient.png");
+    m_gradient->define_tile(ivec2(1, 1));
+
     m_camera = new Camera();
     Scene& scene = Scene::GetScene();
     scene.PushCamera(m_camera);
@@ -93,6 +96,9 @@ ld33_game::ld33_game()
     m_player = new actor();
     Ticker::Ref(m_player);
 
+    m_postprocess = new postprocess();
+    Ticker::Ref(m_postprocess);
+
     m_fx_step = Sampler::Register("data/fx_step.wav");
     m_music = Sampler::Register("data/bu-a-castles-witches.ogg");
     Sampler::LoopSample(m_music);
@@ -105,6 +111,7 @@ ld33_game::~ld33_game()
     Sampler::Deregister(m_music);
 
     Ticker::Unref(m_player);
+    Ticker::Unref(m_postprocess);
 
     Ticker::Unref(m_game_text);
     Ticker::Unref(m_level_text);
@@ -112,6 +119,7 @@ ld33_game::~ld33_game()
     Ticker::Unref(m_start_text);
 
     Tiler::Deregister(m_tiles);
+    Tiler::Deregister(m_gradient);
 
     Scene& scene = Scene::GetScene();
     scene.PopCamera(m_camera);
@@ -147,20 +155,23 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
     m_tiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
 
     Renderer::Get()->SetClearColor(Color::white);
+    Renderer::Get()->SetAlphaFunc(AlphaFunc::Greater, 0.f);
+    Renderer::Get()->SetBlendFunc(BlendFunc::SrcAlpha, BlendFunc::OneMinusSrcAlpha);
 }
 
 void ld33_game::tick_camera(float seconds)
 {
     UNUSED(seconds);
 
-    ivec2 m_viewport_size = ivec2(300, 200);
+    ivec2 const viewport_size = ivec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
 
     if (m_player)
     {
-        mat4 proj = mat4::ortho(m_viewport_size.x, m_viewport_size.y, -100.f, 100.f);
+        mat4 proj = mat4::ortho(viewport_size.x, viewport_size.y, -100.f, 100.f);
 
-        m_poi = m_player->m_position.xy;
-        mat4 view = mat4::translate(-vec3(m_poi.xy, 0.0f));
+        // Center the camera slightly above the player sprite
+        m_poi = m_player->m_position.xy + vec2(0.5f * TILE_SIZE_X, 1.0f * TILE_SIZE_Y);
+        mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
 
         m_camera->SetView(view);
         m_camera->SetProjection(proj);

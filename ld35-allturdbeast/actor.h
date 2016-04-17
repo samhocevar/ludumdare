@@ -56,7 +56,7 @@ private:
 
     animaltype m_type;
     actorstate m_state;
-    bool m_eastward, m_falling, m_jumping, m_dead;
+    bool m_eastward, m_moving, m_falling, m_jumping, m_dead;
     double m_timer, m_jump_timer;
 };
 
