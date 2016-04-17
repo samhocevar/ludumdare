@@ -167,6 +167,9 @@ void levelmap::load_data(char const *data)
                     else if (id >= int(tileid::mouse_passage) && id < int(tileid::mouse_passage) + 6)
                         m_map[x][y] = tileid::mouse_passage;
 
+                    else if (id >= int(tileid::elephant_passage) && id < int(tileid::elephant_passage) + 2)
+                        m_map[x][y] = tileid::elephant_passage;
+
                     else if (id >= int(tileid::wall_start) && id < int(tileid::wall_end))
                         m_map[x][y] = tileid::wall;
 

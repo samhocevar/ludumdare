@@ -25,7 +25,8 @@ using namespace lol;
 
 ld33_game::ld33_game()
   : m_level(nullptr),
-    m_timer(0.0)
+    m_timer(0.0),
+    m_shake_timer(0.0)
 {
     m_tiles = Tiler::Register("data/tiles.png");
     m_tiles->define_tile(ivec2(16, 16));
@@ -166,7 +167,7 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
     m_supertiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
     m_supertiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
 
-    Renderer::Get()->SetClearColor(Color::white);
+    Renderer::Get()->SetClearColor(Color::black);
     Renderer::Get()->SetAlphaFunc(AlphaFunc::Greater, 0.f);
     Renderer::Get()->SetBlendFunc(BlendFunc::SrcAlpha, BlendFunc::OneMinusSrcAlpha);
 }
@@ -184,6 +185,16 @@ void ld33_game::tick_camera(float seconds)
         // Center the camera slightly above the player sprite
         m_poi = m_player->m_position.xy + vec2(0.5f * TILE_SIZE_X, 1.0f * TILE_SIZE_Y);
         mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
+
+        if (m_shake_timer > 0.f)
+        {
+            float shake_intensity = (float)m_shake_timer / SHAKE_DURATION;
+            view = mat4::rotate(rand(-.1f, .1f) * shake_intensity, vec3::axis_z)
+                 * mat4::translate(rand(-5.f, 5.f) * shake_intensity, rand(-5.f, 5.f) * shake_intensity, 0.f)
+                 * mat4::scale(rand(1.f, 1.2f))
+                 * view;
+            m_shake_timer -= seconds;
+        }
 
         m_camera->SetView(view);
         m_camera->SetProjection(proj);

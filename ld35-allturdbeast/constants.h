@@ -26,19 +26,21 @@ static int const TILE_SIZE_Y = 16;
 static int const BG_SIZE_X = 12;
 static int const BG_SIZE_Y = 8;
 
+static float const SHAKE_CHARGE_DURATION = 0.2f;
+static float const SHAKE_DURATION = 0.7f;
 static float const MORPH_DURATION = 0.4f;
 
-static float const CAT_SPEED_WALK = 12.0f;
-static float const CAT_SPEED_FALL = 18.0f; // fall speed must be > walk speed
-static float const CAT_SPEED_JUMP = 15.0f;
-static float const CAT_TIME_JUMP = 0.5f;
+static float const CAT_SPEED_WALK = 10.0f;
+static float const CAT_SPEED_FALL = 14.0f; // fall speed must be > walk speed
+static float const CAT_SPEED_JUMP = 10.0f;
+static float const CAT_TIME_JUMP = 0.35f;
 
 static float const ELEPHANT_SPEED_WALK = 3.0f;
 static float const ELEPHANT_SPEED_FALL = 20.0f;
 static float const ELEPHANT_SPEED_JUMP = 1.0f;
 static float const ELEPHANT_TIME_JUMP = 0.1f;
 
-static float const MOUSE_SPEED_WALK = 8.0f;
+static float const MOUSE_SPEED_WALK = 6.0f;
 static float const MOUSE_SPEED_FALL = 10.0f;
 static float const MOUSE_SPEED_JUMP = 0.0f;
 static float const MOUSE_TIME_JUMP = 0.0f;
@@ -68,6 +70,7 @@ enum class tileid : uint16_t
     slope_down = 0x21,
 
     mouse_passage = 0x24, // +6
+    elephant_passage = 0x2a, // +1
 
     background = 0x40,
     /* ... and the following four 2×2 tiles (5 in total) */

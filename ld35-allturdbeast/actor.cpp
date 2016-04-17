@@ -34,6 +34,7 @@ actor::actor()
     m_jumping(false),
     m_dead(false),
     m_timer(0.0),
+    m_fall_timer(0.0),
     m_jump_timer(0.0),
     m_morph_timer(0.0)
 {
@@ -62,6 +63,7 @@ void actor::subtick_game(float seconds)
     double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
 
     m_timer += seconds;
+    m_fall_timer += seconds;
     m_jump_timer += seconds;
     m_morph_timer += seconds;
 
@@ -81,6 +83,8 @@ void actor::subtick_game(float seconds)
         if (m_morph_timer > MORPH_DURATION)
             m_target_type = animaltype::none;
     }
+
+    bool was_falling = m_falling;
 
     auto tile_here = get_tile(m_tile);
     auto tile_below = get_tile(m_tile + ivec2(0, 1));
@@ -222,6 +226,16 @@ void actor::subtick_game(float seconds)
         m_delta.y += TILE_SIZE_Y;
     }
 
+    if (m_falling && !was_falling)
+    {
+        m_fall_timer = 0.0;
+    }
+    else if (was_falling && !m_falling)
+    {
+        if (m_type == animaltype::elephant && m_fall_timer > SHAKE_CHARGE_DURATION)
+            g_game->m_shake_timer = SHAKE_DURATION;
+    }
+
     m_position = vec3(m_tile.x * TILE_SIZE_X, -m_tile.y * TILE_SIZE_Y, 0.f);
     m_position += vec3(m_delta, 0.f);
 }
@@ -303,6 +317,9 @@ tileid actor::get_tile(ivec2 pos) const
     tileid tile = g_game->m_level->get_tile(pos);
 
     if (tile == tileid::mouse_passage && m_type != animaltype::mouse)
+        tile = tileid::wall;
+
+    if (tile == tileid::elephant_passage && (m_type != animaltype::elephant || g_game->m_shake_timer <= 0.0))
         tile = tileid::wall;
 
     return tile;
