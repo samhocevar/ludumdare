@@ -92,6 +92,16 @@ void levelmap::TickDraw(float seconds, Scene &scene)
         }
         ++z;
     }
+
+    /* Render orbs */
+    for (ivec2 const &pos : m_orbs)
+    {
+        int frame = int(bigtileid::orb);
+        double anim_debug = lol::fmod(g_game->m_timer / 0.75, 1.0);
+        frame += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 1 : 2;
+
+        scene.AddTile(g_game->m_bigtiles, frame, vec3(TILE_SIZE_X * pos.x, - TILE_SIZE_Y * pos.y, z), 0, vec2(1.f), 0.f);
+    }
 }
 
 void levelmap::load_file(char const *file)
@@ -172,6 +182,12 @@ void levelmap::load_data(char const *data)
 
                     else if (id >= int(tileid::wall_start) && id < int(tileid::wall_end))
                         m_map[x][y] = tileid::wall;
+
+                    else if (id == int(tileid::orb))
+                    {
+                        m_orbs.push(ivec2(x, y));
+                        m_layers.last()[x][y] = tileid::empty;
+                    }
 
                     else if (id == int(tileid::player_start))
                     {

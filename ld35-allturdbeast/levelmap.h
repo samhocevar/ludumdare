@@ -28,6 +28,7 @@ public:
     void load_data(char const *data);
 
     ivec2 m_player_start;
+    array<ivec2> m_orbs;
 
     tileid get_tile(ivec2 pos) const;
 

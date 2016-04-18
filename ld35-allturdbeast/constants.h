@@ -62,6 +62,7 @@ enum class tileid : uint16_t
     empty = 0x00,
     player_start = 0x01,
     select = 0x02,
+    orb = 0x03,
 
     wall = 0x10,
     wall_start = wall,
@@ -80,6 +81,6 @@ enum class tileid : uint16_t
 enum class bigtileid : uint16_t
 {
     ray = 0x2,
-    ball = 0x15,
+    orb = 0x15,
     player_idle = 0x18,
 };
