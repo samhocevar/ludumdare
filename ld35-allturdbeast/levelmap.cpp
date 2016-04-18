@@ -100,7 +100,7 @@ void levelmap::TickDraw(float seconds, Scene &scene)
         double anim_debug = lol::fmod(g_game->m_timer / 0.75, 1.0);
         frame += anim_debug < 0.333 ? 0 : anim_debug < 0.666 ? 1 : 2;
 
-        scene.AddTile(g_game->m_bigtiles, frame, vec3(TILE_SIZE_X * pos.x, - TILE_SIZE_Y * pos.y, z), 0, vec2(1.f), 0.f);
+        scene.AddTile(g_game->m_bigtiles, frame, vec3(TILE_SIZE_X * (pos.x - 0.5f), - TILE_SIZE_Y * (pos.y + 0.5f), z), 0, vec2(1.f), 0.f);
     }
 }
 

@@ -56,6 +56,7 @@ private:
 
     tileid get_tile(ivec2 pos) const;
 
+    int m_orb_count;
     animaltype m_type, m_target_type;
     actorstate m_state;
     bool m_eastward, m_moving, m_falling, m_jumping, m_dead;

@@ -25,6 +25,7 @@ using namespace lol;
 actor::actor()
   : m_tile(0, 0),
     m_delta(0.f, 0.f),
+    m_orb_count(0),
     m_type(animaltype::cat),
     m_target_type(animaltype::none),
     m_state(actorstate::idle),
@@ -58,6 +59,16 @@ void actor::subtick_game(float seconds)
     {
         /* No level yet; bail out */
         return;
+    }
+
+    for (int i = g_game->m_level->m_orbs.count(); i--; )
+    {
+        ivec2 pos = g_game->m_level->m_orbs[i];
+        if (m_tile == pos)
+        {
+            ++m_orb_count;
+            g_game->m_level->m_orbs.remove(i);
+        }
     }
 
     double footstep_then = lol::fmod(m_timer / 0.35, 1.0);
@@ -488,6 +499,27 @@ void actor::move(actorstate state)
 
 void actor::morph(animaltype type)
 {
+    switch (type)
+    {
+        case animaltype::cat:
+        case animaltype::mouse:
+            if (m_orb_count <= 0)
+                return;
+            break;
+        case animaltype::elephant:
+            if (m_orb_count <= 1)
+                return;
+            break;
+        case animaltype::bird:
+            if (m_orb_count <= 2)
+                return;
+            break;
+        case animaltype::turd:
+            if (m_orb_count <= 3)
+                return;
+            break;
+    }
+
     /* If we already have a two-button target, cancel */
     if (m_target_type == animaltype::turd || m_target_type == animaltype::bird)
         return;
