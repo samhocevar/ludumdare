@@ -247,9 +247,9 @@ void ld33_game::tick_events(float seconds)
     else if (m2 && m3)
         m_player->morph(animaltype::turd);
     else if (m1)
-        m_player->morph(animaltype::elephant);
-    else if (m2)
         m_player->morph(animaltype::cat);
+    else if (m2)
+        m_player->morph(animaltype::elephant);
     else if (m3)
         m_player->morph(animaltype::mouse);
 
