@@ -40,6 +40,9 @@ ld33_game::ld33_game()
     m_gradient = Tiler::Register("data/gradient.png");
     m_gradient->define_tile(ivec2(1, 1));
 
+    m_title = Tiler::Register("data/title.png");
+    m_title->define_tile(ivec2(1, 1));
+
     m_camera = new Camera();
     Scene& scene = Scene::GetScene();
     scene.PushCamera(m_camera);
@@ -129,6 +132,7 @@ ld33_game::~ld33_game()
     Tiler::Deregister(m_bigtiles);
     Tiler::Deregister(m_supertiles);
     Tiler::Deregister(m_gradient);
+    Tiler::Deregister(m_title);
 
     Scene& scene = Scene::GetScene();
     scene.PopCamera(m_camera);
@@ -143,16 +147,6 @@ void ld33_game::TickGame(float seconds)
 
     tick_events(seconds);
     tick_camera(seconds);
-
-#if DEBUG_CODE
-    if (!m_level)
-    {
-        m_level = new levelmap();
-        m_level->load_file("data/testmap.tmx");
-
-        m_player->m_tile = m_level->m_player_start;
-    }
-#endif
 }
 
 void ld33_game::TickDraw(float seconds, Scene &scene)
@@ -167,9 +161,21 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
     m_supertiles->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
     m_supertiles->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
 
-    Renderer::Get()->SetClearColor(Color::black);
+    m_gradient->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
+    m_gradient->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
+    m_title->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
+    m_title->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
+
+    Renderer::Get()->SetClearColor(Color::red);
     Renderer::Get()->SetAlphaFunc(AlphaFunc::Greater, 0.f);
     Renderer::Get()->SetBlendFunc(BlendFunc::SrcAlpha, BlendFunc::OneMinusSrcAlpha);
+
+    if (!m_level)
+    {
+        vec2 const viewport_size = (vec2)ivec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
+        scene.AddTile(g_game->m_title, 0, vec3(m_poi - vec2(0.5f, 0.5f) * viewport_size, 9.f), 0,
+                      vec2(VIEWPORT_SIZE_X / 256.f, VIEWPORT_SIZE_Y / 144.f), 0);
+    }
 }
 
 void ld33_game::tick_camera(float seconds)
@@ -180,29 +186,49 @@ void ld33_game::tick_camera(float seconds)
 
     if (m_player)
     {
-        mat4 proj = mat4::ortho(viewport_size.x, viewport_size.y, -100.f, 100.f);
-
         // Center the camera slightly above the player sprite
         m_poi = m_player->m_position.xy + vec2(0.5f * TILE_SIZE_X, 1.0f * TILE_SIZE_Y);
-        mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
-
-        if (m_shake_timer > 0.f)
-        {
-            float shake_intensity = (float)m_shake_timer / SHAKE_DURATION;
-            view = mat4::rotate(rand(-.1f, .1f) * shake_intensity, vec3::axis_z)
-                 * mat4::translate(rand(-5.f, 5.f) * shake_intensity, rand(-5.f, 5.f) * shake_intensity, 0.f)
-                 * mat4::scale(rand(1.f, 1.2f))
-                 * view;
-            m_shake_timer -= seconds;
-        }
-
-        m_camera->SetView(view);
-        m_camera->SetProjection(proj);
     }
+    else
+    {
+        m_poi = vec2(0.f, 0.f);
+    }
+
+    mat4 proj = mat4::ortho(viewport_size.x, viewport_size.y, -100.f, 100.f);
+    mat4 view = mat4::translate(-vec3(m_poi, 0.0f));
+
+    if (m_shake_timer > 0.f)
+    {
+        float shake_intensity = (float)m_shake_timer / SHAKE_DURATION;
+        view = mat4::rotate(rand(-.1f, .1f) * shake_intensity, vec3::axis_z)
+             * mat4::translate(rand(-5.f, 5.f) * shake_intensity, rand(-5.f, 5.f) * shake_intensity, 0.f)
+             * mat4::scale(rand(1.f, 1.2f))
+             * view;
+        m_shake_timer -= seconds;
+    }
+
+    m_camera->SetView(view);
+    m_camera->SetProjection(proj);
 }
 
 void ld33_game::tick_events(float seconds)
 {
+    if (!m_level)
+    {
+        if (!m_controller->WasKeyPressedThisFrame(input::jump))
+            return;
+
+#if DEBUG_CODE
+        if (!m_level)
+        {
+            m_level = new levelmap();
+            m_level->load_file("data/testmap.tmx");
+
+            m_player->m_tile = m_level->m_player_start;
+        }
+#endif
+    }
+
     /* Handle directions */
     if (m_controller->IsKeyPressed(input::go_left))
         m_player->move(actorstate::go_left);
