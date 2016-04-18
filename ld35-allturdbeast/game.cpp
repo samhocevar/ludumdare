@@ -173,8 +173,8 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
     if (!m_level)
     {
         vec2 const viewport_size = (vec2)ivec2(VIEWPORT_SIZE_X, VIEWPORT_SIZE_Y);
-        scene.AddTile(g_game->m_title, 0, vec3(m_poi - vec2(0.5f, 0.5f) * viewport_size, 9.f), 0,
-                      vec2(VIEWPORT_SIZE_X / 256.f, VIEWPORT_SIZE_Y / 144.f), 0);
+        scene.AddTile(g_game->m_title, 0, vec3(m_poi - vec2(0.4f, 0.4f) * viewport_size, 9.f), 0,
+                      0.8f * vec2(VIEWPORT_SIZE_X / 256.f, VIEWPORT_SIZE_Y / 144.f), 0);
     }
 }
 
