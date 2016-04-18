@@ -1,5 +1,5 @@
 ﻿//
-//  Unnamed — Entry for Ludum Dare 35
+//  All Turd Beast — Entry for Ludum Dare 35
 //
 //  Copyright © 2016 Sam Hocevar <sam@hocevar.net>
 //
@@ -166,7 +166,7 @@ void ld33_game::TickDraw(float seconds, Scene &scene)
     m_title->GetTexture()->SetMagFiltering(TextureMagFilter::NEAREST_TEXEL);
     m_title->GetTexture()->SetMinFiltering(TextureMinFilter::NEAREST_TEXEL_NO_MIPMAP);
 
-    Renderer::Get()->SetClearColor(Color::red);
+    Renderer::Get()->SetClearColor(Color::black);
     Renderer::Get()->SetAlphaFunc(AlphaFunc::Greater, 0.f);
     Renderer::Get()->SetBlendFunc(BlendFunc::SrcAlpha, BlendFunc::OneMinusSrcAlpha);
 

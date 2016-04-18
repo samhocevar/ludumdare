@@ -1,5 +1,5 @@
 ﻿//
-//  Unnamed — Entry for Ludum Dare 35
+//  All Turd Beast — Entry for Ludum Dare 35
 //
 //  Copyright © 2016 Sam Hocevar <sam@hocevar.net>
 //

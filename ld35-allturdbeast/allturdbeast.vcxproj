@@ -28,8 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="actor.cpp" />
+    <ClCompile Include="allturdbeast.cpp" />
     <ClCompile Include="game.cpp" />
-    <ClCompile Include="ld35.cpp" />
     <ClCompile Include="levelmap.cpp" />
   </ItemGroup>
   <ItemGroup>
