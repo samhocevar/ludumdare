@@ -53,9 +53,9 @@ ld33_game::ld33_game()
     m_input << InputProfile::Keyboard(input::go_right, "Right");
     m_input << InputProfile::Keyboard(input::go_right, "D");
     m_input << InputProfile::Keyboard(input::jump, "Space");
-    m_input << InputProfile::Keyboard(input::morph_1, "X");
-    m_input << InputProfile::Keyboard(input::morph_2, "C");
-    m_input << InputProfile::Keyboard(input::morph_3, "V");
+    m_input << InputProfile::Keyboard(input::morph_1, "J");
+    m_input << InputProfile::Keyboard(input::morph_2, "K");
+    m_input << InputProfile::Keyboard(input::morph_3, "L");
     m_input << InputProfile::Keyboard(input::do_pause, "P");
     m_input << InputProfile::Keyboard(input::reset, "R");
     m_input << InputProfile::Keyboard(input::escape, "Escape");
