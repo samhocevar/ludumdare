@@ -25,64 +25,79 @@ using namespace pegtl;
 
 #include "level-description.h"
 
-struct do_size : action_base<do_size>
+namespace grammar
 {
-    static void apply(std::string const &ctx, level_layout &layout)
+    //
+    // Grammar rules
+    //
+
+    struct _ : star<space> {};
+
+    struct r_bom
+      : opt<pegtl_string_t("\xef\xbb\xbf")> {};
+
+    struct r_line
+      : seq<star<one<' ', 'S', 'E', '%', 'X', '-', '+', '_',
+                     'o', '|', 'W', 'p', 'b', '#', '@', '*'>>,
+            eol> {};
+
+    struct r_layout
+      : plus<r_line> {};
+
+    struct r_name
+      : until<at<eol>, any> {};
+
+    struct r_name_statement
+      : seq<pegtl_string_t("name"), _, one<'='>, _, r_name,
+            eol> {};
+
+    struct r_size
+      : seq<pegtl_string_t("size"), _, plus<digit>, _, plus<digit>, _, eol> {};
+
+    struct r_header
+      : star<sor<r_size,
+                 r_name_statement>> {};
+
+    struct r_level
+      : seq<r_bom, r_header, r_layout, pegtl::eof> {};
+
+    //
+    // Grammar actions
+    //
+
+    template<typename R>
+    struct action : nothing<R> {};
+
+    template<>
+    struct action<r_size>
     {
-        printf(">%s<\n", ctx.c_str());
-    }
-};
+        static void apply(pegtl::input const &in, level_layout &layout)
+        {
+            printf(">%s<\n", in.string().c_str());
+        }
+    };
 
-struct do_name : action_base<do_name>
-{
-    static void apply(std::string const &ctx, level_layout &layout)
+    template<>
+    struct action<r_name>
     {
-        layout.m_name = ctx.c_str();
-    }
-};
+        static void apply(pegtl::input const &in, level_layout &layout)
+        {
+            layout.m_name = in.string().c_str();
+        }
+    };
 
-struct do_line : action_base<do_line>
-{
-    static void apply(std::string const &ctx, level_layout &layout)
+    template<>
+    struct action<r_line>
     {
-        // Resize layout
-        layout.m_size.y += 1;
-        layout.m_size.x = lol::max(layout.m_size.x, (int)ctx.length());
-        layout.m_lines.push(ctx);
-    }
-};
-
-struct _ : star<space> {};
-
-struct r_bom
-  : opt<string<'\xef', '\xbb', '\xbf'>> {};
-
-struct r_line
-  : seq<ifapply<star<one<' ', 'S', 'E', '%', 'X', '-', '+', '_',
-                         'o', '|', 'W', 'p', 'b', '#', '@', '*'>>,
-                do_line>,
-        eol> {};
-
-struct r_layout
-  : plus<r_line> {};
-
-struct r_name
-  : seq<string<'n', 'a', 'm', 'e'>, _, one<'='>, _,
-        ifapply<until<at<eol>, any>,
-                do_name>,
-        eol> {};
-
-struct r_size
-  : ifapply<seq<string<'s', 'i', 'z', 'e'>,
-                _, plus<digit>, _, plus<digit>, _, eol>,
-            do_size> {};
-
-struct r_header
-  : star<sor<r_size,
-             r_name>> {};
-
-struct r_level
-  : seq<r_bom, r_header, r_layout, pegtl::eof> {};
+        static void apply(pegtl::input const &in, level_layout &layout)
+        {
+            // Resize layout
+            layout.m_size.y += 1;
+            layout.m_size.x = lol::max(layout.m_size.x, (int)in.string().length());
+            layout.m_lines.push(in.string());
+        }
+    };
+}
 
 //
 // Level description implementation
@@ -93,7 +108,7 @@ void level_description::load_data(char const *data)
     m_layout = level_layout();
 
     m_layout.m_size = ivec2(0);
-    basic_parse_string<r_level>(data, m_layout);
+    pegtl::parse<grammar::r_level, grammar::action>(data, "level", m_layout);
     m_layout.m_tiles.resize(m_layout.m_size);
 
     for (int j = 0; j < m_layout.m_size.y; ++j)
