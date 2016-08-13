@@ -71,7 +71,7 @@ namespace grammar
     template<>
     struct action<r_size>
     {
-        static void apply(pegtl::input const &in, level_layout &layout)
+        static void apply(pegtl::action_input const &in, level_layout &layout)
         {
             printf(">%s<\n", in.string().c_str());
         }
@@ -80,7 +80,7 @@ namespace grammar
     template<>
     struct action<r_name>
     {
-        static void apply(pegtl::input const &in, level_layout &layout)
+        static void apply(pegtl::action_input const &in, level_layout &layout)
         {
             layout.m_name = in.string().c_str();
         }
@@ -89,7 +89,7 @@ namespace grammar
     template<>
     struct action<r_line>
     {
-        static void apply(pegtl::input const &in, level_layout &layout)
+        static void apply(pegtl::action_input const &in, level_layout &layout)
         {
             // Resize layout
             layout.m_size.y += 1;
@@ -108,7 +108,7 @@ void level_description::load_data(char const *data)
     m_layout = level_layout();
 
     m_layout.m_size = ivec2(0);
-    pegtl::parse<grammar::r_level, grammar::action>(data, "level", m_layout);
+    pegtl::parse_string<grammar::r_level, grammar::action>(data, "level", m_layout);
     m_layout.m_tiles.resize(m_layout.m_size);
 
     for (int j = 0; j < m_layout.m_size.y; ++j)
