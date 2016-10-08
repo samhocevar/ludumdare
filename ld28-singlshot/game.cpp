@@ -58,10 +58,10 @@ Game::Game()
     Ticker::Ref(m_controller);
 
     /* SFX */
-    m_snd_missile = Sampler::Register("data/missile.wav");
-    m_snd_bullet = Sampler::Register("data/bullet.wav");
-    m_snd_explosion = Sampler::Register("data/explosion.wav");
-    m_snd_powerup = Sampler::Register("data/powerup.wav");
+    m_snd_missile = sampler::load_sample("data/missile.wav");
+    m_snd_bullet = sampler::load_sample("data/bullet.wav");
+    m_snd_explosion = sampler::load_sample("data/explosion.wav");
+    m_snd_powerup = sampler::load_sample("data/powerup.wav");
 
     /* Tileset */
     m_tiles = Tiler::Register("data/tiles.png");
@@ -93,10 +93,10 @@ Game::~Game()
 {
     Tiler::Deregister(m_tiles);
 
-    Sampler::Deregister(m_snd_missile);
-    Sampler::Deregister(m_snd_bullet);
-    Sampler::Deregister(m_snd_explosion);
-    Sampler::Deregister(m_snd_powerup);
+    sampler::unload_sample(m_snd_missile);
+    sampler::unload_sample(m_snd_bullet);
+    sampler::unload_sample(m_snd_explosion);
+    sampler::unload_sample(m_snd_powerup);
 
     Ticker::Unref(m_ship);
     Ticker::Unref(m_starfield);
@@ -209,7 +209,7 @@ void Game::TickGame(float seconds)
     /* Resolve fire */
     if (!m_ship->m_dead && m_power && m_controller->IsKeyPressed(KEY_FIRE))
     {
-        Sampler::PlaySample(m_snd_missile);
+        sampler::play_sample(m_snd_missile);
 
         m_rockets.push(new Thing(this, 5));
         m_rockets.last()->m_position = m_ship->m_position;
@@ -233,7 +233,7 @@ void Game::TickGame(float seconds)
         if (lol::distance(m_ship->m_position.xy,
                      m_powerups[i]->m_position.xy) < 12.f)
         {
-            Sampler::PlaySample(m_snd_powerup);
+            sampler::play_sample(m_snd_powerup);
 
             if (m_power)
             {

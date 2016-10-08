@@ -68,7 +68,7 @@ void actor::TickGame(float seconds)
     if (footstep_now < footstep_then &&
          (m_state == actorstate::go_left || m_state == actorstate::go_right))
     {
-        Sampler::PlaySample(g_game->m_fx_step);
+        sampler::play_sample(g_game->m_fx_step);
     }
 
     auto tile_here = g_game->m_level->get_tile(m_tile);

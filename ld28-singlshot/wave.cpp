@@ -93,7 +93,7 @@ void Wave::TickGame(float seconds)
             /* Reset to zero in case we accumulated too much */
             m_fire_time[i] = 0.0;
 
-            Sampler::PlaySample(m_game->m_snd_bullet);
+            sampler::play_sample(m_game->m_snd_bullet);
 
             m_game->m_bullets.push(new Thing(m_game, 8));
             m_game->m_bullets.last()->m_position = m_things[i]->m_position;
@@ -176,7 +176,7 @@ void Wave::HandleCollisions(Thing *thing)
             m_game->m_combo += 100;
 
             /* Stop missile sound */
-            Sampler::StopSample(m_game->m_snd_missile);
+            sampler::stop_sample(m_game->m_snd_missile);
         }
     }
 }

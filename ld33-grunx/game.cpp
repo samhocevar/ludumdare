@@ -101,16 +101,16 @@ ld33_game::ld33_game()
     m_hero->m_position.z = 1000.f; // hide hero for now
     Ticker::Ref(m_hero);
 
-    m_fx_step = Sampler::Register("data/fx_step.wav");
-    m_music = Sampler::Register("data/bu-a-castles-witches.ogg");
-    Sampler::LoopSample(m_music);
+    m_fx_step = sampler::load_sample("data/fx_step.wav");
+    m_music = sampler::load_sample("data/bu-a-castles-witches.ogg");
+    sampler::loop_sample(m_music);
 }
 
 ld33_game::~ld33_game()
 {
     // Clean up after ourselves
-    Sampler::Deregister(m_fx_step);
-    Sampler::Deregister(m_music);
+    sampler::unload_sample(m_fx_step);
+    sampler::unload_sample(m_music);
 
     Ticker::Unref(m_monster);
     Ticker::Unref(m_hero);

@@ -236,7 +236,7 @@ void ship::TickGame(float seconds)
         if (length(m_velocity) > 1.f)
         {
             if (g_game->m_shake_duration < 0.7f * SHAKE_DURATION)
-                Sampler::PlaySample(g_game->m_fx_crash);
+                sampler::play_sample(g_game->m_fx_crash);
 
             g_game->m_shake_duration = SHAKE_DURATION;
         }
@@ -276,7 +276,7 @@ void ship::TickGame(float seconds)
     /* Misc 2: bonus */
     if (bonus_tile != tileid::empty)
     {
-        Sampler::PlaySample(g_game->m_fx_bonus);
+        sampler::play_sample(g_game->m_fx_bonus);
         if (bonus_tile == tileid::bonus_cockpit)
             ++m_cockpit_count;
         if (bonus_tile == tileid::bonus_thruster)

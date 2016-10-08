@@ -83,7 +83,7 @@ void actor::subtick_game(float seconds)
     if (footstep_now < footstep_then &&
          (m_state == actorstate::go_left || m_state == actorstate::go_right))
     {
-        Sampler::PlaySample(g_game->m_fx_step);
+        sampler::play_sample(g_game->m_fx_step);
     }
 
     if (m_target_type != animaltype::none)

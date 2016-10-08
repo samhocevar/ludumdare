@@ -62,26 +62,26 @@ weshgrow_game::weshgrow_game()
 
     m_controller->Init(m_input);
 
-    m_fx_engine_start = Sampler::Register("data/fx_engine_start.wav");
-    m_fx_engine_loop = Sampler::Register("data/fx_engine_loop.wav");
-    m_fx_bonus = Sampler::Register("data/fx_bonus.wav");
-    m_fx_crash = Sampler::Register("data/fx_crash.wav");
-    m_music_title = Sampler::Register("data/bu-blue-and-crazed.ogg");
-    m_music_game = Sampler::Register("data/bu-legs-of-heads.ogg");
+    m_fx_engine_start = sampler::load_sample("data/fx_engine_start.wav");
+    m_fx_engine_loop = sampler::load_sample("data/fx_engine_loop.wav");
+    m_fx_bonus = sampler::load_sample("data/fx_bonus.wav");
+    m_fx_crash = sampler::load_sample("data/fx_crash.wav");
+    m_music_title = sampler::load_sample("data/bu-blue-and-crazed.ogg");
+    m_music_game = sampler::load_sample("data/bu-legs-of-heads.ogg");
     // FIXME: title music handling is broken
-    //Sampler::LoopSample(m_music_title);
-    Sampler::LoopSample(m_music_game);
+    //sampler::loop_sample(m_music_title);
+    sampler::loop_sample(m_music_game);
 }
 
 weshgrow_game::~weshgrow_game()
 {
     // Clean up after ourselves
-    Sampler::Deregister(m_fx_engine_start);
-    Sampler::Deregister(m_fx_engine_loop);
-    Sampler::Deregister(m_fx_bonus);
-    Sampler::Deregister(m_fx_crash);
-    Sampler::Deregister(m_music_title);
-    Sampler::Deregister(m_music_game);
+    sampler::unload_sample(m_fx_engine_start);
+    sampler::unload_sample(m_fx_engine_loop);
+    sampler::unload_sample(m_fx_bonus);
+    sampler::unload_sample(m_fx_crash);
+    sampler::unload_sample(m_music_title);
+    sampler::unload_sample(m_music_game);
 
     Tiler::Deregister(m_tiles);
 
@@ -184,7 +184,7 @@ void weshgrow_game::tick_events(float seconds)
         if (m_ship)
         {
             // XXX: we need to be careful with running sounds
-            Sampler::StopSample(m_fx_engine_loop);
+            sampler::stop_sample(m_fx_engine_loop);
 
             Ticker::Unref(m_ship);
             m_ship = nullptr;
@@ -205,9 +205,9 @@ void weshgrow_game::tick_events(float seconds)
 
 #if 0 // FIXME: this seems broken
         /* Reset music */
-        Sampler::StopSample(m_music_title);
-        Sampler::StopSample(m_music_game);
-        Sampler::LoopSample(m_level_id ? m_music_game : m_music_title);
+        sampler::stop_sample(m_music_title);
+        sampler::stop_sample(m_music_game);
+        sampler::loop_sample(m_level_id ? m_music_game : m_music_title);
 #endif
     }
 
@@ -221,13 +221,13 @@ void weshgrow_game::tick_events(float seconds)
         int has_thrust = int(m_ship->m_thrust_left) + 2 * int(m_ship->m_thrust_right);
 
         if (has_thrust & ~had_thrust)
-            Sampler::PlaySample(m_fx_engine_start);
+            sampler::play_sample(m_fx_engine_start);
 
         if (has_thrust && !had_thrust)
-            Sampler::LoopSample(m_fx_engine_loop);
+            sampler::loop_sample(m_fx_engine_loop);
 
         if (!has_thrust && had_thrust)
-            Sampler::StopSample(m_fx_engine_loop);
+            sampler::stop_sample(m_fx_engine_loop);
     }
 }
 
