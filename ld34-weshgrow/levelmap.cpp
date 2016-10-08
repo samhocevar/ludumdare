@@ -103,7 +103,7 @@ bool levelmap::load_file(char const *file)
 {
     msg::debug("loading level %s\n", file);
 
-    array<String> datafiles = System::GetPathList(file);
+    array<String> datafiles = sys::get_path_list(file);
     for (String candidate : datafiles)
     {
         File f;

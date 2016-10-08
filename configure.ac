@@ -2,7 +2,7 @@ dnl
 dnl  Configure script for a Lol Engine project
 dnl
 
-AC_INIT(roflmao, 0.0)
+AC_INIT(ludumdare, 0.0)
 
 dnl
 dnl  Standard autoconf setup and tools requirements
@@ -22,7 +22,11 @@ AC_CONFIG_HEADER(config.h)
 
 AC_CONFIG_FILES(
  [Makefile
-  src/Makefile
+  ld28-singlshot/Makefile
+  ld32-sot3000/Makefile
+  ld33-grunx/Makefile
+  ld34-weshgrow/Makefile
+  ld35-allturdbeast/Makefile
 ])
 
 dnl

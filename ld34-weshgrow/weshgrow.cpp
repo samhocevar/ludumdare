@@ -25,7 +25,7 @@ weshgrow_game *g_game;
 
 int main(int argc, char **argv)
 {
-    System::Init(argc, argv);
+    sys::init(argc, argv);
 
     Application app("Wesh Grow",
                     ivec2(WINDOW_SIZE_X, WINDOW_SIZE_Y), 60.0f);

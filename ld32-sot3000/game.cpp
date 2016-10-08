@@ -305,7 +305,7 @@ void sot3000_game::tick_events(float seconds)
             m_current_level = 0;
 
             array<String> levelfiles;
-            array<String> listfiles = System::GetPathList("data/levels.txt");
+            array<String> listfiles = sys::get_path_list("data/levels.txt");
             for (String candidate : listfiles)
             {
                 File f;
@@ -330,7 +330,7 @@ void sot3000_game::tick_events(float seconds)
             for (String level : levelfiles)
             {
                 String fullname = String::format("data/%s", level.C());
-                array<String> datafiles = System::GetPathList(fullname);
+                array<String> datafiles = sys::get_path_list(fullname);
                 for (String candidate : datafiles)
                 {
                     File f;

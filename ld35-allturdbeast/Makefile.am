@@ -1,5 +1,5 @@
 
-include $(top_srcdir)/build/autotools/common.am
+include $(top_srcdir)/lol/build/autotools/common.am
 
 bin_PROGRAMS = allturdbeast
 
@@ -12,7 +12,7 @@ allturdbeast_SOURCES = \
 allturdbeast_CPPFLAGS = $(AM_CPPFLAGS)
 allturdbeast_DEPENDENCIES = @LOL_DEPS@
 allturdbeast_LDFLAGS = $(AM_LDFLAGS)
-if USE_EMSCRIPTEN
+if LOL_USE_EMSCRIPTEN
 allturdbeast_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
 endif
 

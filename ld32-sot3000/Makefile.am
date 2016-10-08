@@ -1,5 +1,5 @@
 
-include $(top_srcdir)/build/autotools/common.am
+include $(top_srcdir)/lol/build/autotools/common.am
 
 bin_PROGRAMS = sot3000
 
@@ -14,7 +14,7 @@ sot3000_SOURCES = \
 sot3000_CPPFLAGS = $(AM_CPPFLAGS)
 sot3000_DEPENDENCIES = @LOL_DEPS@
 sot3000_LDFLAGS = $(AM_LDFLAGS)
-if USE_EMSCRIPTEN
+if LOL_USE_EMSCRIPTEN
 sot3000_LDFLAGS += --preload-file data -s TOTAL_MEMORY=120000000
 endif
 
