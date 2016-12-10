@@ -23,7 +23,7 @@ using namespace lol;
 #define ZLIB_LEVEL 9
 #define ZLIB_CHUNK 16384
 
-#define PRESERVATION 0.7f
+#define PRESERVATION 0.5f
 
 int main(int argc, char **argv)
 {
@@ -77,8 +77,8 @@ int main(int argc, char **argv)
     im.Load(argv[1]);
 
     ivec2 size(im.GetSize());
-    //int const desired_width = 128;
-    int const desired_width = 256;
+    int const desired_width = 128;
+    //int const desired_width = 256;
 
     if (size.x != desired_width)
     {
@@ -121,9 +121,9 @@ int main(int argc, char **argv)
 
             // Append raw data
             if (i & 1)
-                rawdata.last() |= (nearest & 0xf);
+                rawdata.last() |= (nearest << 4) & 0xf0;
             else
-                rawdata.push((nearest << 4) & 0xf0);
+                rawdata.push(nearest & 0x0f);
 
             // Store colour
             dstdata[i][j] = palette[nearest];
