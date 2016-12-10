@@ -36,6 +36,9 @@ dnl
 
 LOL_AC_SUBPROJECT()
 
+dnl  For ld37
+PKG_CHECK_MODULES(ZLIB, zlib, [ac_cv_my_have_zlib="yes"], [:])
+
 dnl
 dnl  Perform the actual commands
 dnl

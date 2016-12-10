@@ -16,7 +16,12 @@
 
 #include <lol/engine.h>
 
+#include <zlib.h>
+
 using namespace lol;
+
+#define ZLIB_LEVEL 9
+#define ZLIB_CHUNK 16384
 
 #define PRESERVATION 0.7f
 
@@ -24,9 +29,9 @@ int main(int argc, char **argv)
 {
     UNUSED(argc, argv);
 
-    if (argc != 3)
+    if (argc != 4)
     {
-        fprintf(stderr, "Usage: %s <source> <dest>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <source> <dest> <data>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -72,7 +77,8 @@ int main(int argc, char **argv)
     im.Load(argv[1]);
 
     ivec2 size(im.GetSize());
-    int const desired_width = 386;
+    //int const desired_width = 128;
+    int const desired_width = 256;
 
     if (size.x != desired_width)
     {
@@ -88,6 +94,7 @@ int main(int argc, char **argv)
     msg::info("image size %d×%d\n", size.x, size.y);
 
     Image dst(size);
+    array<uint8_t> rawdata;
 
     /* Dither image for first destination */
     array2d<vec4> &curdata = im.Lock2D<PixelFormat::RGBA_F32>();
@@ -112,6 +119,12 @@ int main(int argc, char **argv)
                 }
             }
 
+            // Append raw data
+            if (i & 1)
+                rawdata.last() |= (nearest & 0xf);
+            else
+                rawdata.push((nearest << 4) & 0xf0);
+
             // Store colour
             dstdata[i][j] = palette[nearest];
             vec4 error = PRESERVATION * (pixel - palette[nearest]) / 16.0f;
@@ -134,6 +147,41 @@ int main(int argc, char **argv)
     /* Save image */
     dst = dst.Resize(size * 4, ResampleAlgorithm::Bresenham);
     dst.Save(argv[2]);
+
+    /* Compress image using zlib */
+    z_stream strm;
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    int ret = deflateInit(&strm, ZLIB_LEVEL);
+    if (ret != Z_OK)
+        return ret;
+
+    FILE *dest = fopen(argv[3], "w+");
+    for (int consumed = 0; consumed < rawdata.count(); )
+    {
+        int todo = lol::min(ZLIB_CHUNK, rawdata.count() - consumed);
+        strm.avail_in = todo;
+        strm.next_in = rawdata.data() + consumed;
+        consumed += todo;
+
+        uint8_t out[ZLIB_CHUNK];
+        do
+        {
+            strm.avail_out = ZLIB_CHUNK;
+            strm.next_out = out;
+            ret = deflate(&strm, consumed == rawdata.count() ? Z_FINISH : Z_NO_FLUSH);
+            size_t have = ZLIB_CHUNK - strm.avail_out;
+            if (fwrite(out, 1, have, dest) != have || ferror(dest))
+            {
+                deflateEnd(&strm);
+                return Z_ERRNO;
+            }
+        }
+        while (strm.avail_out == 0);
+    }
+    fclose(dest);
+    deflateEnd(&strm);
 
     return 0;
 }
