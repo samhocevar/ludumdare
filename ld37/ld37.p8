@@ -13,15 +13,6 @@ function get_mem(address,size)
   return a
 end
 
-function set_mem(address,size,data)
-  for i=0,size/4-1,64 do
-    for j=0,63 do
-      dset(j,data[i+j])
-    end
-    memcpy(address+i*4,0x5e00,0x100)
-  end
-end
-
 -- zzlib - zlib decompression in Lua - PICO-8 edition
 
 -- Copyright (c) 2016 Francois Galea <fgalea at free.fr>
@@ -243,8 +234,7 @@ local function inflate_block_uncompressed(out,bs)
 end
 
 local function inflate_main(out,bs)
-  local last,type
-  if bs:getb(16)!=0xda78 then
+  if bs:getb(16)!=bor(0xda78,0) then
     error("No zlib header found")
   end
   repeat
@@ -268,6 +258,7 @@ function zzlib.inflate(inaddr)
   local out = {}
   inflate_main(out,bitstream_init(inaddr))
   -- convert table to 32-bit numbers (instead of 8)
+  printh("got "..#out.." bytes")
   local ret = {}
   for i = 1, #out, 4 do
     ret[(i-1)/4] = shl(out[i+3],8) + shl(out[i+2],0) + shr(out[i+1],8) + shr(out[i],16)
@@ -286,11 +277,51 @@ for i=0,255 do
   reverse[i] = k
 end
 
-function _init()
-  a = zzlib.inflate(0x0)
-  set_mem(0x6000,0x2000,a)
+--
+-- Copy to memory from Lua
+--
+function set_mem(lines, dst, dstwidth, src, srcwidth, srcoff)
+  dx = band(srcoff,7)
+  srcoff -= dx
+
+  for line = 0,lines-1 do
+    for j = 0,dstwidth/8 do
+      dset(j,src[srcoff/8 + srcwidth/8*line + j])
+    end
+    memcpy(dst + dstwidth/2 * line, 0x5e00 + shr(dx,1), dstwidth/2)
+  end
+  do return end
+
+  for i=0,size/4-1,64 do
+    for j=0,63 do
+      dset(j,data[i+j])
+    end
+    memcpy(address+i*4,0x5e00,0x100)
+  end
 end
 
+function _init()
+  a = zzlib.inflate(0x0)
+end
+
+img_w, img_h = 280, 280
+
+x, y = shr(img_w, 1), shr(img_h, 1)
+--x, y = 0, 0
+max_x = img_w - 0x80
+max_y = img_h - 0x80
+
 function _update60()
+  local lines = 128
+  local dst = 0x6000
+  local dstwidth = 0x80
+  local srcwidth = img_w
+  local srcoff = y * srcwidth + x
+  set_mem(lines, dst, dstwidth, a, srcwidth, srcoff)
+
+  if x >= 2 and btn(0) then x -= 2 end
+  if x < max_x - 2 and btn(1) then x += 2 end
+  if y >= 2 and btn(2) then y -= 2 end
+  if y < max_y - 2 and btn(3) then y += 2 end
 end
 

@@ -77,8 +77,8 @@ int main(int argc, char **argv)
     im.Load(argv[1]);
 
     ivec2 size(im.GetSize());
-    int const desired_width = 128;
-    //int const desired_width = 256;
+    //int const desired_width = 128;
+    int const desired_width = 280;
 
     if (size.x != desired_width)
     {
