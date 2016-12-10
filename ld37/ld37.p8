@@ -126,8 +126,7 @@ local function inflate_block_loop(out,bs,nlit,ndist)
   repeat
     lit = bs:getv(littable,nlit)
     if lit < 256 then
-      poke(out,lit)
-      out += 1
+      out[#out+1]=lit
     elseif lit > 256 then
       local nbits = 0
       local size = 3
@@ -151,15 +150,11 @@ local function inflate_block_loop(out,bs,nlit,ndist)
         dist += shl(band(v,1)+2,nbits)
         dist += bs:getb(nbits)
       end
-      while size > 0 do
-        local v = peek(out-dist)
-        poke(out,v)
-        out += 1
-        size -= 1
+      for n = #out+1, #out+size do
+        out[n] = out[n-dist]
       end
     end
   until lit == 256
-  return out
 end
 
 local order = { 17, 18, 19, 1, 9, 8, 10, 7, 11, 6, 12, 5, 13, 4, 14, 3, 15, 2, 16 }
@@ -208,7 +203,7 @@ local function inflate_block_dynamic(out,bs)
   local nlit = hufftable_create(littable,litdepths,hlit)
   for i=1,hdist do distdepths[i] = depths[i+hlit] end
   local ndist = hufftable_create(disttable,distdepths,hdist)
-  return inflate_block_loop(out,bs,nlit,ndist,littable,disttable)
+  inflate_block_loop(out,bs,nlit,ndist,littable,disttable)
 end
 
 local stcnt = { 144, 112, 24, 8 }
@@ -227,7 +222,7 @@ local function inflate_block_static(out,bs)
     depths[i] = 5
   end
   local ndist = hufftable_create(disttable,depths,32)
-  return inflate_block_loop(out,bs,nlit,ndist,littable,disttable)
+  inflate_block_loop(out,bs,nlit,ndist,littable,disttable)
 end
 
 local function inflate_block_uncompressed(out,bs)
@@ -240,10 +235,11 @@ local function inflate_block_uncompressed(out,bs)
   if bxor(len,nlen) != 65535 then
     error("LEN and NLEN don't match")
   end
-  memcpy(out,bs.pos,len)
-  out += len
+  local off = #out+1
+  for i=0,len-1 do
+    out[off+i] = peek(bs.pos+i)
+  end
   bs.pos += len
-  return out
 end
 
 local function inflate_main(out,bs)
@@ -256,11 +252,11 @@ local function inflate_main(out,bs)
     last = bs:getb(1)
     type = bs:getb(2)
     if type == 0 then
-      out = inflate_block_uncompressed(out,bs)
+      inflate_block_uncompressed(out,bs)
     elseif type == 1 then
-      out = inflate_block_static(out,bs)
+      inflate_block_static(out,bs)
     elseif type == 2 then
-      out = inflate_block_dynamic(out,bs)
+      inflate_block_dynamic(out,bs)
     else
       error("unsupported block type")
     end
@@ -268,8 +264,15 @@ local function inflate_main(out,bs)
   bs:flushb(band(bs.n,7))
 end
 
-function zzlib.inflate(outaddr,inaddr)
-  inflate_main(outaddr,bitstream_init(inaddr))
+function zzlib.inflate(inaddr)
+  local out = {}
+  inflate_main(out,bitstream_init(inaddr))
+  -- convert table to 32-bit numbers (instead of 8)
+  local ret = {}
+  for i = 1, #out, 4 do
+    ret[(i-1)/4] = shl(out[i+3],8) + shl(out[i+2],0) + shr(out[i+1],8) + shr(out[i],16)
+  end
+  return ret
 end
 
 -- init reverse array
@@ -284,7 +287,8 @@ for i=0,255 do
 end
 
 function _init()
-  zzlib.inflate(0x6000,0x0)
+  a = zzlib.inflate(0x0)
+  set_mem(0x6000,0x2000,a)
 end
 
 function _update60()
