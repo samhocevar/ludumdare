@@ -68,7 +68,7 @@ local function bitstream_init(addr)
   }
   -- get rid of n first bits
   function bs:flushb(n)
-    self.n = self.n - n
+    self.n -= n
     self.b = shr(self.b,n)
   end
   -- get a number of n bits from stream
@@ -79,7 +79,7 @@ local function bitstream_init(addr)
       self.n += 8
     end
     local ret = shl(band(self.b,shl(0x.0001,n)-0x.0001),16)
-    self.n = self.n - n
+    self.n -= n
     self.b = shr(self.b,n)
     return ret
   end
@@ -96,7 +96,7 @@ local function bitstream_init(addr)
     local e = hufftable[v]
     local len = band(e,15)
     local ret = flr(shr(e,4))
-    self.n = self.n - len
+    self.n -= len
     self.b = shr(self.b,len)
     return ret
   end
@@ -116,7 +116,7 @@ local function hufftable_create(table,depths,nvalues)
     if d > nbits then
       nbits = d
     end
-    bl_count[d] = bl_count[d] + 1
+    bl_count[d] += 1
   end
   local code = 0
   bl_count[0] = 0
@@ -158,29 +158,29 @@ local function inflate_block_loop(out,bs,nlit,ndist)
       local size = 3
       local dist = 1
       if lit < 265 then
-        size = size + lit - 257
+        size += lit - 257
       elseif lit < 285 then
         nbits = flr(shr(lit-261,2))
-        size = size + shl(band(lit-261,3)+4,nbits)
+        size += shl(band(lit-261,3)+4,nbits)
       else
         size = 258
       end
       if nbits > 0 then
-        size = size + bs:getb(nbits)
+        size += bs:getb(nbits)
       end
       local v = bs:getv(disttable,ndist)
       if v < 4 then
-        dist = dist + v
+        dist += v
       else
         nbits = flr(shr(v-2,1))
-        dist = dist + shl(band(v,1)+2,nbits)
-        dist = dist + bs:getb(nbits)
+        dist += shl(band(v,1)+2,nbits)
+        dist += bs:getb(nbits)
       end
       while size > 0 do
         local v = peek(out-dist)
         poke(out,v)
         out += 1
-        size = size - 1
+        size -= 1
       end
     end
   until lit == 256
@@ -210,7 +210,7 @@ local function inflate_block_dynamic(out,bs)
     local v = bs:getv(lengthtable,nlen)
     if v < 16 then
       depths[i] = v
-      i = i + 1
+      i += 1
     elseif v < 19 then
       local nbt = {2,3,7}
       local nb = nbt[v-15]
@@ -219,11 +219,11 @@ local function inflate_block_dynamic(out,bs)
       if v == 16 then
         c = depths[i-1]
       elseif v == 18 then
-        n = n + 8
+        n += 8
       end
       for j=1,n do
         depths[i] = c
-        i = i + 1
+        i += 1
       end
     else
       error("wrong entry in depth table for literal/length alphabet: "..v);
@@ -262,7 +262,7 @@ local function inflate_block_uncompressed(out,bs)
     error("Unexpected.. should be zero remaining bits in buffer.")
   end
   local nlen = bs:getb(16)
-  if bxor(len,nlen) ~= 65535 then
+  if bxor(len,nlen) != 65535 then
     error("LEN and NLEN don't match")
   end
   memcpy(out,bs.pos,len)
@@ -273,13 +273,8 @@ end
 
 local function inflate_main(out,bs)
   local last,type
-  bs.pos+=10
-  if band(peek(bs.pos-7),8) ~= 0 then
-    --print("ok")
-    while peek(bs.pos) ~= 0 do
-      bs.pos += 1
-    end
-    bs.pos += 1
+  if bs.getb(16)!=0x78da then
+    error("No zlib header found")
   end
   repeat
     local block
@@ -298,7 +293,7 @@ local function inflate_main(out,bs)
   bs:flushb(band(bs.n,7))
 end
 
-function zzlib.gunzip(outaddr,inaddr)
+function zzlib.inflate(outaddr,inaddr)
   inflate_main(outaddr,bitstream_init(inaddr))
 end
 
@@ -306,8 +301,8 @@ end
 for i=0,255 do
   local k=0
   for j=0,7 do
-    if band(i,shl(1,j)) ~= 0 then
-      k = k + shl(1,7-j)
+    if band(i,shl(1,j)) != 0 then
+      k += shl(1,7-j)
     end
   end
   reverse[i] = k
