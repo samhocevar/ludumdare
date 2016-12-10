@@ -129,15 +129,20 @@ int main(int argc, char **argv)
             dstdata[i][j] = palette[nearest];
             vec4 error = PRESERVATION * (pixel - palette[nearest]) / 16.0f;
 
+            //float diff[] = { 7.0f, 1.0f, 5.0f, 3.0f }; // Floyd-Steinberg
+            //float diff[] = { 6.0f, 3.0f, 5.0f, 2.0f }; // Hocevar-Niger
+            //float diff[] = { 0.0f, 5.0f, 7.0f, 4.0f }; // Horizontal stripes
+            float diff[] = { 9.0f, 3.0f, 0.0f, 4.0f }; // Vertical stripes
+
             // Propagate error to current image
             if (i + 1 < size.x)
-                curdata[i + 1][j] += 7.0f * error;
+                curdata[i + 1][j] += diff[0] * error;
             if (i - 1 >= 0 && j + 1 < size.y)
-                curdata[i - 1][j + 1] += 1.0f * error;
+                curdata[i - 1][j + 1] += diff[1] * error;
             if (j + 1 < size.y)
-                curdata[i][j + 1] += 5.0f * error;
+                curdata[i][j + 1] += diff[2] * error;
             if (i + 1 < size.x && j + 1 < size.y)
-                curdata[i + 1][j + 1] += 3.0f * error;
+                curdata[i + 1][j + 1] += diff[3] * error;
         }
     }
 
