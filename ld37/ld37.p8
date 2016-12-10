@@ -2,8 +2,11 @@ pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
 
+--IMAGE_WIDTH, IMAGE_HEIGHT = 280, 280
+IMAGE_WIDTH, IMAGE_HEIGHT = 600, 250
+
 function get_mem(address,size)
-  a={}
+  local a={}
   for i=0,size/4-1,64 do
     memcpy(0x5e00,address+i*4,0x100)
     for j=0,63 do
@@ -234,9 +237,10 @@ local function inflate_block_uncompressed(out,bs)
 end
 
 local function inflate_main(out,bs)
-  if bs:getb(16)!=bor(0xda78,0) then
+  if bs:getb(8)!=0x78 then
     error("No zlib header found")
   end
+  bs.pos += 1
   repeat
     local block
     last = bs:getb(1)
@@ -280,9 +284,9 @@ end
 --
 -- Copy to memory from Lua
 --
-function set_mem(lines, dst, dstwidth, src, srcwidth, srcoff)
-  dx = band(srcoff,7)
-  srcoff -= dx
+function set_mem(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
+  local dx = band(x,7)
+  local srcoff = y * srcwidth + x - dx
 
   for line = 0,lines-1 do
     for j = 0,dstwidth/8 do
@@ -290,34 +294,22 @@ function set_mem(lines, dst, dstwidth, src, srcwidth, srcoff)
     end
     memcpy(dst + dstwidth/2 * line, 0x5e00 + shr(dx,1), dstwidth/2)
   end
-  do return end
-
-  for i=0,size/4-1,64 do
-    for j=0,63 do
-      dset(j,data[i+j])
-    end
-    memcpy(address+i*4,0x5e00,0x100)
-  end
 end
 
 function _init()
-  a = zzlib.inflate(0x0)
+  big_data = zzlib.inflate(0x0)
 end
 
-img_w, img_h = 280, 280
-
-x, y = shr(img_w, 1), shr(img_h, 1)
---x, y = 0, 0
-max_x = img_w - 0x80
-max_y = img_h - 0x80
+max_x = IMAGE_WIDTH - 0x80
+max_y = IMAGE_HEIGHT - 0x80
+x, y = shr(max_x, 1), shr(max_y, 1)
 
 function _update60()
   local lines = 128
   local dst = 0x6000
   local dstwidth = 0x80
-  local srcwidth = img_w
-  local srcoff = y * srcwidth + x
-  set_mem(lines, dst, dstwidth, a, srcwidth, srcoff)
+  local srcwidth = IMAGE_WIDTH
+  set_mem(lines, dst, dstwidth, big_data, srcwidth, x, y)
 
   if x >= 2 and btn(0) then x -= 2 end
   if x < max_x - 2 and btn(1) then x += 2 end

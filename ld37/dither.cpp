@@ -16,8 +16,6 @@
 
 #include <lol/engine.h>
 
-#include <zlib.h>
-
 using namespace lol;
 
 #define ZLIB_LEVEL 9
@@ -78,7 +76,8 @@ int main(int argc, char **argv)
 
     ivec2 size(im.GetSize());
     //int const desired_width = 128;
-    int const desired_width = 280;
+    //int const desired_width = 280;
+    int const desired_width = 600;
 
     if (size.x != desired_width)
     {
@@ -153,40 +152,10 @@ int main(int argc, char **argv)
     dst = dst.Resize(size * 4, ResampleAlgorithm::Bresenham);
     dst.Save(argv[2]);
 
-    /* Compress image using zlib */
-    z_stream strm;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    int ret = deflateInit(&strm, ZLIB_LEVEL);
-    if (ret != Z_OK)
-        return ret;
-
+    /* Save data */
     FILE *dest = fopen(argv[3], "w+");
-    for (int consumed = 0; consumed < rawdata.count(); )
-    {
-        int todo = lol::min(ZLIB_CHUNK, rawdata.count() - consumed);
-        strm.avail_in = todo;
-        strm.next_in = rawdata.data() + consumed;
-        consumed += todo;
-
-        uint8_t out[ZLIB_CHUNK];
-        do
-        {
-            strm.avail_out = ZLIB_CHUNK;
-            strm.next_out = out;
-            ret = deflate(&strm, consumed == rawdata.count() ? Z_FINISH : Z_NO_FLUSH);
-            size_t have = ZLIB_CHUNK - strm.avail_out;
-            if (fwrite(out, 1, have, dest) != have || ferror(dest))
-            {
-                deflateEnd(&strm);
-                return Z_ERRNO;
-            }
-        }
-        while (strm.avail_out == 0);
-    }
+    fwrite(rawdata.data(), 1, rawdata.count(), dest);
     fclose(dest);
-    deflateEnd(&strm);
 
     return 0;
 }
