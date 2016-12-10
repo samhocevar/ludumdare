@@ -27,9 +27,9 @@ int main(int argc, char **argv)
 {
     UNUSED(argc, argv);
 
-    if (argc != 4)
+    if (argc != 5)
     {
-        fprintf(stderr, "Usage: %s <source> <dest> <data>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <source> <width> <dest> <data>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -75,13 +75,11 @@ int main(int argc, char **argv)
     im.Load(argv[1]);
 
     ivec2 size(im.GetSize());
-    //int const desired_width = 128;
-    //int const desired_width = 280;
-    int const desired_width = 600;
+    int const desired_width = (atoi(argv[2]) + 7) / 8 * 8;
 
     if (size.x != desired_width)
     {
-        size.y = int(size.y * float(desired_width) / size.x);
+        size.y = int(size.y * float(desired_width) / size.x) / 2 * 2;
         size.x = desired_width;
         im = im.Resize(size, ResampleAlgorithm::Bicubic);
     }
@@ -149,11 +147,11 @@ int main(int argc, char **argv)
     dst.Unlock2D(dstdata);
 
     /* Save image */
-    dst = dst.Resize(size * 4, ResampleAlgorithm::Bresenham);
-    dst.Save(argv[2]);
+    //dst = dst.Resize(size * 4, ResampleAlgorithm::Bresenham);
+    dst.Save(argv[3]);
 
     /* Save data */
-    FILE *dest = fopen(argv[3], "w+");
+    FILE *dest = fopen(argv[4], "w+");
     fwrite(rawdata.data(), 1, rawdata.count(), dest);
     fclose(dest);
 

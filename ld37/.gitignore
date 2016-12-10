@@ -1,3 +1,5 @@
 # Our binaries
 dither
-ld37-final.p8
+ld37.p8
+# Cruft
+obj

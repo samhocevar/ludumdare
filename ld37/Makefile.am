@@ -10,14 +10,23 @@ dither_DEPENDENCIES = @LOL_DEPS@
 
 #SRCIMG = data/test.png
 SRCIMG = data/pano.jpeg
+#SRCIMG = data/world.jpeg
+#SRCIMG = data/sony.jpeg
+WIDTH = 600
 
-all: ld37-final.p8
+TOLERANCE = 31000
 
-ld37-final.p8: $(SRCIMG) dither ld37.p8
-	./dither $(SRCIMG) tmp.png tmp.data
-	cat tmp.data | ./zlib_lossy/minigzip -l30000 | (gunzip || true) | zlib-flate -compress >| tmp.data2 && mv tmp.data2 tmp.Z
-	../../zepto8/src/zeptool ld37.p8 --data tmp.Z --top8 >| $@.tmp && mv $@.tmp $@
+TMPWORLD = obj/world.tmp
+TMPCART = obj/cart.p8
+
+all: ld37.p8
+
+ld37.p8: $(SRCIMG) dither template.p8
+	./dither $(SRCIMG) $(WIDTH) obj/world.png obj/world
+	cat obj/world | ./zlib_lossy/minigzip -l$(TOLERANCE) | (gunzip 2>/dev/null || true) | zlib-flate -compress >| $(TMPWORLD) && mv $(TMPWORLD) obj/world.Z
+	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
+	../../zepto8/src/zeptool template.p8 --data obj/world.Z --top8 | sed "s/@SIZE@/$$SIZE/" >| $(TMPCART) && mv $(TMPCART) $@
 	rm -f tmp.data tmp.png tmp.Z
 
-CLEANFILES += ld37-final.p8 tmp.Z
+CLEANFILES += ld37.p8
 
