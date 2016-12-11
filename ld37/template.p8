@@ -44,13 +44,13 @@ end
 
 local reverse = {}
 
-local function bs_init(addr, array)
+local function bs_init(addr)
   local bs = {
-    pos = addr,  -- char buffer pointer
-    b = 0,       -- bit buffer
-    n = 0,       -- number of bits in buffer
-    out = array, -- output array
-    outpos = 0,  -- output position
+    pos = addr, -- char buffer pointer
+    b = 0,      -- bit buffer
+    n = 0,      -- number of bits in buffer
+    out = {},   -- output array
+    outpos = 0, -- output position
   }
   -- get rid of n first bits
   function bs:flushb(n)
@@ -87,11 +87,32 @@ local function bs_init(addr, array)
     return ret
   end
   function bs:write(n)
-    self.out[self.outpos] = n
+    local d = band(self.outpos, 0.75)
+    local off = flr(self.outpos)
+    if d==0 then
+      n=shr(n,16)
+    else
+      if d==0.25 then
+        n=shr(n,8)
+      elseif d==0.75 then
+        n=shl(n,8)
+      end
+      n+=self.out[off]
+    end
+    self.out[off] = n
     self.outpos += 0.25
   end
   function bs:readback(off)
-    return self.out[self.outpos + off * 0.25]
+    local d = band(self.outpos + off * 0.25, 0.75)
+    local n = self.out[flr(self.outpos + off * 0.25)]
+    if d==0 then
+      n=shl(n,16)
+    elseif d==0.25 then
+      n=shl(n,8)
+    elseif d==0.75 then
+      n=shr(n,8)
+    end
+    return band(n,0xff)
   end
   return bs
 end
@@ -268,6 +289,7 @@ local function inflate_block_uncompressed(bs)
 end
 
 local function inflate_main(bs)
+  bs.out = {}
 -- xxx: begin remove
   if peek(bs.pos)!=0x78 then
     error("no zlib header found")
@@ -291,19 +313,12 @@ local function inflate_main(bs)
     end
   until last == 1
   bs:flushb(band(bs.n,7))
+  --printh("decompressed "..#bs.out.." * 4 bytes of data")
+  return bs.out
 end
 
 function inflate(inaddr)
-  local out = {}
-  local bs = bs_init(inaddr, out)
-  inflate_main(bs)
-  -- convert table to 32-bit numbers (instead of 8)
-  printh("decompressed "..bs.outpos.." u32s of data")
-  local ret = {}
-  for i = 0, bs.outpos-1 do
-    ret[i] = shl(out[i+0.75],8) + shl(out[i+0.5],0) + shr(out[i+0.25],8) + shr(out[i],16)
-  end
-  return ret
+  return inflate_main(bs_init(inaddr))
 end
 
 --
