@@ -8,6 +8,9 @@ dither_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_FLAGS)
 dither_LDFLAGS = $(AM_LDFLAGS) $(ZLIB_LIBS)
 dither_DEPENDENCIES = @LOL_DEPS@
 
+ZEPTOOL = ../../zepto8/src/zeptool
+ZCOMPRESS = zlib-flate -compress
+
 #SRCIMG = data/test.png
 SRCIMG = data/pano.jpeg
 #SRCIMG = data/world.jpeg
@@ -17,15 +20,25 @@ WIDTH = 600
 TOLERANCE = 31000
 
 TMPWORLD = obj/world.tmp
+TMPDATA = obj/template.data
 TMPCART = obj/cart.p8
 
 all: ld37.p8
 
 ld37.p8: $(SRCIMG) dither template.p8
+	mkdir -p obj
+	@# Dither our image to some pixel data
 	./dither $(SRCIMG) $(WIDTH) obj/world.png obj/world
-	cat obj/world | ./zlib_lossy/minigzip -l$(TOLERANCE) | (gunzip 2>/dev/null || true) | zlib-flate -compress >| $(TMPWORLD) && mv $(TMPWORLD) obj/world.Z
+	@# Compress image using lossy compression, then uncompress and recompress it
+	cat obj/world | ./zlib_lossy/minigzip -l$(TOLERANCE) | (gunzip 2>/dev/null || true) | $(ZCOMPRESS) >| $(TMPWORLD) && mv $(TMPWORLD) obj/world.Z
+	@# Extract first 2kB of data from template
+	$(ZEPTOOL) template.p8 --todata | dd count=4096 bs=1 | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
 	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
-	../../zepto8/src/zeptool template.p8 --data obj/world.Z --top8 | sed "s/@SIZE@/$$SIZE/" >| $(TMPCART) && mv $(TMPCART) $@
+	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 | sed "s/=.*XXX.*/=$$SIZE/" >| $(TMPCART)
+	sed '/rom = {/q' < $(TMPCART) >| $@
+	echo '[0]=' >> $@
+	cat $(TMPDATA) >> $@
+	sed '0,/rom = {/d' < $(TMPCART) >> $@
 	rm -f tmp.data tmp.png tmp.Z
 
 CLEANFILES += ld37.p8
