@@ -287,10 +287,10 @@ end
 function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
   srcwidth /= 8 -- we read uint32s, so 8 pixels per value
   dstwidth /= 2 -- we write uint8s, so 2 pixels per value
-  local dx = band(x,7)
-  local x = flr(x/8)
-  local srcoff = y * srcwidth + x
-  local w1 = max(0, srcwidth - x - 1)
+  local dx = band(xoff,7)
+  local xoff = flr(xoff/8)
+  local srcoff = yoff * srcwidth + xoff
+  local w1 = max(0, srcwidth - xoff - 1)
   local w2 = dstwidth / 4
 
   tmp_mem = 0x5e00 + shr(dx,1)
@@ -307,19 +307,46 @@ function _init()
   big_data = zzlib.inflate(0x0)
 end
 
-max_x = IMAGE_WIDTH - 0x80
-max_y = IMAGE_HEIGHT - 0x80
-x, y = shr(max_x, 1), shr(max_y, 1)
+-- Center the mouse at startup
+mx, my = shr(IMAGE_WIDTH, 1), shr(IMAGE_HEIGHT, 1)
+cx, cy = 0, 0
 
 function _update60()
   local step = 2
-  --if x >= step and btn(0) then x -= step end
-  --if x < max_x - step and btn(1) then x += step end
-  if btn(0) then x -= step end
-  if btn(1) then x += step end
-  x %= IMAGE_WIDTH
-  if y >= step and btn(2) then y -= step end
-  if y < max_y - step and btn(3) then y += step end
+  --if mx >= step and btn(0) then mx -= step end
+  --if mx < max_x - step and btn(1) then mx += step end
+  if btn(0) then mx -= step end
+  if btn(1) then mx += step end
+  mx %= IMAGE_WIDTH
+  if my - step >= 0 and btn(2) then my -= step end
+  if my + step < IMAGE_HEIGHT and btn(3) then my += step end
+end
+
+function mouse()
+  for u=0,10 do
+    dx=(u%3==2 and 1 or 0)-(u%3==0 and 1 or 0)
+    dy=(flr(u/3)==2 and 1 or 0)-(flr(u/3)==0 and 1 or 0)
+    x0,y0 = 64+dx,cy+dy
+    color(u==10 and 7 or 0)
+    line(x0,y0,x0+4,y0+6)
+    line(x0,y0,x0+3,y0+1)
+    line(x0,y0,x0+0,y0+3)
+  end
+--  print("\010",64,cy,7)
+--print("\128\132\133\134\135\136", 30, cy-40)
+--print("\137\138\140\141\143\144", 30, cy-32)
+--print("\146\147\150\152\153", 30, cy-24)
+  --print("F",65,cy+1,7)
+  --print("\\",64,cy+2,7)
+  --print("\\",65,cy+2,7)
+
+  --print("F",65,cy+1,0)
+end
+
+function box(title)
+  rectfill(9,109,119,121,0)
+  rect(10,110,118,120,7)
+  print(title, 13, 113)
 end
 
 function _draw()
@@ -327,6 +354,9 @@ function _draw()
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = IMAGE_WIDTH
-  blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, x, y)
+  cx, cy = (mx - 64) % IMAGE_WIDTH, flr(my * 128 / IMAGE_HEIGHT)
+  blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, cx, cy)
+  box("you look around the room.")
+  mouse()
 end
 
