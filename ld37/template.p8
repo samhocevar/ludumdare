@@ -46,9 +46,10 @@ local reverse = {}
 
 local function bs_init(addr)
   local bs = {
-    pos = addr,   -- char buffer pointer
-    b = 0,        -- bit buffer
-    n = 0,        -- number of bits in buffer
+    pos = addr, -- char buffer pointer
+    b = 0,      -- bit buffer
+    n = 0,      -- number of bits in buffer
+    outpos = 0, -- output position
   }
   -- get rid of n first bits
   function bs:flushb(n)
@@ -137,7 +138,8 @@ local function inflate_block_loop(out,bs,nlit,ndist)
   repeat
     lit = bs:getv(littable,nlit)
     if lit < 256 then
-      out[#out+1]=lit
+      out[bs.outpos]=lit
+      bs.outpos+=0.25
     elseif lit > 256 then
       local nbits = 0
       local size = 3
@@ -161,9 +163,12 @@ local function inflate_block_loop(out,bs,nlit,ndist)
         dist += shl(band(v,1)+2,nbits)
         dist += bs:getb(nbits)
       end
-      for n = #out+1, #out+size do
+      dist /= 4
+      size /= 4
+      for n = bs.outpos, bs.outpos+size, 0.25 do
         out[n] = out[n-dist]
       end
+      bs.outpos += size
     end
   until lit == 256
 end
@@ -252,10 +257,11 @@ local function inflate_block_uncompressed(out,bs)
     error("len and nlen don't match")
   end
 -- xxx: end remove
-  local off = #out+1
+  local off = bs.outpos
   for i=0,len-1 do
-    out[off+i] = peek(bs.pos+i)
+    out[off+i*0.25] = peek(bs.pos+i)
   end
+  bs.outpos += len*0.25
   bs.pos += len
 end
 
@@ -286,13 +292,13 @@ local function inflate_main(out,bs)
 end
 
 function inflate(inaddr)
-  local out = {}
-  inflate_main(out,bs_init(inaddr))
+  local out, bs = {}, bs_init(inaddr)
+  inflate_main(out,bs)
   -- convert table to 32-bit numbers (instead of 8)
-  printh("decompressed "..#out.." bytes of data")
+  printh("decompressed "..bs.outpos.."*4 bytes of data")
   local ret = {}
-  for i = 1, #out, 4 do
-    ret[(i-1)/4] = shl(out[i+3],8) + shl(out[i+2],0) + shr(out[i+1],8) + shr(out[i],16)
+  for i = 0, bs.outpos-1 do
+    ret[i] = shl(out[i+0.75],8) + shl(out[i+0.5],0) + shr(out[i+0.25],8) + shr(out[i],16)
   end
   return ret
 end
