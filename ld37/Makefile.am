@@ -1,12 +1,17 @@
 
 include $(top_srcdir)/lol/build/autotools/common.am
 
-bin_PROGRAMS = dither
+bin_PROGRAMS = dither bluenoise
 
 dither_SOURCES = dither.cpp
 dither_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_FLAGS)
 dither_LDFLAGS = $(AM_LDFLAGS) $(ZLIB_LIBS)
 dither_DEPENDENCIES = @LOL_DEPS@
+
+bluenoise_SOURCES = bluenoise.cpp
+bluenoise_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_FLAGS)
+bluenoise_LDFLAGS = $(AM_LDFLAGS) $(ZLIB_LIBS)
+bluenoise_DEPENDENCIES = @LOL_DEPS@
 
 ZEPTOOL = ../../zepto8/src/zeptool
 ZCOMPRESS = zlib-flate -compress
@@ -33,8 +38,11 @@ ld37.p8: $(SRCIMG) dither template.p8
 	cat obj/world | ./zlib_lossy/minigzip -l$(TOLERANCE) | (gunzip 2>/dev/null || true) | $(ZCOMPRESS) >| $(TMPWORLD) && mv $(TMPWORLD) obj/world.Z
 	@# Extract first 2kB of data from template
 	$(ZEPTOOL) template.p8 --todata | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
+	@# Extract image size
 	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
-	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 | sed "s/=.*xxx image size.*/=$$SIZE/" >| $(TMPCART)
+	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 \
+	    | sed "s/=.*xxx image size.*/=$$SIZE/" \
+	   >| $(TMPCART)
 	sed '/rom = {/q' < $(TMPCART) >| $@
 	echo '[0]=' >> $@
 	cat $(TMPDATA) >> $@

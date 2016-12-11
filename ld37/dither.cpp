@@ -25,8 +25,6 @@ using namespace lol;
 
 int main(int argc, char **argv)
 {
-    UNUSED(argc, argv);
-
     if (argc != 5)
     {
         fprintf(stderr, "Usage: %s <source> <width> <dest> <data>\n", argv[0]);

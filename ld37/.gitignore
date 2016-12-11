@@ -1,5 +1,7 @@
 # Our binaries
 dither
+bluenoise
+# Our game
 ld37.p8
 # Cruft
 obj
