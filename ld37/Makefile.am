@@ -32,7 +32,7 @@ ld37.p8: $(SRCIMG) dither template.p8
 	@# Compress image using lossy compression, then uncompress and recompress it
 	cat obj/world | ./zlib_lossy/minigzip -l$(TOLERANCE) | (gunzip 2>/dev/null || true) | $(ZCOMPRESS) >| $(TMPWORLD) && mv $(TMPWORLD) obj/world.Z
 	@# Extract first 2kB of data from template
-	$(ZEPTOOL) template.p8 --todata | dd count=4096 bs=1 | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
+	$(ZEPTOOL) template.p8 --todata | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
 	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
 	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 | sed "s/=.*XXX.*/=$$SIZE/" >| $(TMPCART)
 	sed '/rom = {/q' < $(TMPCART) >| $@

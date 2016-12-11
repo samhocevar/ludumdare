@@ -1,6 +1,15 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
+--  ludum dare 36
+--  copyright (c) 2016 sam hocevar <sam@hocevar.net>
+--                2016 francois galea <fgalea at free.fr>
+--
+--  this program is free software. it comes without any warranty, to
+--  the extent permitted by applicable law. you can redistribute it
+--  and/or modify it under the terms of the do what the fuck you want
+--  to public license, version 2, as published by the wtfpl task force.
+--  see the copying file or http://www.wtfpl.net/ for more details.
 
 image_width, image_height = 160,160 --XXX: this will be modified by the makefile script
 
@@ -29,17 +38,6 @@ function set_mem(address,size,data)
     memcpy(address+i*4,0x5e00,0x100)
   end
 end
-
--- zzlib - zlib decompression in lua - pico-8 edition
-
--- copyright (c) 2016 francois galea <fgalea at free.fr>
--- this program is free software. it comes without any warranty, to
--- the extent permitted by applicable law. you can redistribute it
--- and/or modify it under the terms of the do what the fuck you want
--- to public license, version 2, as published by sam hocevar. see
--- the copying file or http://www.wtfpl.net/ for more details.
-
-local zzlib = {}
 
 local reverse = {}
 
@@ -272,7 +270,7 @@ local function inflate_main(out,bs)
   bs:flushb(band(bs.n,7))
 end
 
-function zzlib.inflate(inaddr)
+function inflate(inaddr)
   local out = {}
   inflate_main(out,bitstream_init(inaddr))
   -- convert table to 32-bit numbers (instead of 8)
@@ -282,17 +280,6 @@ function zzlib.inflate(inaddr)
     ret[(i-1)/4] = shl(out[i+3],8) + shl(out[i+2],0) + shr(out[i+1],8) + shr(out[i],16)
   end
   return ret
-end
-
--- init reverse array
-for i=0,255 do
-  local k=0
-  for j=0,7 do
-    if band(i,shl(1,j)) != 0 then
-      k += shl(1,7-j)
-    end
-  end
-  reverse[i] = k
 end
 
 --
@@ -318,10 +305,21 @@ function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
 end
 
 function _init()
+  -- init reverse array
+  for i=0,255 do
+    local k=0
+    for j=0,7 do
+      if band(i,shl(1,j)) != 0 then
+        k += shl(1,7-j)
+      end
+    end
+    reverse[i] = k
+  end
+
   if #rom>0 then
-    big_data = zzlib.inflate(0x0)
+    big_data = inflate(0x0)
     set_mem(0x0, band(#rom+0xff,0x7f00), rom)
-    rom = zzlib.inflate(0x0)
+    rom = inflate(0x0)
     set_mem(0x0, band(#rom+0xff,0x7f00), rom)
   else
     -- random noise for testing purposes
