@@ -401,6 +401,8 @@ end
 
 function title()
   local blit = function(i, j)
+    print("a game by sam hocevar", 30+i, 86+j, 7)
+    print("    for ludum dare 36", 30+i, 95+j, 7)
     sspr(32, 0, 80, 32, 10+i, 20+j, 108, 64)
   end
   pal(7,0)
@@ -438,7 +440,7 @@ function _draw()
     title()
   end
 
-  box("you look around.")
+  --box("you look around.")
 
   if state!=0 then
     mouse()
