@@ -289,7 +289,6 @@ local function inflate_block_uncompressed(bs)
 end
 
 local function inflate_main(bs)
-  bs.out = {}
 -- xxx: begin remove
   if peek(bs.pos)!=0x78 then
     error("no zlib header found")
@@ -361,6 +360,17 @@ function _init()
   -- decompress data
   if #rom>0 then
     big_data = inflate(0x0)
+    big_data2 = {}
+    for n=0,#big_data-1 do
+      local x = shl(big_data[n],4)
+      if n%(image_width/8) == image_width/8-1 then
+        x += shr(big_data[n-image_width/8+1],28)
+      else
+        x += shr(big_data[n+1],28)
+      end
+      big_data2[n] = x
+    end
+    big_data = big_data2
 
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
     rom = inflate(0x0)
