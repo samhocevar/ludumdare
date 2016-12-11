@@ -334,9 +334,9 @@ function _init()
   if #rom>0 then
     big_data = inflate(0x0)
 
-    u32_to_memory(0x0, band(#rom+0xff,0x7f00), rom)
+    u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
     rom = inflate(0x0)
-    u32_to_memory(0x0, band(#rom+0xff,0x7f00), rom)
+    u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
 -- xxx: begin remove
   else
     -- random noise for testing purposes
@@ -381,8 +381,14 @@ function _draw()
   blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, cx, cy)
 
   --sspr sx sy sw sh dx dy [dw dh] [flip_x] [flip_y]
-  sspr(32, 0, 96, 64, 20, 20)
-
+  pal(7,0)
+  for i=-1,1 do
+    for j=-1,1 do
+      sspr(32, 0, 96, 64, 20+i, 30+j)
+    end
+  end
+  pal()
+  sspr(32, 0, 96, 64, 20, 30)
 
   box("you look around you.")
   mouse()
