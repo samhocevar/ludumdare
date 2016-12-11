@@ -44,12 +44,13 @@ end
 
 local reverse = {}
 
-local function bs_init(addr)
+local function bs_init(addr, array)
   local bs = {
-    pos = addr, -- char buffer pointer
-    b = 0,      -- bit buffer
-    n = 0,      -- number of bits in buffer
-    outpos = 0, -- output position
+    pos = addr,  -- char buffer pointer
+    b = 0,       -- bit buffer
+    n = 0,       -- number of bits in buffer
+    out = array, -- output array
+    outpos = 0,  -- output position
   }
   -- get rid of n first bits
   function bs:flushb(n)
@@ -84,6 +85,13 @@ local function bs_init(addr)
     self.n -= len
     self.b = shr(self.b,len)
     return ret
+  end
+  function bs:write(n)
+    self.out[self.outpos] = n
+    self.outpos += 0.25
+  end
+  function bs:readback(off)
+    return self.out[self.outpos + off * 0.25]
   end
   return bs
 end
@@ -133,13 +141,12 @@ end
 local littable = {}
 local disttable = {}
 
-local function inflate_block_loop(out,bs,nlit,ndist)
+local function inflate_block_loop(bs,nlit,ndist)
   local lit
   repeat
     lit = bs:getv(littable,nlit)
     if lit < 256 then
-      out[bs.outpos]=lit
-      bs.outpos+=0.25
+      bs:write(lit)
     elseif lit > 256 then
       local nbits = 0
       local size = 3
@@ -163,12 +170,9 @@ local function inflate_block_loop(out,bs,nlit,ndist)
         dist += shl(band(v,1)+2,nbits)
         dist += bs:getb(nbits)
       end
-      dist /= 4
-      size /= 4
-      for n = bs.outpos, bs.outpos+size, 0.25 do
-        out[n] = out[n-dist]
+      for n = 1,size do
+        bs:write(bs:readback(-dist))
       end
-      bs.outpos += size
     end
   until lit == 256
 end
@@ -179,7 +183,7 @@ local lengthtable = {}
 local litdepths = {}
 local distdepths = {}
 
-local function inflate_block_dynamic(out,bs)
+local function inflate_block_dynamic(bs)
   local hlit = 257 + bs:getb(5)
   local hdist = 1 + bs:getb(5)
   local hclen = 4 + bs:getb(4)
@@ -221,13 +225,13 @@ local function inflate_block_dynamic(out,bs)
   local nlit = hufftable_create(littable,litdepths,hlit)
   for i=1,hdist do distdepths[i] = depths[i+hlit] end
   local ndist = hufftable_create(disttable,distdepths,hdist)
-  inflate_block_loop(out,bs,nlit,ndist,littable,disttable)
+  inflate_block_loop(bs,nlit,ndist,littable,disttable)
 end
 
 local stcnt = { 144, 112, 24, 8 }
 local stdpt = { 8, 9, 7, 8 }
 
-local function inflate_block_static(out,bs)
+local function inflate_block_static(bs)
   local k = 1
   for i=1,4 do
     local d = stdpt[i]
@@ -240,10 +244,10 @@ local function inflate_block_static(out,bs)
     depths[i] = 5
   end
   local ndist = hufftable_create(disttable,depths,32)
-  inflate_block_loop(out,bs,nlit,ndist,littable,disttable)
+  inflate_block_loop(bs,nlit,ndist,littable,disttable)
 end
 
-local function inflate_block_uncompressed(out,bs)
+local function inflate_block_uncompressed(bs)
   bs:flushb(band(bs.n,7))
   local len = bs:getb(16)
 -- xxx: begin remove
@@ -257,15 +261,13 @@ local function inflate_block_uncompressed(out,bs)
     error("len and nlen don't match")
   end
 -- xxx: end remove
-  local off = bs.outpos
   for i=0,len-1 do
-    out[off+i*0.25] = peek(bs.pos+i)
+    bs:write(peek(bs.pos+i))
   end
-  bs.outpos += len*0.25
   bs.pos += len
 end
 
-local function inflate_main(out,bs)
+local function inflate_main(bs)
 -- xxx: begin remove
   if peek(bs.pos)!=0x78 then
     error("no zlib header found")
@@ -277,11 +279,11 @@ local function inflate_main(out,bs)
     last = bs:getb(1)
     type = bs:getb(2)
     if type == 0 then
-      inflate_block_uncompressed(out,bs)
+      inflate_block_uncompressed(bs)
     elseif type == 1 then
-      inflate_block_static(out,bs)
+      inflate_block_static(bs)
     elseif type == 2 then
-      inflate_block_dynamic(out,bs)
+      inflate_block_dynamic(bs)
 -- xxx: begin remove
     else
       error("unsupported block type")
@@ -292,10 +294,11 @@ local function inflate_main(out,bs)
 end
 
 function inflate(inaddr)
-  local out, bs = {}, bs_init(inaddr)
-  inflate_main(out,bs)
+  local out = {}
+  local bs = bs_init(inaddr, out)
+  inflate_main(bs)
   -- convert table to 32-bit numbers (instead of 8)
-  printh("decompressed "..bs.outpos.."*4 bytes of data")
+  printh("decompressed "..bs.outpos.." u32s of data")
   local ret = {}
   for i = 0, bs.outpos-1 do
     ret[i] = shl(out[i+0.75],8) + shl(out[i+0.5],0) + shr(out[i+0.25],8) + shr(out[i],16)
