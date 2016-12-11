@@ -34,7 +34,7 @@ ld37.p8: $(SRCIMG) dither template.p8
 	@# Extract first 2kB of data from template
 	$(ZEPTOOL) template.p8 --todata | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
 	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
-	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 | sed "s/=.*XXX.*/=$$SIZE/" >| $(TMPCART)
+	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 | sed "s/=.*xxx image size.*/=$$SIZE/" >| $(TMPCART)
 	sed '/rom = {/q' < $(TMPCART) >| $@
 	echo '[0]=' >> $@
 	cat $(TMPDATA) >> $@
