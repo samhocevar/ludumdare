@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
---  ludum dare 36
+--  ludum dare 37
 --  copyright (c) 2016 sam hocevar <sam@hocevar.net>
 --                2016 francois galea <fgalea at free.fr>
 --
@@ -409,7 +409,7 @@ function title()
   local blit = function(i, j)
     print("    a pico8 game", 54+i, 79+j, 7)
     print("  by sam hocevar", 54+i, 87+j, 7)
-    print("for ludumdare 36", 54+i, 95+j, 7)
+    print("for ludumdare 37", 54+i, 95+j, 7)
     print("also fuck gamergate lol", 33+i, 120+j, 7)
     sspr(32, 0, 80, 32, 10+i, 20+j, 108, 64)
   end
