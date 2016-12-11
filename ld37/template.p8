@@ -401,8 +401,10 @@ end
 
 function title()
   local blit = function(i, j)
-    print("a game by sam hocevar", 30+i, 86+j, 7)
-    print("    for ludum dare 36", 30+i, 95+j, 7)
+    print("    a pico8 game", 54+i, 79+j, 7)
+    print("  by sam hocevar", 54+i, 87+j, 7)
+    print("for ludumdare 36", 54+i, 95+j, 7)
+    print("also fuck gamergate lol", 33+i, 120+j, 7)
     sspr(32, 0, 80, 32, 10+i, 20+j, 108, 64)
   end
   pal(7,0)
