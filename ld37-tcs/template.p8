@@ -13,6 +13,11 @@ __lua__
 
 image_width, image_height = 160,160 -- xxx image size
 
+obj = {
+  { "open", "wow bravo!",    2, { }, { 1 }, { 1 }, { { 300, 125, 320, 140 } } },
+  { "painting", "it's ugly", 1, { }, { 1 }, { 1 }, { { 422, 115, 455, 137 } } },
+}
+facts = {}
 big_data = {}
 rom = {
 }
@@ -345,6 +350,8 @@ function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
   end
 end
 
+strlen = {}
+
 function _init()
   -- clean startup
   cls()
@@ -359,6 +366,11 @@ function _init()
     end
     reverse[i] = k
   end
+
+  -- init strlen array
+  local s = "\151"
+  --local s = "\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\168"
+  for i=1,#s do strlen[sub(s,i,i)] = true end
 
   -- decompress data
   if #rom>0 then
@@ -396,8 +408,9 @@ function _init()
 end
 
 -- center the mouse at startup
-mx, my = shr(image_width, 1), shr(image_height, 1)
-cx, cy = 0, 0
+world_x, world_y = shr(image_width, 1), shr(image_height, 1)
+mouse_x, mouse_y = 0, 0
+mouse_type = 0
 
 fog_t = 0
 fog = 5
@@ -410,33 +423,53 @@ state = 1
 function _update60()
   if state!=0 then
     local step = 1
-    --if mx >= step and btn(0) then mx -= step end
-    --if mx < max_x - step and btn(1) then mx += step end
-    if btn(0) then mx -= step end
-    if btn(1) then mx += step end
-    mx %= image_width
-    if my - step >= 0 and btn(2) then my -= step end
-    if my + step < image_height and btn(3) then my += step end
+    --if world_x >= step and btn(0) then world_x -= step end
+    --if world_x < max_x - step and btn(1) then world_x += step end
+    if btn(0) then world_x -= step end
+    if btn(1) then world_x += step end
+    world_x %= image_width
+    if world_y - step >= 0 and btn(2) then world_y -= step end
+    if world_y + step < image_height and btn(3) then world_y += step end
   end
 
   if state==0 then
     -- scroll slightly
-    mx = (mx + 0.125) % image_width
+    world_x = (world_x + 0.125) % image_width
     -- handle fog
     fog_t += shr(1,7)
     local new_fog = 8.0 * (1 - cos(min((fog_t+0.5)%3.0,1.0))) - 0.5
     fog, fog_dir = new_fog, new_fog > fog and 1 or -1
     -- pick a new background image
-    if fog >= 15 then mx, my = rnd(image_width), rnd(image_height) end
+    if fog >= 15 then world_x, world_y = rnd(image_width), rnd(image_height) end
+  end
+
+  if state==1 then
+    mouse_info = nil
+    mouse_type = 0
+    for k,v in pairs(obj) do
+      context, message, mouse, facts_wanted, facts_nowanted, facts_activated, coords = v[1], v[2], v[3], v[4], v[5], v[6], v[7]
+      inside = false
+      for q in all(coords) do
+        if (world_x >= q[1] and world_x <= q[3] and world_y >= q[2] and world_y <= q[4]) inside = true
+      end
+      if (inside) then
+        mouse_type = mouse
+        mouse_info = context
+      end
+    end
   end
 end
 
 function draw_mouse()
   palt(0,false)
   palt(2,true)
-  spr(0x40,64,cy)
-  spr(0x50,64,cy+8)
+  spr(0x40+mouse_type,64,mouse_y)
+  spr(0x50+mouse_type,64,mouse_y+8)
   palt()
+
+  if mouse_info then
+    box("\151: "..mouse_info, -1, mouse_y-20)
+  end
 end
 
 function title()
@@ -456,8 +489,11 @@ function title()
 end
 
 function box(text, x, y)
-  rectfill(x,y,x+4*#text+6,y+12,0)
-  rect(x+1,y+1,x+4*#text+5,y+11,7)
+  local s=#text
+  for i=1,s do if(strlen[sub(text,i,i)]) s+=1 end
+  if (x<0) x=61-2*s
+  rectfill(x,y,x+4*s+6,y+12,0)
+  rect(x+1,y+1,x+4*s+5,y+11,7)
   print(text, x+4, y+4)
 end
 
@@ -466,8 +502,8 @@ function draw_world()
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
-  cx, cy = (flr(mx) + image_width - 64) % image_width, flr(my * 128 / image_height)
-  blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, cx, cy)
+  mouse_x, mouse_y = (flr(world_x) + image_width - 64) % image_width, flr(world_y * 128 / image_height)
+  blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, mouse_x, mouse_y)
 end
 
 function draw_fog()
