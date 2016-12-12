@@ -13,13 +13,14 @@ __lua__
 
 image_width, image_height = 160,160 -- xxx image size
 
-obj = {
-  { "open", "wow bravo!",    2, { }, { 1 }, { 1 }, { { 300, 125, 320, 140 } } },
-  { "painting", "it's ugly", 1, { }, { 1 }, { 1 }, { { 422, 115, 455, 137 } } },
-}
 facts = {}
 big_data = {}
 rom = {
+}
+obj = {
+  -- context, message, mouse, facts_wanted, facts_notwanted, facts_activated, coords
+  { "open", "wow bravo!",    2, { 1 }, { }, { 1 }, { { 300, 125, 320, 140 } } },
+  { "painting", "you look at the painting.\n\nit's ugly", 1, { }, { 1 }, { 1 }, { { 422, 115, 455, 137 } } },
 }
 
 -- xxx: begin remove
@@ -408,20 +409,38 @@ function _init()
 end
 
 -- center the mouse at startup
-world_x, world_y = shr(image_width, 1), shr(image_height, 1)
+world_x, world_y = 0, 0
 mouse_x, mouse_y = 0, 0
 mouse_type = 0
 
-fog_t = 0
-fog = 5
-fog_dir = 1
+fog_t, fog, fog_dir, fog_color = 0.5, 0, 1, 0
 
 -- 0: main menu
 -- 1: in game
-state = 1
+state = 0
 
 function _update60()
-  if state!=0 then
+  -- handle fog always
+  fog_t += shr(1,7)
+  local new_fog = 8.0 * (1 - cos(min(fog_t%3.0,1.0))) - 0.5
+  fog, fog_dir = new_fog, new_fog > fog and 1 or -1
+
+  -- handle UI
+  mouse_info = nil
+  mouse_type = 0
+
+  if state==0 then
+    -- scroll slightly
+    world_x = (world_x + 0.125) % image_width
+    -- pick a new background image
+    if fog >= 15 then world_x, world_y = rnd(image_width), rnd(image_height) end
+
+    if btnp(4) then
+      world_x, world_y = shr(image_width, 1), shr(image_height, 1)
+      facts = {}
+      state = 1
+    end
+  elseif state==1 then
     local step = 1
     --if world_x >= step and btn(0) then world_x -= step end
     --if world_x < max_x - step and btn(1) then world_x += step end
@@ -430,33 +449,46 @@ function _update60()
     world_x %= image_width
     if world_y - step >= 0 and btn(2) then world_y -= step end
     if world_y + step < image_height and btn(3) then world_y += step end
-  end
 
-  if state==0 then
-    -- scroll slightly
-    world_x = (world_x + 0.125) % image_width
-    -- handle fog
-    fog_t += shr(1,7)
-    local new_fog = 8.0 * (1 - cos(min((fog_t+0.5)%3.0,1.0))) - 0.5
-    fog, fog_dir = new_fog, new_fog > fog and 1 or -1
-    -- pick a new background image
-    if fog >= 15 then world_x, world_y = rnd(image_width), rnd(image_height) end
-  end
-
-  if state==1 then
-    mouse_info = nil
-    mouse_type = 0
     for k,v in pairs(obj) do
-      context, message, mouse, facts_wanted, facts_nowanted, facts_activated, coords = v[1], v[2], v[3], v[4], v[5], v[6], v[7]
-      inside = false
-      for q in all(coords) do
-        if (world_x >= q[1] and world_x <= q[3] and world_y >= q[2] and world_y <= q[4]) inside = true
+      local context, message, mouse, facts_wanted, facts_notwanted, facts_activated, coords = v[1], v[2], v[3], v[4], v[5], v[6], v[7]
+      local wanted = true
+      for k,v in pairs(facts_wanted) do
+        if not facts[v] then wanted = false end
       end
-      if (inside) then
-        mouse_type = mouse
-        mouse_info = context
+      for k,v in pairs(facts_notwanted) do
+        if facts[v] then wanted = false end
+      end
+      if wanted then
+        local inside = false
+        for q in all(coords) do
+          if (world_x >= q[1] and world_x <= q[3] and world_y >= q[2] and world_y <= q[4]) inside = true
+        end
+        if inside then
+          mouse_type = mouse
+          mouse_info = context
+          if btnp(4) then
+            message_info = message
+            for k,v in pairs(facts_activated) do
+              facts[v] = true
+            end
+            fog_t, fog, fog_dir, fog_color = 0, 0, 1, 6
+            state = 2
+            break
+          end
+        end
       end
     end
+  elseif state==2 then
+    if fog_t > 0.5 then state = 3 end
+  elseif state==3 then
+    -- wait for user button
+    if btnp(4) then
+      fog_t, fog, fog_dir, fog_color = 0.5, 16, 1, 6
+      state = 4
+    end
+  elseif state==4 then
+    if fog_t > 1 then state = 1 end
   end
 end
 
@@ -507,7 +539,7 @@ function draw_world()
 end
 
 function draw_fog()
-  for i=0,15 do pal(i,0) end
+  for i=0,15 do pal(i,fog_color) end
   for n=0,15 do
     for i=0,15 do palt(i,(i+n)/2>fog) end
     --map(0, n%2, 0, n*8, 16, 1)
@@ -518,17 +550,23 @@ function draw_fog()
 end
 
 function _draw()
-  draw_world()
+  if state!=3 then
+    draw_world()
+  else
+    cls(fog_color)
+  end
+
   if state==0 then
     draw_fog()
     title()
-  end
-
-  --box("you look around.", 10, 10)
-
-  if state!=0 then
+  elseif state==1 then
     draw_mouse()
+  elseif state==2 or state==4 then
+    draw_fog()
+  elseif state==3 then
+    box(message_info, -1, 20)
   end
+  --box("you look around.", 10, 10)
 end
 
 __gfx__
