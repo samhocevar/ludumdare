@@ -1,7 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
---  ludum dare 37
+--  the chamber scrolls
 --  copyright (c) 2016 sam hocevar <sam@hocevar.net>
 --                2016 francois galea <fgalea at free.fr>
 --

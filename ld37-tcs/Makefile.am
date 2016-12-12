@@ -25,25 +25,26 @@ WIDTH = 600
 TOLERANCE = 31000
 
 TMPWORLD = obj/world.tmp
-TMPDATA = obj/template.data
+TMPDATA = obj/source.data
 TMPCART = obj/cart.p8
 
 CART = the-chamber-scrolls.p8
 
 all: $(CART)
 
-$(CART): $(SRCIMG) dither template.p8
+$(CART): $(SRCIMG) dither source.p8
 	mkdir -p obj
 	@# Dither our image to some pixel data
 	./dither $(SRCIMG) $(WIDTH) obj/world.png obj/world
 	@# Compress image using lossy compression, then uncompress and recompress it
 	cat obj/world | ./zlib_lossy/minigzip -l$(TOLERANCE) | (gunzip 2>/dev/null || true) | $(ZCOMPRESS) >| $(TMPWORLD) && mv $(TMPWORLD) obj/world.Z
-	@# Extract first 2kB of data from template
-	$(ZEPTOOL) template.p8 --todata | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
+	@# Extract first 2kB of data from source
+	$(ZEPTOOL) source.p8 --todata | $(ZCOMPRESS) | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >| $(TMPDATA)
 	@# Extract image size
 	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
-	$(ZEPTOOL) template.p8 --data obj/world.Z --top8 \
+	$(ZEPTOOL) source.p8 --data obj/world.Z --top8 \
 	    | sed "s/=.*xxx image size.*/=$$SIZE/" \
+	    | sed '6,$${s/ *--.*//}' | grep . \
 	   >| $(TMPCART)
 	sed '/rom = {/q' < $(TMPCART) >| $@
 	echo '[0]=' >> $@
