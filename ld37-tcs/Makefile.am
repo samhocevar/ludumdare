@@ -28,9 +28,11 @@ TMPWORLD = obj/world.tmp
 TMPDATA = obj/template.data
 TMPCART = obj/cart.p8
 
-all: ld37.p8
+CART = the-chamber-scrolls.p8
 
-ld37.p8: $(SRCIMG) dither template.p8
+all: $(CART)
+
+$(CART): $(SRCIMG) dither template.p8
 	mkdir -p obj
 	@# Dither our image to some pixel data
 	./dither $(SRCIMG) $(WIDTH) obj/world.png obj/world
@@ -49,5 +51,5 @@ ld37.p8: $(SRCIMG) dither template.p8
 	sed '0,/rom = {/d' < $(TMPCART) >> $@
 	rm -f tmp.data tmp.png tmp.Z
 
-CLEANFILES += ld37.p8
+CLEANFILES += $(CART)
 
