@@ -331,7 +331,7 @@ function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
   local dx = band(xoff,7)
   local xoff = flr(xoff/8)
   local srcoff = yoff * srcwidth + xoff
-  local w1 = max(0, srcwidth - xoff - 1)
+  local w1 = min(max(0, srcwidth - xoff - 1), dstwidth / 4)
   local w2 = dstwidth / 4
 
   tmp_mem = 0x5e00 + shr(dx,1)
@@ -339,7 +339,8 @@ function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
     local off = srcoff + srcwidth * line
     -- read line + special wrap around case
     for j = 0,w1    do dset(j,data[off + j]) end
-    for j = w1+1,w2 do dset(j,data[off - srcwidth + j]) end
+    off -= srcwidth
+    for j = w1+1,w2 do dset(j,data[off + j]) end
     memcpy(dst + dstwidth * line, tmp_mem, dstwidth)
   end
 end
