@@ -324,6 +324,8 @@ end
 -- copy to memory from lua
 --
 function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
+  local data = src[1 - xoff % 2]
+  xoff = band(xoff,0xfffe)
   srcwidth /= 8 -- we read uint32s, so 8 pixels per value
   dstwidth /= 2 -- we write uint8s, so 2 pixels per value
   local dx = band(xoff,7)
@@ -336,8 +338,8 @@ function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
   for line = 0,lines-1 do
     local off = srcoff + srcwidth * line
     -- read line + special wrap around case
-    for j = 0,w1    do dset(j,src[off + j]) end
-    for j = w1+1,w2 do dset(j,src[off - srcwidth + j]) end
+    for j = 0,w1    do dset(j,data[off + j]) end
+    for j = w1+1,w2 do dset(j,data[off - srcwidth + j]) end
     memcpy(dst + dstwidth * line, tmp_mem, dstwidth)
   end
 end
@@ -359,29 +361,28 @@ function _init()
 
   -- decompress data
   if #rom>0 then
-    big_data = inflate(0x0)
-    big_data2 = {}
-    for n=0,#big_data-1 do
-      local x = shl(big_data[n],4)
-      if n%(image_width/8) == image_width/8-1 then
-        x += shr(big_data[n-image_width/8+1],28)
-      else
-        x += shr(big_data[n+1],28)
-      end
-      big_data2[n] = x
-    end
-    big_data = big_data2
-
+    big_data = { [0] = inflate(0x0), {} }
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
     rom = inflate(0x0)
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
 -- xxx: begin remove
   else
     -- random noise for testing purposes
+    big_data = { [0] = {}, {} }
     for n=0,image_width*image_height-1 do
-      big_data[n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
+      x = flr(n % image_width / 8)
+      y = flr(n / image_width / 8)
+      big_data[0][n]=bxor(band(x+y,0xf)*0x1111.1111)
+      --big_data[0][n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
     end
 -- xxx: end remove
+  end
+
+  -- compute off-by-one-pixel data
+  for n=0,#big_data[0]-1 do
+    local off = n - 1
+    if n % (image_width / 8) == 0 then off += image_width / 8 end
+    big_data[1][n] = shl(big_data[0][n],4) + band(shr(big_data[0][off],28),0x.000f)
   end
 
   -- init dithering screen (lots of overdraw on the right, but whatever)
@@ -407,7 +408,7 @@ state = 0
 
 function _update60()
   if state!=0 then
-    local step = 2
+    local step = 1
     --if mx >= step and btn(0) then mx -= step end
     --if mx < max_x - step and btn(1) then mx += step end
     if btn(0) then mx -= step end
@@ -460,7 +461,7 @@ function _draw()
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
-  cx, cy = (band(mx,0xfffe) - 64) % image_width, flr(band(my,0xfffe) * 128 / image_height)
+  cx, cy = (flr(mx) + image_width - 64) % image_width, flr(my * 128 / image_height)
   blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, cx, cy)
 
   for i=0,15 do pal(i,0) end
