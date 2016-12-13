@@ -424,6 +424,8 @@ fog_t, fog, fog_dir, fog_color = 0.5, 0, 1, 0
 state = 0
 
 function _update60()
+  rnd()
+
   -- handle fog always
   fog_t += shr(1,7)
   local new_fog = 8.0 * (1 - cos(min(fog_t%3.0,1.0))) - 0.5
@@ -432,7 +434,7 @@ function _update60()
   -- handle ui
   mouse_info = nil
   mouse_type = 0
-  mouse_shake -= 1
+  mouse_shake = max(mouse_shake - 0.25, 0)
 
   local clicked = false
   if not down then
@@ -479,19 +481,23 @@ function _update60()
           mouse_type = mouse
           mouse_info = context
           if clicked then
-            message_info = message
             for k,v in pairs(facts_activated) do
               facts[v] = true
             end
-            fog_t, fog, fog_dir, fog_color = 0, 0, 1, 6
-            state = 2
+            message_info = message
+            if mouse_type == 2 then
+              fog_t, fog, fog_dir, fog_color = 0, 0, 1, 6
+              state = 2
+            else
+              state = 5
+            end
             break
           end
         end
       end
     end
     if clicked and state==1 then
-      mouse_shake = 10
+      mouse_shake = 5
       sfx(0)
     end
   elseif state==2 then
@@ -504,20 +510,24 @@ function _update60()
     end
   elseif state==4 then
     if fog_t > 1 then state = 1 end
+  elseif state==5 then
+    if btnp(4) then
+      state = 1
+    end
   end
 end
 
 function draw_mouse()
   palt(0,false)
   palt(2,true)
-  local x = 64 + (mouse_shake > 0 and rnd(3) or 0)
-  local y = mouse_y + (mouse_shake > 0 and rnd(3) or 0)
+  local x = 64 + rnd(mouse_shake)
+  local y = mouse_y + rnd(mouse_shake)
   spr(0x40+mouse_type,x, y)
   spr(0x50+mouse_type,x, y+8)
   palt()
 
   if mouse_info then
-    box("\151: "..mouse_info, -1, mouse_y-20)
+    box("\151 "..mouse_info, -1, mouse_y-20)
   end
 end
 
@@ -538,11 +548,23 @@ function title()
 end
 
 function box(text, x, y)
-  local s=#text
-  for i=1,s do if(strlen[sub(text,i,i)]) s+=1 end
-  if (x<0) x=61-2*s
-  rectfill(x,y,x+4*s+6,y+12,0)
-  rect(x+1,y+1,x+4*s+5,y+11,7)
+  local l=#text
+  local w,lw,h = 0,0,1
+  for i=1,l do
+    local c = sub(text,i,i)
+    if(c=="\n") then
+      w=max(lw,w) lw=0 h+=1
+    elseif(strlen[c]) then
+      lw += 2
+    else
+      lw += 1
+    end
+  end
+  w=max(lw,w)
+  if (x<0) x=62-2*w
+  if (y<0) y=62-3*h
+  rectfill(x,y,x+4*w+6,y+h*6+6,0)
+  rect(x+1,y+1,x+4*w+5,y+h*6+5,7)
   print(text, x+4, y+4)
 end
 
@@ -551,7 +573,7 @@ function draw_world()
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
-  mouse_x, mouse_y = (flr(world_x) + image_width - 64) % image_width, flr(world_y * 128 / image_height)
+  mouse_x, mouse_y = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width, flr((world_y + rnd(mouse_shake)) * 128 / image_height)
   blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, mouse_x, mouse_y)
 end
 
@@ -582,6 +604,8 @@ function _draw()
     draw_fog()
   elseif state==3 then
     box(message_info, -1, 20)
+  elseif state==5 then
+    box(message_info, -1, -1)
   end
   --box("you look around.", 10, 10)
 end
