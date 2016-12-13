@@ -20,6 +20,11 @@ rom = {
 -- facts:
 --  1: have seen painting #3
 --  2: safe is open
+--  3: looked into flower pot
+--  4: cracked drawer
+--  5: found the key behind the pillow
+--  6: opened the chest
+--  7: found the safe combination
 obj = {
   -- context, mouse, important, facts_wanted, facts_notwanted, facts_activated, coords, message
   { "painting", 1, false, { }, { }, { }, { { 26, 95, 53, 139 }, { 53, 101, 75, 139} },
@@ -30,13 +35,50 @@ obj = {
     "you look at the painting.\nit's ugly. you cannot\nunderstand why people\nbuy these things." },
   { "painting", 1, false, { }, { }, { }, { { 258, 88, 306, 126 } },
     "you look at the painting.\nthere are a lot of such\npaintings in the room." },
-  { "painting", 1, true,  { }, { 1 }, { 1 }, { { 107, 128, 114, 133 } },
-    "you look at the painting.\nthere is a safe hidden\nbehind it!" },
-  { "safe",     1, false, { 1 }, { 2 }, { 1 }, { { 107, 128, 114, 133 } },
-    "the safe is closed.\nyou need the combination." },
+  { "painting", 1, false, { }, { }, { }, { { 520, 104, 544, 128 } },
+    "why do people buy\npaintings? clearly\nvideo games are a\nlot better. ever seen a\n60 fps painting?" },
 
-  { "open",    2, false, { 1 }, { }, { 1 }, { { 300, 130, 320, 140 } },
-    "wow bravo!" },
+  { "flowers",  1, true,  { }, { 3 }, { 3 }, { { 99, 146, 118, 166 } },
+    "there was a crowbar hidden\nin the flower pot!\nseriously, what are the\nodds?" },
+  { "flowers",  1, false, { 3 }, { }, { }, { { 99, 146, 118, 166 } },
+    "these flowers do not\nlook healthy. hard to\ntell in this resolution," },
+
+  { "painting", 1, true,  { }, { 1 }, { 1 }, { { 107, 128, 114, 133 } },
+    "you look at the painting.\n\nthere was a safe hidden\nbehind it!\n\nclassic point-n-click\nmechanism, but damn\neffective!" },
+  { "safe",     1, false, { 1 }, { 7 }, { }, { { 107, 128, 114, 133 } },
+    "the safe is closed.\nyou need the combination." },
+  { "open",     2, true, { 7 }, { 2 }, { 2 }, { { 107, 128, 114, 133 } },
+    "congratulations! you\nopened the safe and the\ngrand secret will be\nrevealed to you.\n\nthere are no scrolls, the\nscrolls are a lie. the\ngame is called the\nchamber scrolls because\nthe chamber... scrolls." },
+  { "painting", 1, true,  { 2 }, { }, { }, { { 107, 128, 114, 133 } },
+    "another boring painting." },
+
+  { "pillow",  1, true, { }, { 5 }, { 5 }, { { 51,159,70,176 } }, "you found the key behind\nthe pillow. you're pretty\nsmart it seems!" },
+  { "pillow",  1, false, { 5 }, { }, { }, { { 51,159,70,176 } }, "this pillow seems comfy." },
+
+  { "drawer",  1, false, { }, { }, { }, { { 245,146,314,158 } }, "a drawer. it is locked." },
+  { "drawer",  1, false, { }, { }, { }, { { 245,158,314,172 } }, "a drawer. it is locked." },
+  { "drawer",  1, false, { }, { 3 }, { }, { { 245,172,314,184 } }, "a drawer. it is locked." },
+  { "drawer",  1, false, { }, { }, { }, { { 245,184,314,196 } }, "a drawer. it is locked." },
+
+  { "crack open", 2, true,  { 3 }, { 4 }, { 4 }, { { 245,172,314,184 } },
+    "you crack the drawer open\nand find a plastic chicken\nwith a pulley. what a\nweird object." },
+  { "drawer",  1, false, { 4 }, { }, { }, { { 245,172,314,184 } },
+    "a drawer. it was cracked\nopen by a vandal." },
+
+  { "lamp", 1, false, { }, { 6 }, { }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
+    "why are the lights on during\ndaylight? clearly i should\nhave downloaded another\nstock photo on google\nimages." },
+  { "use plates", 2, true,  { 6 }, { 7 }, { 7 }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
+    "the photographic plates\nwere hiding the secret\nsafe combination! kudos to\nscience once again!" },
+  { "lamp", 1, false, { 7 }, { }, { }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
+    "why are the lights on during\ndaylight? clearly i should\nhave downloaded another\nstock photo on google\nimages." },
+
+  { "look", 1, false, { }, { }, { }, { { 130,118,162,152 }, { 389,114, 402,154 } }, "the weather is beautiful.\nvideo games are too." },
+
+  { "chest", 1, false, { }, { 5 }, { }, { { 503,177, 514,189 } }, "this chest's lock requires\na key of some sort." },
+  { "open",  2, true,  { 5 }, { 6 }, { 6 }, { { 503,177, 514,189 } }, "you find old photographic\nplates in the chest.\nwhat could they be good for?" },
+  { "chest", 1, false, { 6 }, { }, { }, { { 503,177, 514,189 } }, "the chest is open but there\nis no longer anything\ninteresting in there." },
+
+  { "go outside", 2, false, { }, { }, { }, { { 493,123, 501,156 } }, "why go outside? this isn't\nan escape game." },
 }
 
 -- xxx: begin remove
@@ -562,7 +604,7 @@ function title()
     print("    a pico-8 game", 50+i, 85+j, 7)
     print("  by  sam hocevar", 50+i, 93+j, 7)
     print("for ludum dare 37", 50+i,101+j, 7)
-    print("also fuck gamergate lol", 33+i, 120+j, 7)
+    print("press \151 to start", 53+i, 120+j, 7)
     sspr(24, 0, 80, 32, 5+i, j, 118, 80)
   end
   pal(7,0)
@@ -587,8 +629,8 @@ function box(text, x, y)
     end
   end
   w=max(lw,w)
-  if (x<0) x=62-2*w
-  if (y<0) y=56-3*h
+  if (x<0) x=60-2*w
+  if (y<0) y=55-3*h
   rectfill(x,y,x+4*w+6,y+h*6+6,0)
   rect(x+1,y+1,x+4*w+5,y+h*6+5,7)
   print(text, x+4, y+4)
