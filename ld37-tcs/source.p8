@@ -414,6 +414,7 @@ end
 -- center the mouse at startup
 world_x, world_y = 0, 0
 mouse_x, mouse_y = 0, 0
+mouse_speed = 0
 mouse_type = 0
 mouse_shake = 0
 
@@ -438,9 +439,9 @@ function _update60()
 
   local clicked = false
   if not down then
-    clicked = btnp(4)
+    clicked = btnp(4) or btnp(5)
   end
-  down = btn(4)
+  down = btn(4) or btn(5)
 
   if state==0 then
     -- scroll slightly
@@ -455,14 +456,19 @@ function _update60()
       state = 1
     end
   elseif state==1 then
-    local step = 1
-    --if world_x >= step and btn(0) then world_x -= step end
-    --if world_x < max_x - step and btn(1) then world_x += step end
-    if btn(0) then world_x -= step end
-    if btn(1) then world_x += step end
+    if not btn(0) and not btn(1) and not btn(2) and not btn(3) then
+      mouse_speed = 0
+    end
+    if btnp(0) or btnp(1) or btnp(2) or btnp(3) then
+      mouse_speed = min(mouse_speed + 0.5, 4)
+    end
+    --if world_x >= mouse_speed and btn(0) then world_x -= mouse_speed end
+    --if world_x < max_x - mouse_speed and btn(1) then world_x += mouse_speed end
+    if btn(0) then world_x -= mouse_speed end
+    if btn(1) then world_x += mouse_speed end
     world_x %= image_width
-    if world_y - step >= 0 and btn(2) then world_y -= step end
-    if world_y + step < image_height and btn(3) then world_y += step end
+    if world_y - mouse_speed >= 0 and btn(2) then world_y -= mouse_speed end
+    if world_y + mouse_speed < image_height and btn(3) then world_y += mouse_speed end
 
     for k,v in pairs(obj) do
       local context, message, mouse, facts_wanted, facts_notwanted, facts_activated, coords = v[1], v[2], v[3], v[4], v[5], v[6], v[7]
@@ -577,7 +583,7 @@ function draw_world()
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
-  mouse_x, mouse_y = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width, flr((world_y + rnd(mouse_shake)) * 128 / image_height)
+  mouse_x, mouse_y = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width, flr((world_y + rnd(mouse_shake)) * 126 / image_height)
   blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, mouse_x, mouse_y)
 end
 
