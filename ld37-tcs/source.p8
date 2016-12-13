@@ -19,8 +19,8 @@ rom = {
 }
 obj = {
   -- context, message, mouse, facts_wanted, facts_notwanted, facts_activated, coords
-  { "open", "wow bravo!",    2, { 1 }, { }, { 1 }, { { 300, 125, 320, 140 } } },
-  { "painting", "you look at the painting.\n\nit's ugly", 1, { }, { 1 }, { 1 }, { { 422, 115, 455, 137 } } },
+  { "open", "wow bravo!",    2, { }, { }, { 1 }, { { 300, 125, 320, 140 } } },
+  { "painting", "you look at the painting.\nit's ugly. you know it.", 1, { }, { }, { 1 }, { { 422, 115, 455, 137 } } },
 }
 
 -- xxx: begin remove
@@ -486,7 +486,7 @@ function _update60()
             end
             message_info = message
             if mouse_type == 2 then
-              fog_t, fog, fog_dir, fog_color = 0, 0, 1, 6
+              fog_t, fog, fog_dir, fog_color = 0, 0, 1, 3
               state = 2
             else
               state = 5
@@ -505,7 +505,7 @@ function _update60()
   elseif state==3 then
     -- wait for user button
     if btnp(4) then
-      fog_t, fog, fog_dir, fog_color = 0.5, 16, 1, 6
+      fog_t, fog, fog_dir, fog_color = 0.5, 16, 1, 3
       state = 4
     end
   elseif state==4 then
@@ -604,8 +604,10 @@ function _draw()
     draw_fog()
   elseif state==3 then
     box(message_info, -1, 20)
+    box("\151 continue", 72, 111)
   elseif state==5 then
     box(message_info, -1, -1)
+    box("\151 continue", 72, 111)
   end
   --box("you look around.", 10, 10)
 end
