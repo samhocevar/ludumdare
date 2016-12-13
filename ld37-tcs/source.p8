@@ -17,10 +17,26 @@ facts = {}
 big_data = {}
 rom = {
 }
+-- facts:
+--  1: have seen painting #3
+--  2: safe is open
 obj = {
-  -- context, message, mouse, facts_wanted, facts_notwanted, facts_activated, coords
-  { "open", "wow bravo!",    2, { 1 }, { }, { 1 }, { { 300, 130, 320, 140 } } },
-  { "painting", "you look at the painting.\nit's ugly. you know it.", 1, { }, { }, { 1 }, { { 422, 115, 455, 137 } } },
+  -- context, mouse, important, facts_wanted, facts_notwanted, facts_activated, coords, message
+  { "painting", 1, false, { }, { }, { }, { { 26, 95, 53, 139 }, { 53, 101, 75, 139} },
+    "you look at the painting.\na beautiful painting with\na lot of emotions in it.\nyou can almost smell the\npixels." },
+  { "painting", 1, false, { }, { }, { }, { { 209, 112, 228, 129 } },
+    "you look at the painting.\nan impressive painting. it\nmust be very expensive.\nit must also be very\npretentious." },
+  { "painting", 1, false, { }, { }, { }, { { 422, 115, 455, 137 } },
+    "you look at the painting.\nit's ugly. you cannot\nunderstand why people\nbuy these things." },
+  { "painting", 1, false, { }, { }, { }, { { 258, 88, 306, 126 } },
+    "you look at the painting.\nthere are a lot of such\npaintings in the room." },
+  { "painting", 1, true,  { }, { 1 }, { 1 }, { { 107, 128, 114, 133 } },
+    "you look at the painting.\nthere is a safe hidden\nbehind it!" },
+  { "safe",     1, false, { 1 }, { 2 }, { 1 }, { { 107, 128, 114, 133 } },
+    "the safe is closed.\nyou need the combination." },
+
+  { "open",    2, false, { 1 }, { }, { 1 }, { { 300, 130, 320, 140 } },
+    "wow bravo!" },
 }
 
 -- xxx: begin remove
@@ -451,7 +467,7 @@ function _update60()
 
     if clicked then
       sfx(2)
-      world_x, world_y = shr(image_width, 1), shr(image_height, 1)
+      world_x, world_y = 170, 190
       facts = {}
       state = 1
     end
@@ -460,7 +476,7 @@ function _update60()
       mouse_speed = 0
     end
     if btnp(0) or btnp(1) or btnp(2) or btnp(3) then
-      mouse_speed = min(mouse_speed + 0.5, 4)
+      mouse_speed = max(min(mouse_speed + 0.25, 3), 1)
     end
     --if world_x >= mouse_speed and btn(0) then world_x -= mouse_speed end
     --if world_x < max_x - mouse_speed and btn(1) then world_x += mouse_speed end
@@ -471,7 +487,7 @@ function _update60()
     if world_y + mouse_speed < image_height and btn(3) then world_y += mouse_speed end
 
     for k,v in pairs(obj) do
-      local context, message, mouse, facts_wanted, facts_notwanted, facts_activated, coords = v[1], v[2], v[3], v[4], v[5], v[6], v[7]
+      local context, mouse, important, facts_wanted, facts_notwanted, facts_activated, coords, message = v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
       local wanted = true
       for k,v in pairs(facts_wanted) do
         if not facts[v] then wanted = false end
@@ -493,7 +509,7 @@ function _update60()
               facts[v] = true
             end
             message_info = message
-            if mouse_type == 2 then
+            if important then
               fog_t, fog, fog_dir, fog_color = 0, 0, 1, 3
               state = 2
             else
@@ -572,7 +588,7 @@ function box(text, x, y)
   end
   w=max(lw,w)
   if (x<0) x=62-2*w
-  if (y<0) y=62-3*h
+  if (y<0) y=56-3*h
   rectfill(x,y,x+4*w+6,y+h*6+6,0)
   rect(x+1,y+1,x+4*w+5,y+h*6+5,7)
   print(text, x+4, y+4)
