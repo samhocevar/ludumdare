@@ -50,7 +50,6 @@ $(CART): $(SRCIMG) dither source.p8
 	echo '[0]=' >> $@
 	cat $(TMPDATA) >> $@
 	sed '0,/rom = {/d' < $(TMPCART) >> $@
-	cat label.txt >> $@
 	rm -f tmp.data tmp.png tmp.Z
 
 CLEANFILES += $(CART)
