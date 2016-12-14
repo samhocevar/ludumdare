@@ -50,6 +50,7 @@ $(CART): $(SRCIMG) dither source.p8
 	echo '[0]=' >> $@
 	cat $(TMPDATA) >> $@
 	sed '0,/rom = {/d' < $(TMPCART) >> $@
+	$(ZEPTOOL) $@ --topng -o $@.png
 	rm -f tmp.data tmp.png tmp.Z
 
 CLEANFILES += $(CART)
