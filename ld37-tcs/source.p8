@@ -432,7 +432,9 @@ function _init()
   for i=1,#s do strlen[sub(s,i,i)] = true end
 
   -- decompress data
+-- xxx: begin remove
   if #rom>0 then
+-- xxx: end remove
     big_data = { [0] = inflate(0x0), {} }
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
     rom = inflate(0x0)
@@ -643,6 +645,16 @@ function draw_world()
   local srcwidth = image_width
   mouse_x, mouse_y = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width, flr((world_y + rnd(mouse_shake)) * 126 / image_height)
   blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, mouse_x, mouse_y)
+-- xxx: begin remove
+  if #rom==0 then
+    for v in all(obj) do
+      for q in all(v[7]) do
+        local x = (q[1] - mouse_x + 128) % image_width - 128
+        rect(x, q[2] - mouse_y, x - q[1] + q[3], q[4] - mouse_y, rnd(8)+7)
+      end
+    end
+  end
+-- xxx: end remove
 end
 
 function draw_fog()

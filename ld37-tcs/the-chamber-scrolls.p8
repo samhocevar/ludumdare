@@ -98,16 +98,6 @@ obj = {
   { "chest", 1, false, { 6 }, { }, { }, { { 503,177, 514,189 } }, "the chest is open but there\nis no longer anything\ninteresting in there." },
   { "go outside", 2, false, { }, { }, { }, { { 493,123, 501,156 } }, "why go outside? this isn't\nan escape game." },
 }
-function get_mem(address,size)
-  local a={}
-  for i=0,size/4-1,64 do
-    memcpy(0x5e00,address+i*4,0x100)
-    for j=0,63 do
-      a[i+j]=dget(j)
-    end
-  end
-  return a
-end
 function u32_to_memory(address,size,data)
   for i=0,size/4-1,64 do
     for j=0,63 do
@@ -214,9 +204,6 @@ local function hufftable_create(table,depths,nvalues)
       next_code[len] = next_code[len] + 1
       local code0 = code * 2^(nbits-len)
       local code1 = (code+1) * 2^(nbits-len)
-      if code1 > 2^nbits then
-        error("code error")
-      end
       for j=code0,code1-1 do
         table[j] = e
       end
@@ -298,8 +285,6 @@ local function inflate_block_dynamic(bs)
         depths[i] = c
         i += 1
       end
-    else
-      error("wrong entry in depth table for literal/length alphabet: "..v);
     end
   end
   for i=1,hlit do litdepths[i] = depths[i] end
@@ -328,22 +313,13 @@ end
 local function inflate_block_uncompressed(bs)
   bs:flushb(band(bs.n,7))
   local len = bs:getb(16)
-  if bs.n > 0 then
-    error("unexpected.. should be zero remaining bits in buffer.")
-  end
   local nlen = bs:getb(16)
-  if bxor(len,nlen) != 65535 then
-    error("len and nlen don't match")
-  end
   for i=0,len-1 do
     bs:write(peek(bs.pos+i))
   end
   bs.pos += len
 end
 local function inflate_main(bs)
-  if peek(bs.pos)!=0x78 then
-    error("no zlib header found")
-  end
   bs.pos += 2
   repeat
     local block
@@ -355,8 +331,6 @@ local function inflate_main(bs)
       inflate_block_static(bs)
     elseif type == 2 then
       inflate_block_dynamic(bs)
-    else
-      error("unsupported block type")
     end
   until last == 1
   bs:flushb(band(bs.n,7))
@@ -398,18 +372,10 @@ function _init()
   end
   local s = "\151"
   for i=1,#s do strlen[sub(s,i,i)] = true end
-  if #rom>0 then
     big_data = { [0] = inflate(0x0), {} }
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
     rom = inflate(0x0)
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
-  else
-    big_data = { [0] = {}, {} }
-    for n=0,image_width/8*image_height-1 do
-      x = flr(n % (image_width / 8) / 2)
-      y = flr((n / (image_width / 8)) / 16)
-      big_data[0][n]=bxor(((3*x+2*y) % 7)*0x1111.1111)
-    end
   end
   music(0,0,1)
   for n=0,#big_data[0]-1 do

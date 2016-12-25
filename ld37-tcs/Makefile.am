@@ -44,6 +44,7 @@ $(CART): $(SRCIMG) dither source.p8
 	SIZE=$$(identify obj/world.png | cut -f3 -d" " | tr x ,); \
 	$(ZEPTOOL) source.p8 --data obj/world.Z --top8 \
 	    | sed "s/=.*xxx image size.*/=$$SIZE/" \
+	    | sed '/-- xxx: begin remove/,/-- xxx: end remove/d' \
 	    | sed '6,$${s/ *--.*//}' | grep . \
 	   >| $(TMPCART)
 	sed '/rom = {/q' < $(TMPCART) >| $@
