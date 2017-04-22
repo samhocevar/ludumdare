@@ -32,8 +32,8 @@ local function bs_init(addr)
       self.pos += 1
       self.n += 8
     end
-    local h = reverse[shl(band(self.b,0x.00ff),16)]
-    local l = reverse[shl(band(self.b,0x.ff),8)]
+    local h = reverse[band(shl(self.b,16),0xff)]
+    local l = reverse[band(shl(self.b,8),0xff)]
     local v = band(shr(shl(h,8)+l,16-n),shl(1,n)-1)
     local e = hufftable[v]
     local len = band(e,15)
