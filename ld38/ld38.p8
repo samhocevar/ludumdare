@@ -138,7 +138,7 @@ local function bs_init(addr)
     end
     local h = reverse[shl(band(self.b,0x.00ff),16)]
     local l = reverse[shl(band(self.b,0x.ff),8)]
-    local v = band(shr(shl(h,8)+l,16-n),2^n-1)
+    local v = band(shr(shl(h,8)+l,16-n),shl(1,n)-1)
     local e = hufftable[v]
     local len = band(e,15)
     local ret = flr(shr(e,4))
@@ -202,8 +202,8 @@ local function hufftable_create(table,depths,nvalues)
       local e = (i-1)*16 + len
       local code = next_code[len]
       next_code[len] = next_code[len] + 1
-      local code0 = code * 2^(nbits-len)
-      local code1 = (code+1) * 2^(nbits-len)
+      local code0 = shl(code,nbits-len)
+      local code1 = shl(code+1,nbits-len)
       for j=code0,code1-1 do
         table[j] = e
       end
@@ -301,6 +301,7 @@ local function inflate_block_static(bs)
     local d = stdpt[i]
     for j=1,stcnt[i] do
       depths[k] = d
+      k += 1
     end
   end
   local nlit = hufftable_create(littable,depths,288)
