@@ -100,8 +100,9 @@ end
 -- size: bytes, must be multiple of 256 (0x100)
 -- offset: bytes, offset inside src
 function u32_to_memory(dest,src,size,offset)
+  offset = offset or 0
   for i=0,size/4-1,64 do
-    local first = i + offset
+    local first = i + offset/4
     for j=0,63 do
       dset(j,src[first+j])
     end
@@ -110,6 +111,9 @@ function u32_to_memory(dest,src,size,offset)
 end
 
 -- import our custom zzlib
+-- xxx: begin remove
+function dofile() end
+-- xxx: end remove
 dofile('zzlib.p8')
 
 --
@@ -149,20 +153,25 @@ function _init()
   for i=1,#s do strlen[sub(s,i,i)] = true end
 
   -- decompress data
+  big_data = { [0] = {}, {} }
 -- xxx: begin remove
   if #rom>0 then
 -- xxx: end remove
-    big_data = { [0] = inflate(0x0), {} }
-    u32_to_memory(0x0, rom, band(4*#rom+0xff,0x7f00), 0)
-    rom = inflate(0x0)
-    u32_to_memory(0x0, rom, band(4*#rom+0xff,0x7f00), 0)
+    -- append ROM to our compressed data and decompress into Lua memory
+    u32_to_memory(0x4300, rom, 0x1b00, 0)
+    local tmp = inflate(0x0000)
+    -- the first 0x4300 bytes were our initial cartridge, copy them to 0x0000
+    u32_to_memory(0x0000, tmp, 0x4300)
+    -- then comes our actual data; 0x10c0 = 0x4300 / 4
+    for n=0x10c0,#tmp do
+      big_data[0][n-0x10c0] = tmp[n]
+    end
 -- xxx: begin remove
   else
     -- random noise for testing purposes
-    big_data = { [0] = {}, {} }
     for n=0,image_width/8*image_height-1 do
-      x = flr(n % (image_width / 8) / 2)
-      y = flr((n / (image_width / 8)) / 16)
+      local x = flr(n % (image_width / 8) / 2)
+      local y = flr((n / (image_width / 8)) / 16)
       big_data[0][n]=bxor(((3*x+2*y) % 7)*0x1111.1111)
       --big_data[0][n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
     end
