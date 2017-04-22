@@ -95,14 +95,17 @@ end
 -- xxx: end remove
 
 -- convert array data to bytes in memory
--- indices in data start at 0
--- size must be multiple of 256 bytes (0x100)
-function u32_to_memory(address,size,data)
+-- dest: memory address
+-- src: array of u32, indices start at 0
+-- size: bytes, must be multiple of 256 (0x100)
+-- offset: bytes, offset inside src
+function u32_to_memory(dest,src,size,offset)
   for i=0,size/4-1,64 do
+    local first = i + offset
     for j=0,63 do
-      dset(j,data[i+j])
+      dset(j,src[first+j])
     end
-    memcpy(address+i*4,0x5e00,0x100)
+    memcpy(dest+i*4,0x5e00,0x100)
   end
 end
 
@@ -140,17 +143,6 @@ function _init()
   -- clean startup
   cls()
 
-  -- init reverse array
-  for i=0,255 do
-    local k=0
-    for j=0,7 do
-      if band(i,shl(1,j)) != 0 then
-        k += shl(1,7-j)
-      end
-    end
-    reverse[i] = k
-  end
-
   -- init strlen array
   local s = "\151"
   --local s = "\140\141\142\143\144\145\146\147\150\151\152\153\154\155\156\157\160\161\162\163\164\165\166\167\168"
@@ -161,9 +153,9 @@ function _init()
   if #rom>0 then
 -- xxx: end remove
     big_data = { [0] = inflate(0x0), {} }
-    u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
+    u32_to_memory(0x0, rom, band(4*#rom+0xff,0x7f00), 0)
     rom = inflate(0x0)
-    u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
+    u32_to_memory(0x0, rom, band(4*#rom+0xff,0x7f00), 0)
 -- xxx: begin remove
   else
     -- random noise for testing purposes

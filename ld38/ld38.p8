@@ -98,12 +98,13 @@ obj = {
   { "chest", 1, false, { 6 }, { }, { }, { { 503,177, 514,189 } }, "the chest is open but there\nis no longer anything\ninteresting in there." },
   { "go outside", 2, false, { }, { }, { }, { { 493,123, 501,156 } }, "why go outside? this isn't\nan escape game." },
 }
-function u32_to_memory(address,size,data)
+function u32_to_memory(dest,src,size,offset)
   for i=0,size/4-1,64 do
+    local first = i + offset
     for j=0,63 do
-      dset(j,data[i+j])
+      dset(j,src[first+j])
     end
-    memcpy(address+i*4,0x5e00,0x100)
+    memcpy(dest+i*4,0x5e00,0x100)
   end
 end
 local reverse = {}
@@ -340,6 +341,15 @@ end
 function inflate(inaddr)
   return inflate_main(bs_init(inaddr))
 end
+for i=0,255 do
+  local k=0
+  for j=0,7 do
+    if band(i,shl(1,j)) != 0 then
+      k += shl(1,7-j)
+    end
+  end
+  reverse[i] = k
+end
 function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
   local data = src[1 - xoff % 2]
   xoff = band(xoff,0xfffe)
@@ -362,21 +372,12 @@ end
 strlen = {}
 function _init()
   cls()
-  for i=0,255 do
-    local k=0
-    for j=0,7 do
-      if band(i,shl(1,j)) != 0 then
-        k += shl(1,7-j)
-      end
-    end
-    reverse[i] = k
-  end
   local s = "\151"
   for i=1,#s do strlen[sub(s,i,i)] = true end
     big_data = { [0] = inflate(0x0), {} }
-    u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
+    u32_to_memory(0x0, rom, band(4*#rom+0xff,0x7f00), 0)
     rom = inflate(0x0)
-    u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
+    u32_to_memory(0x0, rom, band(4*#rom+0xff,0x7f00), 0)
   music(0,0,1)
   for n=0,#big_data[0]-1 do
     local off = n - 1

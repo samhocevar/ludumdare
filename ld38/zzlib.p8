@@ -277,3 +277,14 @@ function inflate(inaddr)
   return inflate_main(bs_init(inaddr))
 end
 
+-- init reverse array
+for i=0,255 do
+  local k=0
+  for j=0,7 do
+    if band(i,shl(1,j)) != 0 then
+      k += shl(1,7-j)
+    end
+  end
+  reverse[i] = k
+end
+
