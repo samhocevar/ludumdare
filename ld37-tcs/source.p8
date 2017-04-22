@@ -449,8 +449,8 @@ function _init()
       big_data[0][n]=bxor(((3*x+2*y) % 7)*0x1111.1111)
       --big_data[0][n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
     end
--- xxx: end remove
   end
+-- xxx: end remove
 
   -- the music is decompressed
   music(0,0,1)

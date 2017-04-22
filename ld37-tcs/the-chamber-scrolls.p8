@@ -376,7 +376,6 @@ function _init()
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
     rom = inflate(0x0)
     u32_to_memory(0x0, band(4*#rom+0xff,0x7f00), rom)
-  end
   music(0,0,1)
   for n=0,#big_data[0]-1 do
     local off = n - 1
