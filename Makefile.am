@@ -11,6 +11,7 @@ SUBDIRS = lol \
     ld34-weshgrow \
     ld35-allturdbeast \
     ld37-tcs \
+    ld38 \
     $(NULL)
 
 test: check

@@ -28,6 +28,7 @@ AC_CONFIG_FILES(
   ld34-weshgrow/Makefile
   ld35-allturdbeast/Makefile
   ld37-tcs/Makefile
+  ld38/Makefile
 ])
 
 dnl
