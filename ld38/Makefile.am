@@ -50,10 +50,11 @@ $(CART): $(SRC) $(LIB) $(IMGDATA) dither
 	    | sed '/-- xxx: begin remove/,/-- xxx: end remove/d' \
 	    | sed '6,$${s/ *--.*//}' | grep . \
 	   >| $(TMPCART)
-	@# Put remaining compressed data in ROM variable
+	@# Put remaining compressed data in ROM variable, and
+	@# add extra newline so that size is at least 1 (ugly hack)
 	sed '/rom = {/q' < $(TMPCART) >| $@
 	echo '[0]=' >> $@
-	cat $(TMPDATA) | dd bs=1 skip=17152 | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >> $@
+	(cat $(TMPDATA) | dd bs=1 skip=17152; echo '') | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >> $@
 	sed '0,/rom = {/d' < $(TMPCART) >> $@
 	@# Create PNG cartridge
 	$(ZEPTOOL) $@ --topng -o $@.png

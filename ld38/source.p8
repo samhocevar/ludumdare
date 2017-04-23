@@ -1,9 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 8
 __lua__
---  the chamber scrolls
+--  LD38 toy project
 --  copyright (c) 2016 sam hocevar <sam@hocevar.net>
---                2016 francois galea <fgalea at free.fr>
 --
 --  this program is free software. it comes without any warranty, to
 --  the extent permitted by applicable law. you can redistribute it
@@ -18,8 +17,11 @@ function dofile() end
 
 image_list = {
   --{ file = "emptytest.png", w = 0, h = 0 },
-  { file = "data/pano.jpeg", w = 600, h = 252, tolerance = 5000 },
-  --{ file = "data/world.jpeg", w = 600, h = 252, tolerance = 5000 },
+  --{ file = "data/pano.jpeg", w = 600, h = 252, tolerance = 40000 },
+  --{ file = "data/limbo.jpeg", w = 640, h = 320, tolerance = 40000 },
+  --{ file = "data/sotb.png", w = 640, h = 220, tolerance = 40000 },
+  { file = "data/skyline.jpeg", w = 1024, h = 128, tolerance = 40000 },
+  { file = "data/bear.png", w = 128, h = 144, tolerance = 10000 },
 }
 current_image = image_list[1]
 
@@ -36,58 +38,58 @@ rom = {
 --  7: found the safe combination
 obj = {
   -- context, mouse, important, facts_wanted, facts_notwanted, facts_activated, coords, message
-  { "painting", 1, false, { }, { }, { }, { { 26, 95, 53, 139 }, { 53, 101, 75, 139} },
-    "you look at the painting.\na beautiful painting with\na lot of emotions in it.\nyou can almost smell the\npixels." },
-  { "painting", 1, false, { }, { }, { }, { { 209, 112, 228, 129 } },
-    "you look at the painting.\nan impressive painting. it\nmust be very expensive.\nit must also be very\npretentious." },
-  { "painting", 1, false, { }, { }, { }, { { 422, 115, 455, 137 } },
-    "you look at the painting.\nit's ugly. you cannot\nunderstand why people\nbuy these things." },
-  { "painting", 1, false, { }, { }, { }, { { 258, 88, 306, 126 } },
-    "you look at the painting.\nthere are a lot of such\npaintings in the room." },
-  { "painting", 1, false, { }, { }, { }, { { 520, 104, 544, 128 } },
-    "why do people buy\npaintings? clearly\nvideo games are a\nlot better. ever seen\na 60 fps painting?" },
-
-  { "flowers",  1, true,  { }, { 3 }, { 3 }, { { 99, 146, 118, 166 } },
-    "there was a crowbar hidden\nin the flower pot!\nseriously, what are the\nodds?" },
-  { "flowers",  1, false, { 3 }, { }, { }, { { 99, 146, 118, 166 } },
-    "these flowers do not\nlook healthy. hard to\ntell in this resolution," },
-
-  { "painting", 1, true,  { }, { 1 }, { 1 }, { { 107, 128, 114, 133 } },
-    "you look at the painting.\n\nthere was a safe hidden\nbehind it!\n\nclassic point-n-click\nmechanism, but damn\neffective!" },
-  { "safe",     1, false, { 1 }, { 7 }, { }, { { 107, 128, 114, 133 } },
-    "the safe is closed.\nyou need the combination." },
-  { "open",     2, true, { 7 }, { 2 }, { 2 }, { { 107, 128, 114, 133 } },
-    "congratulations! you\nopened the safe and the\ngrand secret will be\nrevealed to you.\n\nthere are no scrolls, the\nscrolls are a lie. the\ngame is called the\nchamber scrolls because\nthe chamber... scrolls." },
-  { "painting", 1, true,  { 2 }, { }, { }, { { 107, 128, 114, 133 } },
-    "another boring painting." },
-
-  { "pillow",  1, true, { }, { 5 }, { 5 }, { { 51,159,70,176 } }, "you found the key behind\nthe pillow. you're pretty\nsmart it seems!" },
-  { "pillow",  1, false, { 5 }, { }, { }, { { 51,159,70,176 } }, "this pillow seems comfy." },
-
-  { "drawer",  1, false, { }, { }, { }, { { 245,146,314,158 } }, "a drawer. it is locked." },
-  { "drawer",  1, false, { }, { }, { }, { { 245,158,314,172 } }, "a drawer. it is locked." },
-  { "drawer",  1, false, { }, { 3 }, { }, { { 245,172,314,184 } }, "a drawer. it is locked." },
-  { "drawer",  1, false, { }, { }, { }, { { 245,184,314,196 } }, "a drawer. it is locked." },
-
-  { "crack open", 2, true,  { 3 }, { 4 }, { 4 }, { { 245,172,314,184 } },
-    "you crack the drawer open\nand find a plastic chicken\nwith a pulley. what a\nweird object." },
-  { "drawer",  1, false, { 4 }, { }, { }, { { 245,172,314,184 } },
-    "a drawer. it was cracked\nopen by a vandal." },
-
-  { "lamp", 1, false, { }, { 6 }, { }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
-    "why are the lights on during\ndaylight? clearly i should\nhave downloaded another\nstock photo on google\nimages." },
-  { "use plates", 2, true,  { 6 }, { 7 }, { 7 }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
-    "the photographic plates\nwere hiding the secret\nsafe combination! kudos to\nscience once again!" },
-  { "lamp", 1, false, { 7 }, { }, { }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
-    "why are the lights on during\ndaylight? clearly i should\nhave downloaded another\nstock photo on google\nimages." },
-
-  { "look", 1, false, { }, { }, { }, { { 130,118,162,152 }, { 389,114, 402,154 } }, "the weather is beautiful.\nvideo games are too." },
-
-  { "chest", 1, false, { }, { 5 }, { }, { { 503,177, 514,189 } }, "this chest's lock requires\na key of some sort." },
-  { "open",  2, true,  { 5 }, { 6 }, { 6 }, { { 503,177, 514,189 } }, "you find old photographic\nplates in the chest.\nwhat could they be good for?" },
-  { "chest", 1, false, { 6 }, { }, { }, { { 503,177, 514,189 } }, "the chest is open but there\nis no longer anything\ninteresting in there." },
-
-  { "go outside", 2, false, { }, { }, { }, { { 493,123, 501,156 } }, "why go outside? this isn't\nan escape game." },
+--   { "painting", 1, false, { }, { }, { }, { { 26, 95, 53, 139 }, { 53, 101, 75, 139} },
+--     "you look at the painting.\na beautiful painting with\na lot of emotions in it.\nyou can almost smell the\npixels." },
+--   { "painting", 1, false, { }, { }, { }, { { 209, 112, 228, 129 } },
+--     "you look at the painting.\nan impressive painting. it\nmust be very expensive.\nit must also be very\npretentious." },
+--   { "painting", 1, false, { }, { }, { }, { { 422, 115, 455, 137 } },
+--     "you look at the painting.\nit's ugly. you cannot\nunderstand why people\nbuy these things." },
+--   { "painting", 1, false, { }, { }, { }, { { 258, 88, 306, 126 } },
+--     "you look at the painting.\nthere are a lot of such\npaintings in the room." },
+--   { "painting", 1, false, { }, { }, { }, { { 520, 104, 544, 128 } },
+--     "why do people buy\npaintings? clearly\nvideo games are a\nlot better. ever seen\na 60 fps painting?" },
+-- 
+--   { "flowers",  1, true,  { }, { 3 }, { 3 }, { { 99, 146, 118, 166 } },
+--     "there was a crowbar hidden\nin the flower pot!\nseriously, what are the\nodds?" },
+--   { "flowers",  1, false, { 3 }, { }, { }, { { 99, 146, 118, 166 } },
+--     "these flowers do not\nlook healthy. hard to\ntell in this resolution," },
+-- 
+--   { "painting", 1, true,  { }, { 1 }, { 1 }, { { 107, 128, 114, 133 } },
+--     "you look at the painting.\n\nthere was a safe hidden\nbehind it!\n\nclassic point-n-click\nmechanism, but damn\neffective!" },
+--   { "safe",     1, false, { 1 }, { 7 }, { }, { { 107, 128, 114, 133 } },
+--     "the safe is closed.\nyou need the combination." },
+--   { "open",     2, true, { 7 }, { 2 }, { 2 }, { { 107, 128, 114, 133 } },
+--     "congratulations! you\nopened the safe and the\ngrand secret will be\nrevealed to you.\n\nthere are no scrolls, the\nscrolls are a lie. the\ngame is called the\nchamber scrolls because\nthe chamber... scrolls." },
+--   { "painting", 1, true,  { 2 }, { }, { }, { { 107, 128, 114, 133 } },
+--     "another boring painting." },
+-- 
+--   { "pillow",  1, true, { }, { 5 }, { 5 }, { { 51,159,70,176 } }, "you found the key behind\nthe pillow. you're pretty\nsmart it seems!" },
+--   { "pillow",  1, false, { 5 }, { }, { }, { { 51,159,70,176 } }, "this pillow seems comfy." },
+-- 
+--   { "drawer",  1, false, { }, { }, { }, { { 245,146,314,158 } }, "a drawer. it is locked." },
+--   { "drawer",  1, false, { }, { }, { }, { { 245,158,314,172 } }, "a drawer. it is locked." },
+--   { "drawer",  1, false, { }, { 3 }, { }, { { 245,172,314,184 } }, "a drawer. it is locked." },
+--   { "drawer",  1, false, { }, { }, { }, { { 245,184,314,196 } }, "a drawer. it is locked." },
+-- 
+--   { "crack open", 2, true,  { 3 }, { 4 }, { 4 }, { { 245,172,314,184 } },
+--     "you crack the drawer open\nand find a plastic chicken\nwith a pulley. what a\nweird object." },
+--   { "drawer",  1, false, { 4 }, { }, { }, { { 245,172,314,184 } },
+--     "a drawer. it was cracked\nopen by a vandal." },
+-- 
+--   { "lamp", 1, false, { }, { 6 }, { }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
+--     "why are the lights on during\ndaylight? clearly i should\nhave downloaded another\nstock photo on google\nimages." },
+--   { "use plates", 2, true,  { 6 }, { 7 }, { 7 }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
+--     "the photographic plates\nwere hiding the secret\nsafe combination! kudos to\nscience once again!" },
+--   { "lamp", 1, false, { 7 }, { }, { }, { { 441, 100, 452, 106 }, { 130, 90, 144, 98 } },
+--     "why are the lights on during\ndaylight? clearly i should\nhave downloaded another\nstock photo on google\nimages." },
+-- 
+--   { "look", 1, false, { }, { }, { }, { { 130,118,162,152 }, { 389,114, 402,154 } }, "the weather is beautiful.\nvideo games are too." },
+-- 
+--   { "chest", 1, false, { }, { 5 }, { }, { { 503,177, 514,189 } }, "this chest's lock requires\na key of some sort." },
+--   { "open",  2, true,  { 5 }, { 6 }, { 6 }, { { 503,177, 514,189 } }, "you find old photographic\nplates in the chest.\nwhat could they be good for?" },
+--   { "chest", 1, false, { 6 }, { }, { }, { { 503,177, 514,189 } }, "the chest is open but there\nis no longer anything\ninteresting in there." },
+-- 
+--   { "go outside", 2, false, { }, { }, { }, { { 493,123, 501,156 } }, "why go outside? this isn't\nan escape game." },
 }
 
 -- xxx: begin remove
@@ -229,7 +231,8 @@ fog_t, fog, fog_dir, fog_color = 0.5, 0, 1, 0
 
 -- 0: main menu
 -- 1: in game
-state = 0
+-- 6: test
+state = 6
 
 function _update60()
   rnd()
@@ -265,7 +268,7 @@ function _update60()
       facts = {}
       state = 1
     end
-  elseif state==1 then
+  elseif state==1 or state==6 then
     if not btn(0) and not btn(1) and not btn(2) and not btn(3) then
       mouse_speed = 0
     end
@@ -423,13 +426,25 @@ function draw_fog()
   pal()
 end
 
+walk_cycle = 0
 function _draw()
+  -- background
   if state!=3 then
     draw_world()
   else
     cls(fog_color)
   end
 
+  -- character
+  walk_cycle += 0x.08
+  frame = flr(walk_cycle % 1 * 12)
+  u32_to_memory(0x1000, image_list[2].data[0], 0xc00, flr(frame / 4) * 0x300)
+  palt(0,false)
+  palt(7,true)
+  spr(128 + frame % 4 * 4, 40, 70, 4, 6)
+  palt()
+
+  -- UI etc.
   if state==0 then
     draw_fog()
     title()
@@ -443,6 +458,7 @@ function _draw()
   elseif state==5 then
     box(message_info, -1, -1)
     box("\151 continue", 72, 111)
+  elseif state==6 then
   end
   --box("you look around.", 10, 10)
 end
