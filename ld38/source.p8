@@ -20,13 +20,13 @@ image_list = {
   --{ file = "data/pano.jpeg", w = 600, h = 252, tolerance = 40000 },
   --{ file = "data/limbo.jpeg", w = 640, h = 320, tolerance = 40000 },
   --{ file = "data/sotb.png", w = 640, h = 220, tolerance = 40000 },
-  { file = "data/skyline.jpeg", w = 1024, h = 128, tolerance = 40000 },
+  { file = "data/skyline.jpeg", w = 1024, h = 128, tolerance = 15000 },
   { file = "data/bear.png", w = 128, h = 144, tolerance = 10000 },
 }
 current_image = image_list[1]
 
 facts = {}
-rom = {
+global_rom = {
 }
 -- facts:
 --  1: have seen painting #3
@@ -162,12 +162,12 @@ function _init()
 
   -- decompress data
 -- xxx: begin remove
-  if #rom>0 then
+  if #global_rom>0 then
 -- xxx: end remove
     -- append ROM to our compressed data and decompress into Lua memory
-    u32_to_memory(0x4300, rom, 0x1b00)
-    u32_to_memory(0x6000, rom, max(0, #rom * 4 - 0x1b00), 0x1b00 / 4)
-    local tmp = inflate(0x0000)
+    --u32_to_memory(0x4300, global_rom, 0x1b00)
+    --u32_to_memory(0x6000, global_rom, max(0, #global_rom * 4 - 0x1b00), 0x1b00 / 4)
+    local tmp = inflate(0x0000,global_rom)
     -- now copy decompressed memory to the proper places
     local u32_offset = 0
     -- the first 0x4300 bytes were our initial cartridge, copy them to 0x0000
@@ -404,7 +404,7 @@ function draw_world()
   skip_y = flr((world_y + rnd(mouse_shake)) / image_height * (image_height - 128))
   blit_bigpic(lines, dst, dstwidth, data, srcwidth, mouse_x, skip_y)
 -- xxx: begin remove
-  if #rom==0 then
+  if #global_rom==0 then
     for v in all(obj) do
       for q in all(v[7]) do
         local x = (q[1] - mouse_x + 128) % image_width - 128

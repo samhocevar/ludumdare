@@ -1,13 +1,16 @@
 local reverse = {}
 
-local function bs_init(addr)
+local function bs_init(addr, rom)
   local bs = {
     pos = addr, -- char buffer pointer
+    rom = rom,  -- extra ROM data as integers
     b = 0,      -- bit buffer
     n = 0,      -- number of bits in buffer
     out = {},   -- output array
     outpos = 0, -- output position
   }
+  -- append ROM data to user memory (first 0x1b00 bytes)
+  if (#rom * 4 > 0) u32_to_memory(0x4300, rom, 0x1b00)
   -- get rid of n first bits
   function bs:flushb(n)
     self.n -= n
@@ -20,11 +23,11 @@ local function bs_init(addr)
       self.pos += 1
       self.n += 8
     end
-    -- extra hack: addresses beyond 0x5e00 continue at 0x6000
-    if self.pos >= 0x4e00 then
-      memcpy(0x0, 0x4e00, 0x1000)
-      memcpy(0x1000, 0x6000, 0x2000)
-      self.pos -= 0x4e00
+    -- extra hack: append rest of RAM
+    if self.pos >= 0x5d00 then
+      memcpy(0x0, 0x5d00, 0x100)
+      if (#self.rom * 4 > 0x1b00) u32_to_memory(0x100, self.rom, #self.rom * 4 - 0x1b00, 0x1b00 / 4)
+      self.pos -= 0x5d00
     end
     local ret = shl(band(self.b,shl(0x.0001,n)-0x.0001),16)
     self.n -= n
@@ -279,8 +282,8 @@ local function inflate_main(bs)
   return bs.out
 end
 
-function inflate(inaddr)
-  return inflate_main(bs_init(inaddr))
+function inflate(inaddr, rom)
+  return inflate_main(bs_init(inaddr, rom))
 end
 
 -- init reverse array
