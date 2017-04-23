@@ -3,9 +3,12 @@ version 8
 __lua__
 --  the chamber scrolls
 --  copyright (c) 2016 sam hocevar <sam@hocevar.net>
-image_width, image_height =600,252
+image_list = {
+  { "emptyshit.png", 0, 0 },
+  { "data/pano.png", 600, 252 },
+}
+current_image = 2
 facts = {}
-big_data = {}
 rom = {
 [0]=
 0xfa82.97d0, 0x1c0b.04fc, 0xfec7.3c16, 0xdef0.b17d, 0xe611.f410, 0x4e58.1b5d,
@@ -305,7 +308,7 @@ obj = {
 function u32_to_memory(dest,src,size,offset)
   offset = offset or 0
   for i=0,size/4-1,64 do
-    local first = i + offset/4
+    local first = i + offset
     for j=0,63 do
       dset(j,src[first+j])
     end
@@ -579,18 +582,26 @@ function _init()
   cls()
   local s = "\151"
   for i=1,#s do strlen[sub(s,i,i)] = true end
-  big_data = { [0] = {}, {} }
-    u32_to_memory(0x4300, rom, 0x1b00, 0)
+    u32_to_memory(0x4300, rom, 0x1b00)
     local tmp = inflate(0x0000)
+    local u32_offset = 0
     u32_to_memory(0x0000, tmp, 0x4300)
-    for n=0x10c0,#tmp do
-      big_data[0][n-0x10c0] = tmp[n]
+    u32_offset += 0x4300 / 4
+    for i in all(image_list) do
+      local u32_count = i[2] / 8 * i[3]
+      local pixels = {}
+      for n=0,u32_count-1 do pixels[n]=tmp[u32_offset+n] end
+      i[1] = { [0] = pixels, {} }
+      u32_offset += u32_count
     end
   music(0,0,1)
-  for n=0,#big_data[0]-1 do
-    local off = n - 1
-    if n % (image_width / 8) == 0 then off += image_width / 8 end
-    big_data[1][n] = shl(big_data[0][n],4) + band(shr(big_data[0][off],28),0x.000f)
+  for i in all(image_list) do
+    local pixels, w, h = i[1], i[2], i[3]
+    for n=0,#pixels[0]-1 do
+      local off = n - 1
+      if n % (w / 8) == 0 then off += w / 8 end
+      pixels[1][n] = shl(pixels[0][n],4) + band(shr(pixels[0][off],28),0x.000f)
+    end
   end
   for i=0x2000,0x2010,2 do
     poke(i,16) poke(i+1,17) poke(i+0x80,32) poke(i+0x81,33)
@@ -619,6 +630,8 @@ function _update60()
     clicked = btnp(4) or btnp(5)
   end
   down = btn(4) or btn(5)
+  local image_width = image_list[current_image][2]
+  local image_height = image_list[current_image][3]
   if state==0 then
     world_x = (world_x + 0.125) % image_width
     if fog >= 15 then world_x, world_y = rnd(image_width), rnd(image_height) end
@@ -743,12 +756,16 @@ function box(text, x, y)
   print(text, x+4, y+4)
 end
 function draw_world()
+  local pixels = image_list[current_image][1]
+  local image_width = image_list[current_image][2]
+  local image_height = image_list[current_image][3]
   local lines = 128
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
-  mouse_x, mouse_y = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width, flr((world_y + rnd(mouse_shake)) * 126 / image_height)
-  blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, mouse_x, mouse_y)
+  mouse_x = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width
+  mouse_y = flr((world_y + rnd(mouse_shake)) * 126 / image_height)
+  blit_bigpic(lines, dst, dstwidth, pixels, srcwidth, mouse_x, mouse_y)
 end
 function draw_fog()
   for i=0,15 do pal(i,fog_color) end

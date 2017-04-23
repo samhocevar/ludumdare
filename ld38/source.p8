@@ -11,10 +11,20 @@ __lua__
 --  to public license, version 2, as published by the wtfpl task force.
 --  see the copying file or http://www.wtfpl.net/ for more details.
 
-image_width, image_height = 600,252 -- xxx image size
+-- xxx: begin remove
+-- This does not exist in PICO-8, we just emulate it
+function dofile() end
+-- xxx: end remove
+
+--  format: name, width, height, tolerance (for lossy compression)
+--  image name is later replaced with pixels
+image_list = {
+  { "emptytest.png", 0, 0 },
+  { "data/pano.png", 600, 252, 40000 },
+}
+current_image = 2
 
 facts = {}
-big_data = {}
 rom = {
 }
 -- facts:
@@ -98,11 +108,11 @@ end
 -- dest: memory address
 -- src: array of u32, indices start at 0
 -- size: bytes, must be multiple of 256 (0x100)
--- offset: bytes, offset inside src
+-- offset: number of u32, offset inside src
 function u32_to_memory(dest,src,size,offset)
   offset = offset or 0
   for i=0,size/4-1,64 do
-    local first = i + offset/4
+    local first = i + offset
     for j=0,63 do
       dset(j,src[first+j])
     end
@@ -111,9 +121,6 @@ function u32_to_memory(dest,src,size,offset)
 end
 
 -- import our custom zzlib
--- xxx: begin remove
-function dofile() end
--- xxx: end remove
 dofile('zzlib.p8')
 
 --
@@ -153,39 +160,53 @@ function _init()
   for i=1,#s do strlen[sub(s,i,i)] = true end
 
   -- decompress data
-  big_data = { [0] = {}, {} }
 -- xxx: begin remove
   if #rom>0 then
 -- xxx: end remove
     -- append ROM to our compressed data and decompress into Lua memory
-    u32_to_memory(0x4300, rom, 0x1b00, 0)
+    u32_to_memory(0x4300, rom, 0x1b00)
     local tmp = inflate(0x0000)
+    -- now copy decompressed memory to the proper places
+    local u32_offset = 0
     -- the first 0x4300 bytes were our initial cartridge, copy them to 0x0000
     u32_to_memory(0x0000, tmp, 0x4300)
-    -- then comes our actual data; 0x10c0 = 0x4300 / 4
-    for n=0x10c0,#tmp do
-      big_data[0][n-0x10c0] = tmp[n]
+    u32_offset += 0x4300 / 4
+    -- now our images
+    for i in all(image_list) do
+      local u32_count = i[2] / 8 * i[3]
+      local pixels = {}
+      for n=0,u32_count-1 do pixels[n]=tmp[u32_offset+n] end
+      i[1] = { [0] = pixels, {} }
+      u32_offset += u32_count
     end
 -- xxx: begin remove
   else
-    -- random noise for testing purposes
-    for n=0,image_width/8*image_height-1 do
-      local x = flr(n % (image_width / 8) / 2)
-      local y = flr((n / (image_width / 8)) / 16)
-      big_data[0][n]=bxor(((3*x+2*y) % 7)*0x1111.1111)
-      --big_data[0][n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
+    for i in all(image_list) do
+      local pixels, w, h = {}, i[2], i[3]
+      -- random noise for testing purposes
+      for n=0,w/8*h-1 do
+        local dy = flr(n / (w / 8)) % 2 * 4
+        local x = flr(n % (w / 8) / 2)
+        local y = flr((n / (w / 8)) / 16)
+        pixels[n]=bxor(((3*x+2*y) % 7 + 3)*shl(0x0101.0101,dy))
+        --pixels[n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
+      end
+      i[1] = { [0] = pixels, {} }
     end
   end
 -- xxx: end remove
 
-  -- the music is decompressed
+  -- the music is now decompressed
   music(0,0,1)
 
   -- compute off-by-one-pixel data
-  for n=0,#big_data[0]-1 do
-    local off = n - 1
-    if n % (image_width / 8) == 0 then off += image_width / 8 end
-    big_data[1][n] = shl(big_data[0][n],4) + band(shr(big_data[0][off],28),0x.000f)
+  for i in all(image_list) do
+    local pixels, w, h = i[1], i[2], i[3]
+    for n=0,#pixels[0]-1 do
+      local off = n - 1
+      if n % (w / 8) == 0 then off += w / 8 end
+      pixels[1][n] = shl(pixels[0][n],4) + band(shr(pixels[0][off],28),0x.000f)
+    end
   end
 
   -- init dithering screen (lots of overdraw on the right, but whatever)
@@ -228,6 +249,9 @@ function _update60()
     clicked = btnp(4) or btnp(5)
   end
   down = btn(4) or btn(5)
+
+  local image_width = image_list[current_image][2]
+  local image_height = image_list[current_image][3]
 
   if state==0 then
     -- scroll slightly
@@ -365,12 +389,16 @@ function box(text, x, y)
 end
 
 function draw_world()
+  local pixels = image_list[current_image][1]
+  local image_width = image_list[current_image][2]
+  local image_height = image_list[current_image][3]
   local lines = 128
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
-  mouse_x, mouse_y = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width, flr((world_y + rnd(mouse_shake)) * 126 / image_height)
-  blit_bigpic(lines, dst, dstwidth, big_data, srcwidth, mouse_x, mouse_y)
+  mouse_x = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width
+  mouse_y = flr((world_y + rnd(mouse_shake)) * 126 / image_height)
+  blit_bigpic(lines, dst, dstwidth, pixels, srcwidth, mouse_x, mouse_y)
 -- xxx: begin remove
   if #rom==0 then
     for v in all(obj) do
