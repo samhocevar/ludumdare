@@ -20,6 +20,12 @@ local function bs_init(addr)
       self.pos += 1
       self.n += 8
     end
+    -- extra hack: addresses beyond 0x5e00 continue at 0x6000
+    if self.pos >= 0x4e00 then
+      memcpy(0x0, 0x4e00, 0x1000)
+      memcpy(0x1000, 0x6000, 0x2000)
+      self.pos -= 0x4e00
+    end
     local ret = shl(band(self.b,shl(0x.0001,n)-0x.0001),16)
     self.n -= n
     self.b = shr(self.b,n)

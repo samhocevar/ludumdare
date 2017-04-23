@@ -16,13 +16,12 @@ __lua__
 function dofile() end
 -- xxx: end remove
 
---  format: name, width, height, tolerance (for lossy compression)
---  image name is later replaced with pixels
 image_list = {
-  { "emptytest.png", 0, 0 },
-  { "data/pano.png", 600, 252, 40000 },
+  --{ file = "emptytest.png", w = 0, h = 0 },
+  { file = "data/pano.jpeg", w = 600, h = 252, tolerance = 5000 },
+  --{ file = "data/world.jpeg", w = 600, h = 252, tolerance = 5000 },
 }
-current_image = 2
+current_image = image_list[1]
 
 facts = {}
 rom = {
@@ -165,6 +164,7 @@ function _init()
 -- xxx: end remove
     -- append ROM to our compressed data and decompress into Lua memory
     u32_to_memory(0x4300, rom, 0x1b00)
+    u32_to_memory(0x6000, rom, max(0, #rom * 4 - 0x1b00), 0x1b00 / 4)
     local tmp = inflate(0x0000)
     -- now copy decompressed memory to the proper places
     local u32_offset = 0
@@ -173,16 +173,16 @@ function _init()
     u32_offset += 0x4300 / 4
     -- now our images
     for i in all(image_list) do
-      local u32_count = i[2] / 8 * i[3]
+      local u32_count = i.w / 8 * i.h
       local pixels = {}
       for n=0,u32_count-1 do pixels[n]=tmp[u32_offset+n] end
-      i[1] = { [0] = pixels, {} }
+      i.data = { [0] = pixels, {} }
       u32_offset += u32_count
     end
 -- xxx: begin remove
   else
     for i in all(image_list) do
-      local pixels, w, h = {}, i[2], i[3]
+      local pixels, w, h = {}, i.w, i.h
       -- random noise for testing purposes
       for n=0,w/8*h-1 do
         local dy = flr(n / (w / 8)) % 2 * 4
@@ -191,7 +191,7 @@ function _init()
         pixels[n]=bxor(((3*x+2*y) % 7 + 3)*shl(0x0101.0101,dy))
         --pixels[n]=band(shl(rnd(256),8)+shr(rnd(256),16),0xbbbb.bbbb)
       end
-      i[1] = { [0] = pixels, {} }
+      i.data = { [0] = pixels, {} }
     end
   end
 -- xxx: end remove
@@ -201,11 +201,11 @@ function _init()
 
   -- compute off-by-one-pixel data
   for i in all(image_list) do
-    local pixels, w, h = i[1], i[2], i[3]
-    for n=0,#pixels[0]-1 do
+    local data, w, h = i.data, i.w, i.h
+    for n=0,#data[0]-1 do
       local off = n - 1
       if n % (w / 8) == 0 then off += w / 8 end
-      pixels[1][n] = shl(pixels[0][n],4) + band(shr(pixels[0][off],28),0x.000f)
+      data[1][n] = shl(data[0][n],4) + band(shr(data[0][off],28),0x.000f)
     end
   end
 
@@ -250,8 +250,8 @@ function _update60()
   end
   down = btn(4) or btn(5)
 
-  local image_width = image_list[current_image][2]
-  local image_height = image_list[current_image][3]
+  local image_width = current_image.w
+  local image_height = current_image.h
 
   if state==0 then
     -- scroll slightly
@@ -389,16 +389,17 @@ function box(text, x, y)
 end
 
 function draw_world()
-  local pixels = image_list[current_image][1]
-  local image_width = image_list[current_image][2]
-  local image_height = image_list[current_image][3]
+  local data = current_image.data
+  local image_width = current_image.w
+  local image_height = current_image.h
   local lines = 128
   local dst = 0x6000
   local dstwidth = 0x80
   local srcwidth = image_width
   mouse_x = (flr(world_x + rnd(mouse_shake)) + image_width - 64) % image_width
-  mouse_y = flr((world_y + rnd(mouse_shake)) * 126 / image_height)
-  blit_bigpic(lines, dst, dstwidth, pixels, srcwidth, mouse_x, mouse_y)
+  mouse_y = flr((world_y + rnd(mouse_shake)) / image_height * 126)
+  skip_y = flr((world_y + rnd(mouse_shake)) / image_height * (image_height - 128))
+  blit_bigpic(lines, dst, dstwidth, data, srcwidth, mouse_x, skip_y)
 -- xxx: begin remove
   if #rom==0 then
     for v in all(obj) do

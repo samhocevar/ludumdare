@@ -16,35 +16,36 @@ bluenoise_DEPENDENCIES = @LOL_DEPS@
 ZEPTOOL = ../../zepto8/src/zeptool
 ZCOMPRESS = zlib-flate -compress
 
-#SRCIMG = data/test.png
-SRCIMG = data/pano.jpeg
-#SRCIMG = data/world.jpeg
-#SRCIMG = data/sony.jpeg
-WIDTH = 600
+IMG = $(shell sed 's/--.*//' $(SRC) | grep 'file = "' | cut -f2 -d'"')
+IMGDATA = $(IMG:%=%.data)
 
-TOLERANCE = 10000
+SRC = source.p8
+LIB = $(shell sed 's/--.*//' $(SRC) | tr "'" '"' | grep 'dofile *. *"' | cut -f2 -d'"')
 
-TMPSOURCE = obj/source.p8
-TMPDATA = obj/source.data
+TMPSRC = obj/$(SRC)
+TMPDATA = obj/source.Z
 TMPCART = obj/cart.p8
 
 CART = ld38.p8
 
 all: $(CART)
 
-$(CART): $(SRCIMG) dither source.p8
+%.data: % dither source.p8
+	@# Dither our images, compress them (lossily), then uncompress them again
+	eval $$(sed 's/--.*//' $(SRC) | grep 'file.*"$<"' | tr -d ' {}' | tr , '\n') \
+	 && ./dither $< $$w $$h $@.png $@.tmp \
+	 && cat $@.tmp | ./fork-zlib/minigzip -9 -l$$tolerance | (gunzip 2>/dev/null || true) >| $@
+	rm -f $@.tmp
+
+$(CART): $(SRC) $(LIB) $(IMGDATA) dither
 	mkdir -p obj
-	@# Implement dofile() in source
-	cat source.p8 | awk -F"'" '/^ *dofile/ { system("cat " $$2); getline } { print }' >| $(TMPSOURCE)
-	@# Create global data, starting with the first 0x4300 bytes of the cart
-	$(ZEPTOOL) $(TMPSOURCE) --todata >| $(TMPDATA)
-	@# Dither our image, compress it (lossily), then uncompress and add it to global data
-	./dither $(SRCIMG) $(WIDTH) obj/world.png obj/world
-	cat obj/world | ./fork-zlib/minigzip -9 -l$(TOLERANCE) | (gunzip 2>/dev/null || true) >> $(TMPDATA)
-	@# Compress global data
-	$(ZCOMPRESS) < $(TMPDATA) >| $(TMPDATA).Z
+	@# Apply dofile() in source
+	cat $(SRC) | awk -F"'" '/^ *dofile/ { system("cat " $$2); getline } { print }' >| $(TMPSRC)
+	@# Create global data, starting with the first 0x4300 bytes of the cart,
+	@# then our images, then compress everything
+	($(ZEPTOOL) $(TMPSRC) --todata; cat /dev/null $(IMGDATA)) | $(ZCOMPRESS) >| $(TMPDATA)
 	@# Put first 0x4300 bytes of compressed data in cartridge
-	$(ZEPTOOL) $(TMPSOURCE) --data $(TMPDATA).Z --top8 \
+	$(ZEPTOOL) $(TMPSRC) --data $(TMPDATA) --top8 \
 	    | sed "s/=.*xxx image size.*/=$$(identify obj/world.png | cut -f3 -d" " | tr x ,)/" \
 	    | sed '/-- xxx: begin remove/,/-- xxx: end remove/d' \
 	    | sed '6,$${s/ *--.*//}' | grep . \
@@ -52,11 +53,11 @@ $(CART): $(SRCIMG) dither source.p8
 	@# Put remaining compressed data in ROM variable
 	sed '/rom = {/q' < $(TMPCART) >| $@
 	echo '[0]=' >> $@
-	cat $(TMPDATA).Z | dd bs=1 skip=17152 | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >> $@
+	cat $(TMPDATA) | dd bs=1 skip=17152 | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >> $@
 	sed '0,/rom = {/d' < $(TMPCART) >> $@
 	@# Create PNG cartridge
 	$(ZEPTOOL) $@ --topng -o $@.png
-	@#rm -f $(TMPDATA) $(TMPDATA).Z
+	@#rm -f $(TMPDATA)
 
-CLEANFILES += $(CART)
+CLEANFILES += $(CART) $(TMPSRC) $(TMPDATA) $(TMPCART) $(IMGDATA)
 

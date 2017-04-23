@@ -25,9 +25,9 @@ using namespace lol;
 
 int main(int argc, char **argv)
 {
-    if (argc != 5)
+    if (argc != 6)
     {
-        fprintf(stderr, "Usage: %s <source> <width> <dest> <data>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <source> <w> <h> <dest> <data>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
@@ -74,11 +74,12 @@ int main(int argc, char **argv)
 
     ivec2 size(im.GetSize());
     int const desired_width = (atoi(argv[2]) + 7) / 8 * 8;
+    int const desired_height = atoi(argv[3]);
 
-    if (size.x != desired_width)
+    if (size.x != desired_width || size.y != desired_height)
     {
-        size.y = int(size.y * float(desired_width) / size.x) / 2 * 2;
         size.x = desired_width;
+        size.y = desired_height;
         im = im.Resize(size, ResampleAlgorithm::Bicubic);
     }
 
@@ -146,10 +147,10 @@ int main(int argc, char **argv)
 
     /* Save image */
     //dst = dst.Resize(size * 4, ResampleAlgorithm::Bresenham);
-    dst.Save(argv[3]);
+    dst.Save(argv[4]);
 
     /* Save data */
-    FILE *dest = fopen(argv[4], "w+");
+    FILE *dest = fopen(argv[5], "w+");
     fwrite(rawdata.data(), 1, rawdata.count(), dest);
     fclose(dest);
 
