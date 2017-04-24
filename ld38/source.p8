@@ -199,7 +199,7 @@ function _init()
 -- xxx: end remove
 
   -- the music is now decompressed
-  music(0,0,1)
+  --music(0,0,1)
 
   -- compute off-by-one-pixel data
   for i in all(image_list) do
@@ -226,6 +226,9 @@ mouse_x, mouse_y = 0, 0
 mouse_speed = 0
 mouse_type = 0
 mouse_shake = 0
+
+walk_cycle = 0
+walk_dir = false
 
 fog_t, fog, fog_dir, fog_color = 0.5, 0, 1, 0
 
@@ -272,8 +275,11 @@ function _update60()
     if not btn(0) and not btn(1) and not btn(2) and not btn(3) then
       mouse_speed = 0
     end
-    if btnp(0) or btnp(1) or btnp(2) or btnp(3) then
-      mouse_speed = max(min(mouse_speed + 0.25, 3), 1)
+    if btnp(0) or btnp(1) then
+      mouse_speed = max(min(mouse_speed + 0.25, 2), 1)
+    end
+    if mouse_speed == 0 and walk_cycle % 0.5 < 0.2 or walk_cycle % 0.5 > 0.25 then
+      mouse_speed = 0.75
     end
     --if world_x >= mouse_speed and btn(0) then world_x -= mouse_speed end
     --if world_x < max_x - mouse_speed and btn(1) then world_x += mouse_speed end
@@ -282,6 +288,10 @@ function _update60()
     world_x %= image_width
     if world_y - mouse_speed >= 0 and btn(2) then world_y -= mouse_speed end
     if world_y + mouse_speed < image_height and btn(3) then world_y += mouse_speed end
+
+    walk_cycle = (walk_cycle + mouse_speed * 0x.05) % 1
+    if btn(0) then walk_dir = true end
+    if btn(1) then walk_dir = false end
 
     for k,v in pairs(obj) do
       local context, mouse, important, facts_wanted, facts_notwanted, facts_activated, coords, message = v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]
@@ -426,7 +436,6 @@ function draw_fog()
   pal()
 end
 
-walk_cycle = 0
 function _draw()
   -- background
   if state!=3 then
@@ -436,12 +445,11 @@ function _draw()
   end
 
   -- character
-  walk_cycle += 0x.08
   frame = flr(walk_cycle % 1 * 12)
   u32_to_memory(0x1000, image_list[2].data[0], 0xc00, flr(frame / 4) * 0x300)
   palt(0,false)
   palt(7,true)
-  spr(128 + frame % 4 * 4, 40, 70, 4, 6)
+  spr(128 + frame % 4 * 4, 50, 70, 4, 6, walk_dir)
   palt()
 
   -- UI etc.
