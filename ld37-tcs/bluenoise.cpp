@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 {
     UNUSED(argc, argv);
 
-    auto const &im = Image::BlueNoiseKernel(ivec2(16,16), ivec2(5,5));
+    auto const &im = image::kernel::blue_noise(ivec2(16,16), ivec2(5,5));
 
     for (int j = 0; j < 16; ++j)
     {

@@ -1,16 +1,14 @@
 local reverse = {}
 
-local function bs_init(addr, rom)
+local function bs_init(data)
   local bs = {
-    pos = addr, -- char buffer pointer
-    rom = rom,  -- extra ROM data as integers
-    b = 0,      -- bit buffer
-    n = 0,      -- number of bits in buffer
-    out = {},   -- output array
-    outpos = 0, -- output position
+    data = data, -- char buffer
+    pos = 0,     -- char buffer index
+    b = 0,       -- bit buffer
+    n = 0,       -- number of bits in buffer
+    out = {},    -- output array
+    outpos = 0,  -- output position
   }
-  -- append ROM data to user memory (first 0x1b00 bytes)
-  if (#rom * 4 > 0) u32_to_memory(0x4300, rom, 0x1b00)
   -- get rid of n first bits
   function bs:flushb(n)
     self.n -= n
@@ -19,15 +17,9 @@ local function bs_init(addr, rom)
   -- get a number of n bits from stream
   function bs:getb(n)
     while self.n < n do
-      self.b += shr(peek(self.pos),16-self.n)
+      self.b += shr(self.data[self.pos],16-self.n)
       self.pos += 1
       self.n += 8
-    end
-    -- extra hack: append rest of RAM
-    if self.pos >= 0x5d00 then
-      memcpy(0x0, 0x5d00, 0x100)
-      if (#self.rom * 4 > 0x1b00) u32_to_memory(0x100, self.rom, #self.rom * 4 - 0x1b00, 0x1b00 / 4)
-      self.pos -= 0x5d00
     end
     local ret = shl(band(self.b,shl(0x.0001,n)-0x.0001),16)
     self.n -= n
@@ -37,7 +29,7 @@ local function bs_init(addr, rom)
   -- get next variable-size of maximum size=n element from stream, according to huffman table
   function bs:getv(hufftable,n)
     while self.n < n do
-      self.b += shr(peek(self.pos),16-self.n)
+      self.b += shr(self.data[self.pos],16-self.n)
       self.pos += 1
       self.n += 8
     end
@@ -249,14 +241,14 @@ local function inflate_block_uncompressed(bs)
   end
 -- xxx: end remove
   for i=0,len-1 do
-    bs:write(peek(bs.pos+i))
+    bs:write(bs.data[bs.pos+i])
   end
   bs.pos += len
 end
 
 local function inflate_main(bs)
 -- xxx: begin remove
-  if peek(bs.pos)!=0x78 then
+  if bs.data[bs.pos]!=0x78 then
     error("no zlib header found")
   end
 -- xxx: end remove
@@ -278,12 +270,11 @@ local function inflate_main(bs)
     end
   until last == 1
   bs:flushb(band(bs.n,7))
-  --printh("decompressed "..#bs.out.." * 4 bytes of data")
   return bs.out
 end
 
-function inflate(inaddr, rom)
-  return inflate_main(bs_init(inaddr, rom))
+function inflate(data)
+  return inflate_main(bs_init(data))
 end
 
 -- init reverse array

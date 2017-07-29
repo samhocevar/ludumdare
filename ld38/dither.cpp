@@ -69,10 +69,10 @@ int main(int argc, char **argv)
     msg::info("palette has %d colours\n", palette.count());
 
     /* Load images */
-    Image im;
-    im.Load(argv[1]);
+    image im;
+    im.load(argv[1]);
 
-    ivec2 size(im.GetSize());
+    ivec2 size(im.size());
     int const desired_width = (atoi(argv[2]) + 7) / 8 * 8;
     int const desired_height = atoi(argv[3]);
 
@@ -89,12 +89,12 @@ int main(int argc, char **argv)
 
     msg::info("image size %d×%d\n", size.x, size.y);
 
-    Image dst(size);
+    image dst(size);
     array<uint8_t> rawdata;
 
     /* Dither image for first destination */
-    array2d<vec4> &curdata = im.Lock2D<PixelFormat::RGBA_F32>();
-    array2d<vec4> &dstdata = dst.Lock2D<PixelFormat::RGBA_F32>();
+    array2d<vec4> &curdata = im.lock2d<PixelFormat::RGBA_F32>();
+    array2d<vec4> &dstdata = dst.lock2d<PixelFormat::RGBA_F32>();
     for (int j = 0; j < size.y; ++j)
     {
         for (int i = 0; i < size.x; ++i)
@@ -142,12 +142,12 @@ int main(int argc, char **argv)
         }
     }
 
-    im.Unlock2D(curdata);
-    dst.Unlock2D(dstdata);
+    im.unlock2d(curdata);
+    dst.unlock2d(dstdata);
 
     /* Save image */
     //dst = dst.Resize(size * 4, ResampleAlgorithm::Bresenham);
-    dst.Save(argv[4]);
+    dst.save(argv[4]);
 
     /* Save data */
     FILE *dest = fopen(argv[5], "w+");

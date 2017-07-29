@@ -30,7 +30,7 @@ CART = ld38.p8
 
 all: $(CART)
 
-%.data: % dither source.p8
+%.data: % dither source.p8 fork-zlib/minigzip
 	@# Dither our images, compress them (lossily), then uncompress them again
 	eval $$(sed 's/--.*//' $(SRC) | grep 'file.*"$<"' | tr -d ' {}' | tr , '\n') \
 	 && ./dither $< $$w $$h $@.png $@.tmp \
@@ -46,7 +46,6 @@ $(CART): $(SRC) $(LIB) $(IMGDATA) dither
 	($(ZEPTOOL) $(TMPSRC) --todata; cat /dev/null $(IMGDATA)) | $(ZCOMPRESS) >| $(TMPDATA)
 	@# Put first 0x4300 bytes of compressed data in cartridge
 	$(ZEPTOOL) $(TMPSRC) --data $(TMPDATA) --top8 \
-	    | sed "s/=.*xxx image size.*/=$$(identify obj/world.png | cut -f3 -d" " | tr x ,)/" \
 	    | sed '/-- xxx: begin remove/,/-- xxx: end remove/d' \
 	    | sed '6,$${s/ *--.*//}' | grep . \
 	   >| $(TMPCART)
@@ -54,7 +53,9 @@ $(CART): $(SRC) $(LIB) $(IMGDATA) dither
 	@# add extra newline so that size is at least 1 (ugly hack)
 	sed '/global_rom = {/q' < $(TMPCART) >| $@
 	echo '[0]=' >> $@
-	(cat $(TMPDATA) | dd bs=1 skip=17152; echo '') | od -v -An -x --endian=little | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | xargs -n 6 >> $@
+	(cat $(TMPDATA) | dd bs=1 skip=17152; echo '') | od -v -An -x --endian=little \
+	  | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | sed 's/0*,/,/ ; s/0x00*/0x/g' \
+	  | xargs -n 6 | tr -d ' ' >> $@
 	sed '0,/global_rom = {/d' < $(TMPCART) >> $@
 	@# Create PNG cartridge
 	$(ZEPTOOL) $@ --topng -o $@.png

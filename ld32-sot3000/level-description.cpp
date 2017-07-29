@@ -18,10 +18,10 @@
 
 #include <lol/engine.h>
 
-#include "pegtl.hh"
+#include "tao/pegtl.hpp"
 
 using namespace lol;
-using namespace pegtl;
+using namespace tao::pegtl;
 
 #include "level-description.h"
 
@@ -34,7 +34,7 @@ namespace grammar
     struct _ : star<space> {};
 
     struct r_bom
-      : opt<pegtl_string_t("\xef\xbb\xbf")> {};
+      : opt<TAOCPP_PEGTL_STRING("\xef\xbb\xbf")> {};
 
     struct r_line
       : seq<star<one<' ', 'S', 'E', '%', 'X', '-', '+', '_',
@@ -48,18 +48,18 @@ namespace grammar
       : until<at<eol>, any> {};
 
     struct r_name_statement
-      : seq<pegtl_string_t("name"), _, one<'='>, _, r_name,
+      : seq<TAOCPP_PEGTL_STRING("name"), _, one<'='>, _, r_name,
             eol> {};
 
     struct r_size
-      : seq<pegtl_string_t("size"), _, plus<digit>, _, plus<digit>, _, eol> {};
+      : seq<TAOCPP_PEGTL_STRING("size"), _, plus<digit>, _, plus<digit>, _, eol> {};
 
     struct r_header
       : star<sor<r_size,
                  r_name_statement>> {};
 
     struct r_level
-      : seq<r_bom, r_header, r_layout, pegtl::eof> {};
+      : seq<r_bom, r_header, r_layout, tao::pegtl::eof> {};
 
     //
     // Grammar actions
@@ -71,7 +71,8 @@ namespace grammar
     template<>
     struct action<r_size>
     {
-        static void apply(pegtl::action_input const &in, level_layout &layout)
+        template<typename Input>
+        static void apply(Input const &in, level_layout &layout)
         {
             printf(">%s<\n", in.string().c_str());
         }
@@ -80,7 +81,8 @@ namespace grammar
     template<>
     struct action<r_name>
     {
-        static void apply(pegtl::action_input const &in, level_layout &layout)
+        template<typename Input>
+        static void apply(Input const &in, level_layout &layout)
         {
             layout.m_name = in.string().c_str();
         }
@@ -89,7 +91,8 @@ namespace grammar
     template<>
     struct action<r_line>
     {
-        static void apply(pegtl::action_input const &in, level_layout &layout)
+        template<typename Input>
+        static void apply(Input const &in, level_layout &layout)
         {
             // Resize layout
             layout.m_size.y += 1;
@@ -108,7 +111,8 @@ void level_description::load_data(char const *data)
     m_layout = level_layout();
 
     m_layout.m_size = ivec2(0);
-    pegtl::parse_string<grammar::r_level, grammar::action>(data, "level", m_layout);
+    tao::pegtl::memory_input<> in(data, "level");
+    tao::pegtl::parse<grammar::r_level, grammar::action>(in, m_layout);
     m_layout.m_tiles.resize(m_layout.m_size);
 
     for (int j = 0; j < m_layout.m_size.y; ++j)
