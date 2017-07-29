@@ -12,6 +12,7 @@ SUBDIRS = lol \
     ld35-allturdbeast \
     ld37-tcs \
     ld38 \
+    ld39 \
     $(NULL)
 
 test: check

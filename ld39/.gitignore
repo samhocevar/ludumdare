@@ -1,0 +1,7 @@
+# Our binaries
+dither
+bluenoise
+# Cruft
+obj
+data/*.data
+data/*.data.png

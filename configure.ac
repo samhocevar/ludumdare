@@ -29,6 +29,7 @@ AC_CONFIG_FILES(
   ld35-allturdbeast/Makefile
   ld37-tcs/Makefile
   ld38/Makefile
+  ld39/Makefile
 ])
 
 dnl
