@@ -22,9 +22,18 @@ image_list = {
   -- also, tolerance could be increased here but beware of artifacts
   { file="data/owl-indexed.png", w=512, h=88, tolerance=10000 },
   { file="data/owl-power.png", w=512, h=120, tolerance=200000 },
-  { file="data/water-indexed.png", w=288, h=384, tolerance=200000, scroll=true },
+
+  -- [4]: water; water-indexed is a 1x12 sprite sheet, but water-transposed is
+  -- the 12x1 sheet we use, it's a lot better, since it takes care of scrolling
+  --{ file="data/water-indexed.png", w=160, h=384, tolerance=2000, scroll=true },
+  { file="data/water-transposed.png", w=1920, h=32, tolerance=2000, scroll=true },
+
+  -- [5]: background; some mountains
+  { file="data/background.png", w=288, h=48, tolerance=2000, scroll=true },
 }
 current_image = image_list[1]
+water = image_list[4]
+bg = image_list[5]
 
 facts = {}
 global_rom = {
@@ -165,6 +174,7 @@ function _init()
 end
 
 world_x, world_y = 0, 0
+scroll_mul = 0
 
 owl_page = -1
 owl_mode = 0
@@ -182,15 +192,19 @@ function _update60()
   --if btnp(0) or btnp(1) then
   --  char_speed = max(min(char_speed + 0.25, 2), 1)
   --end
-  if (btn(0)) owl_x -= 0x1.a
-  if (btn(1)) owl_x += 0x1.a
-  if (btn(2)) owl_y -= 0x1.a
-  if (btn(3)) owl_y += 0x1.a
+  if (btn(0)) owl_x -= 0x2.2
+  if (btn(1)) owl_x += 0x2.2
+  if (btn(2)) owl_y -= 0x2.2
+  if (btn(3)) owl_y += 0x2.2
 
   if btnp(5) then
     owl_mode = 1 - owl_mode
     owl_page = -1
   end
+
+  -- We wrap at 4 because we're also using scroll_mul*0.25 and
+  -- scroll_mul*1.5, for instance
+  scroll_mul = (scroll_mul + 0x.0018) % 4
 
   world_x += 0.75
   world_x %= image_width
@@ -217,18 +231,36 @@ off_x = 0
 end
 
 function _draw()
-  local frame, page
+  local frame, page, off_x
 
   -- background
   draw_world()
 
-  -- water
-  local water = image_list[4]
-  frame = flr(water_cycle % 1 * 12)
-  -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
-  blit_bigpic(water.h / 12, 0x0200, 0x80, water.data, water.w, world_x, water.h / 12 * frame)
+  -- mountains
+  palt(0,false) -- black = opaque
   palt(8,true) -- red = transparent
-  spr(16, 0, 96, 16, 4)
+  off_x = water.w * scroll_mul * 0.5
+  -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+  blit_bigpic(bg.h, 0x0200, 0x80, bg.data, bg.w, off_x % bg.w, 0)
+  spr(16, 0, 60, 16, 6)
+  palt()
+
+  -- water
+  palt(0,false) -- black = opaque
+  palt(8,true) -- red = transparent
+  frame = flr(water_cycle % 1 * 12)
+  off_x = water.w * (scroll_mul + frame * 5 % 12 / 12)
+  -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+  blit_bigpic(water.h, 0x0200, 0x80, water.data, water.w, off_x % water.w, 0)
+  spr(16, 0, 88, 16, 4)
+
+  -- water layer 2
+  if true then
+    -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+    off_x = water.w * (scroll_mul * 1.5 + (frame + 6) * 5 % 12 / 12)
+    blit_bigpic(water.h, 0x0200, 0x80, water.data, water.w, off_x % water.w, 0)
+    spr(16, 0, 100, 16, 4)
+  end
   palt()
 
   -- character
@@ -248,7 +280,7 @@ owl_page = -1
 
   -- debug
   cursor(90,120)
-  print(stat(1)..'%')
+  print(stat(1)..'%', 90, 120)
 end
 
 __gfx__
