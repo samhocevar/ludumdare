@@ -16,15 +16,13 @@ function dofile() end
 -- xxx: end remove
 
 image_list = {
-  --{ file = "emptytest.png", w = 0, h = 0 },
-  --{ file = "data/pano.jpeg", w = 600, h = 252, tolerance = 40000 },
-  --{ file = "data/limbo.jpeg", w = 640, h = 320, tolerance = 40000 },
-  --{ file = "data/sotb.png", w = 640, h = 220, tolerance = 40000 },
-  { file="data/world.png", w=384, h=128, tolerance=62200, scroll=true },
+  --{ file="data/world.png", w=384, h=128, tolerance=62200, scroll=true },
+  { file="data/world.png", w=128, h=128, tolerance=62200, scroll=true },
   -- storing 16x1 sprites compresses better than 4x4 (22528 -> 5226 vs. 5505
   -- also, tolerance could be increased here but beware of artifacts
   { file="data/owl-indexed.png", w=512, h=88, tolerance=10000 },
   { file="data/owl-power.png", w=512, h=120, tolerance=200000 },
+  { file="data/water-indexed.png", w=288, h=384, tolerance=200000, scroll=true },
 }
 current_image = image_list[1]
 
@@ -68,7 +66,7 @@ dofile('zzlib.p8')
 -- copy to memory from lua
 --
 function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
-  local data = src[xoff % 2]
+  local data = src[flr(xoff % 2)]
   xoff = band(xoff,0xfffe)
   srcwidth /= 8 -- we read uint32s, so 8 pixels per value
   dstwidth /= 2 -- we write uint8s, so 2 pixels per value
@@ -155,11 +153,13 @@ function _init()
   -- compute off-by-one-pixel data
   print('postprocessing...')
   for i in all(image_list) do
-    local data, w, h = i.data, i.w, i.h
-    for n=0,#data[0]-1 do
-      local off = n + 1
-      if off % (w / 8) == 0 then off -= w / 8 end
-      data[1][n] = band(shr(data[0][n],4),0xfff.ffff) + shl(data[0][off],28)
+    if i.scroll then
+      local data, w, h = i.data, i.w, i.h
+      for n=0,#data[0]-1 do
+        local off = n + 1
+        if off % (w / 8) == 0 then off -= w / 8 end
+        data[1][n] = band(shr(data[0][n],4),0xfff.ffff) + shl(data[0][off],28)
+      end
     end
   end
 end
@@ -171,7 +171,7 @@ owl_mode = 0
 owl_x, owl_y = 10, 20
 
 fly_cycle = 0
-facing_dir = false
+water_cycle = 0
 
 function _update60()
   rnd()
@@ -196,37 +196,52 @@ function _update60()
   world_x %= image_width
 
   fly_cycle = (fly_cycle + 0x.07) % 1
+  water_cycle = (water_cycle + 0x.03) % 1
 end
 
 function draw_world()
   local data = current_image.data
   local image_width = current_image.w
   local image_height = current_image.h
-  local n=8
+  local n=1
   for i=0,n-1 do
     local lines = 128/n
     local srcwidth = image_width
     local dstwidth = 128
     local dst = 0x6000 + 128 * flr(64*i/n)
     off_x = (flr(world_x * (1.5+0.75*abs(3-i))) + image_width - 64) % image_width
+off_x = 0
     skip_y = flr((world_y) / image_height * (image_height - 128)) + i * 128 / n
     blit_bigpic(lines, dst, dstwidth, data, srcwidth, off_x, skip_y)
   end
 end
 
 function _draw()
+  local frame, page
+
   -- background
   draw_world()
 
+  -- water
+  local water = image_list[4]
+  frame = flr(water_cycle % 1 * 12)
+  -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+  blit_bigpic(water.h / 12, 0x0200, 0x80, water.data, water.w, world_x, water.h / 12 * frame)
+  palt(8,true) -- red = transparent
+  spr(16, 0, 96, 16, 4)
+  palt()
+
   -- character
   local owl = image_list[2 + owl_mode]
-  local frame = flr(fly_cycle % 1 * 16)
-  local page = flr(frame / 4)
+  frame = flr(fly_cycle % 1 * 16)
+  page = flr(frame / 4)
   if page != owl_page then
     -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
-    blit_bigpic(owl.h, 0x0200, 0x80, owl.data, owl.w, 0x80 * page, 0)
+    blit_bigpic(owl.h, 0x0200, 0x80, owl.data, owl.w, owl.w / 4 * page, 0)
     owl_page = page
   end
+-- HACK
+owl_page = -1
   palt(8,true) -- red = transparent
   spr(16 + frame % 4 * 4, owl_x, owl_y, owl.w / 16 / 8, owl.h / 8)
   palt()
