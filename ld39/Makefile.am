@@ -16,7 +16,7 @@ bluenoise_DEPENDENCIES = @LOL_DEPS@
 ZEPTOOL = ../../zepto8/src/zeptool
 ZCOMPRESS = zlib-flate -compress
 
-IMG = $(shell sed 's/--.*//' $(SRC) | grep 'file = "' | cut -f2 -d'"')
+IMG = $(shell sed 's/--.*//' $(SRC) | grep 'file *= *"' | cut -f2 -d'"')
 IMGDATA = $(IMG:%=%.data)
 
 SRC = source.p8

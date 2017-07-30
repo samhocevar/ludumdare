@@ -84,8 +84,8 @@ int main(int argc, char **argv)
     }
 
     // Slight blur
-    im = im.Resize(size * 2, ResampleAlgorithm::Bicubic)
-           .Resize(size, ResampleAlgorithm::Bresenham);
+//    im = im.Resize(size * 2, ResampleAlgorithm::Bicubic)
+//           .Resize(size, ResampleAlgorithm::Bresenham);
 
     msg::info("image size %d×%d\n", size.x, size.y);
 

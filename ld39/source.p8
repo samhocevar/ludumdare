@@ -20,11 +20,13 @@ image_list = {
   --{ file = "data/pano.jpeg", w = 600, h = 252, tolerance = 40000 },
   --{ file = "data/limbo.jpeg", w = 640, h = 320, tolerance = 40000 },
   --{ file = "data/sotb.png", w = 640, h = 220, tolerance = 40000 },
-  { file = "data/world.jpeg", w = 1024, h = 128, tolerance = 62200 },
-  { file = "data/owl-indexed.png", w = 512, h = 88, tolerance = 0 },
+  { file="data/world.png", w=384, h=128, tolerance=62200, scroll=true },
+  -- storing 16x1 sprites compresses better than 4x4 (22528 -> 5226 vs. 5505
+  -- also, tolerance could be increased here but beware of artifacts
+  { file="data/owl-indexed.png", w=512, h=88, tolerance=10000 },
+  { file="data/owl-power.png", w=512, h=120, tolerance=200000 },
 }
 current_image = image_list[1]
-owl = image_list[2]
 
 facts = {}
 global_rom = {
@@ -164,6 +166,8 @@ end
 
 world_x, world_y = 0, 0
 
+owl_page = -1
+owl_mode = 0
 owl_x, owl_y = 10, 20
 
 fly_cycle = 0
@@ -182,6 +186,11 @@ function _update60()
   if (btn(1)) owl_x += 0x1.a
   if (btn(2)) owl_y -= 0x1.a
   if (btn(3)) owl_y += 0x1.a
+
+  if btnp(5) then
+    owl_mode = 1 - owl_mode
+    owl_page = -1
+  end
 
   world_x += 0.75
   world_x %= image_width
@@ -210,17 +219,20 @@ function _draw()
   draw_world()
 
   -- character
-  frame = flr(fly_cycle % 1 * 16)
-  --blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
-  blit_bigpic(owl.h, 0x0200, 0x80, owl.data, owl.w, 0x80 * flr(frame / 4), 0)
-
-  --u32_to_memory(0x0100, owl.data[0], owl.w / 4 * owl.h / 2, flr(frame / 4) * (owl.h / 8 * owl.w / 4))
+  local owl = image_list[2 + owl_mode]
+  local frame = flr(fly_cycle % 1 * 16)
+  local page = flr(frame / 4)
+  if page != owl_page then
+    -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+    blit_bigpic(owl.h, 0x0200, 0x80, owl.data, owl.w, 0x80 * page, 0)
+    owl_page = page
+  end
   palt(8,true) -- red = transparent
   spr(16 + frame % 4 * 4, owl_x, owl_y, owl.w / 16 / 8, owl.h / 8)
   palt()
 
   -- debug
-  cursor(1,1)
+  cursor(90,120)
   print(stat(1)..'%')
 end
 
