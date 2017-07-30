@@ -21,7 +21,7 @@ using namespace lol;
 #define ZLIB_LEVEL 9
 #define ZLIB_CHUNK 16384
 
-#define PRESERVATION 0.5f
+#define PRESERVATION 0.1f
 
 int main(int argc, char **argv)
 {

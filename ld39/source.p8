@@ -21,7 +21,7 @@ image_list = {
   --{ file = "data/limbo.jpeg", w = 640, h = 320, tolerance = 40000 },
   --{ file = "data/sotb.png", w = 640, h = 220, tolerance = 40000 },
   { file = "data/world.jpeg", w = 1024, h = 128, tolerance = 62200 },
-  { file = "data/owl.png", w = 128, h = 512, tolerance = 20000 },
+  { file = "data/owl-indexed.png", w = 512, h = 88, tolerance = 0 },
 }
 current_image = image_list[1]
 owl = image_list[2]
@@ -66,7 +66,7 @@ dofile('zzlib.p8')
 -- copy to memory from lua
 --
 function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
-  local data = src[1 - xoff % 2]
+  local data = src[xoff % 2]
   xoff = band(xoff,0xfffe)
   srcwidth /= 8 -- we read uint32s, so 8 pixels per value
   dstwidth /= 2 -- we write uint8s, so 2 pixels per value
@@ -155,16 +155,16 @@ function _init()
   for i in all(image_list) do
     local data, w, h = i.data, i.w, i.h
     for n=0,#data[0]-1 do
-      local off = n - 1
-      if n % (w / 8) == 0 then off += w / 8 end
-      data[1][n] = shl(data[0][n],4) + band(shr(data[0][off],28),0x.000f)
+      local off = n + 1
+      if off % (w / 8) == 0 then off -= w / 8 end
+      data[1][n] = band(shr(data[0][n],4),0xfff.ffff) + shl(data[0][off],28)
     end
   end
 end
 
--- center the mouse at startup
 world_x, world_y = 0, 0
-char_speed = 0
+
+owl_x, owl_y = 10, 20
 
 fly_cycle = 0
 facing_dir = false
@@ -175,25 +175,18 @@ function _update60()
   local image_width = current_image.w
   local image_height = current_image.h
 
-  if not btn(0) and not btn(1) and not btn(2) and not btn(3) then
-    char_speed = 0
-  end
-  if btnp(0) or btnp(1) then
-    char_speed = max(min(char_speed + 0.25, 2), 1)
-  end
-  if char_speed == 0 and fly_cycle % 0.5 < 0.2 or fly_cycle % 0.5 > 0.25 then
-    char_speed = 0.75
-  end
-  if btn(0) then world_x -= char_speed end
-  if btn(1) then world_x += char_speed end
-  world_x %= image_width
-  if world_y - char_speed >= 0 and btn(2) then world_y -= char_speed end
-  if world_y + char_speed < image_height and btn(3) then world_y += char_speed end
+  --if btnp(0) or btnp(1) then
+  --  char_speed = max(min(char_speed + 0.25, 2), 1)
+  --end
+  if (btn(0)) owl_x -= 0x1.a
+  if (btn(1)) owl_x += 0x1.a
+  if (btn(2)) owl_y -= 0x1.a
+  if (btn(3)) owl_y += 0x1.a
 
-  fly_cycle = (fly_cycle + 0x.05) % 1
-  --fly_cycle = (fly_cycle + char_speed * 0x.05) % 1
-  if btn(0) then facing_dir = true end
-  if btn(1) then facing_dir = false end
+  world_x += 0.75
+  world_x %= image_width
+
+  fly_cycle = (fly_cycle + 0x.07) % 1
 end
 
 function draw_world()
@@ -218,13 +211,12 @@ function _draw()
 
   -- character
   frame = flr(fly_cycle % 1 * 16)
-  u32_to_memory(0x0100, owl.data[0], owl.w / 4 * owl.h / 2, flr(frame / 4) * (owl.h / 8 * owl.w / 4))
-  palt(0,true) -- black = transparent
-  --palt(7,false)
-  local dx, dy = 2, 4
-  spr(16 + frame % 4 * 4, 12, dx, dy, owl.h / 4 / 8 - 1, facing_dir)
-  --spr(128 + frame % 4 * 4, 50, 70, 4, owl.h / 4 / 8, facing_dir)
---memcpy(0x6000,0x0100,0x2000)
+  --blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
+  blit_bigpic(owl.h, 0x0200, 0x80, owl.data, owl.w, 0x80 * flr(frame / 4), 0)
+
+  --u32_to_memory(0x0100, owl.data[0], owl.w / 4 * owl.h / 2, flr(frame / 4) * (owl.h / 8 * owl.w / 4))
+  palt(8,true) -- red = transparent
+  spr(16 + frame % 4 * 4, owl_x, owl_y, owl.w / 16 / 8, owl.h / 8)
   palt()
 
   -- debug
