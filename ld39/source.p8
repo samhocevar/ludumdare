@@ -16,8 +16,9 @@ function dofile() end
 -- xxx: end remove
 
 image_list = {
-  --{ file="data/world.png", w=384, h=128, tolerance=62200, scroll=true },
-  { file="data/world.png", w=128, h=128, tolerance=62200, scroll=true },
+  -- [1]: the background
+  { file="data/background.png", w=128, h=96, tolerance=62200, scroll=true },
+
   -- storing 16x1 sprites compresses better than 4x4 (22528 -> 5226 vs. 5505
   -- also, tolerance could be increased here but beware of artifacts
   { file="data/owl-indexed.png", w=512, h=88, tolerance=10000 },
@@ -28,12 +29,12 @@ image_list = {
   --{ file="data/water-indexed.png", w=160, h=384, tolerance=2000, scroll=true },
   { file="data/water-transposed.png", w=1920, h=32, tolerance=2000, scroll=true },
 
-  -- [5]: background; some mountains
-  { file="data/background.png", w=288, h=48, tolerance=2000, scroll=true },
+  -- [5]: some mountains
+  { file="data/mountains.png", w=288, h=48, tolerance=2000, scroll=true },
 }
-current_image = image_list[1]
+background = image_list[1]
 water = image_list[4]
-bg = image_list[5]
+mountains = image_list[5]
 
 facts = {}
 global_rom = {
@@ -173,7 +174,6 @@ function _init()
   end
 end
 
-world_x, world_y = 0, 0
 scroll_mul = 0
 
 owl_page = -1
@@ -185,9 +185,6 @@ water_cycle = 0
 
 function _update60()
   rnd()
-
-  local image_width = current_image.w
-  local image_height = current_image.h
 
   --if btnp(0) or btnp(1) then
   --  char_speed = max(min(char_speed + 0.25, 2), 1)
@@ -206,77 +203,85 @@ function _update60()
   -- scroll_mul*1.5, for instance
   scroll_mul = (scroll_mul + 0x.0018) % 4
 
-  world_x += 0.75
-  world_x %= image_width
-
   fly_cycle = (fly_cycle + 0x.07) % 1
   water_cycle = (water_cycle + 0x.03) % 1
 end
 
 function draw_world()
-  local data = current_image.data
-  local image_width = current_image.w
-  local image_height = current_image.h
-  local n=1
+  local data = background.data
+  local image_width = background.w
+  local image_height = background.h
+  local world_x = (image_width * scroll_mul * 4) % image_width
+  local n=6
+  local lines = flr(image_height/n)
   for i=0,n-1 do
-    local lines = 128/n
     local srcwidth = image_width
     local dstwidth = 128
-    local dst = 0x6000 + 128 * flr(64*i/n)
-    off_x = (flr(world_x * (1.5+0.75*abs(3-i))) + image_width - 64) % image_width
-off_x = 0
-    skip_y = flr((world_y) / image_height * (image_height - 128)) + i * 128 / n
-    blit_bigpic(lines, dst, dstwidth, data, srcwidth, off_x, skip_y)
+    local dst = 0x6000 + 64 * i * lines
+    off_x = (flr(world_x * (2+2*abs(5-i)/n)) + image_width) % image_width
+    --off_x = (flr(world_x * (1.5+0.75*abs(n/2-i))) + image_width - 64) % image_width
+--off_x = 0
+    off_y = i*lines
+    blit_bigpic(lines, dst, dstwidth, data, srcwidth, off_x, off_y)
   end
 end
 
 function _draw()
   local frame, page, off_x
 
+  cls(1)
+
   -- background
   draw_world()
+
+  -- debug
+  --do return end
 
   -- mountains
   palt(0,false) -- black = opaque
   palt(8,true) -- red = transparent
   off_x = water.w * scroll_mul * 0.5
   -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
-  blit_bigpic(bg.h, 0x0200, 0x80, bg.data, bg.w, off_x % bg.w, 0)
+  blit_bigpic(mountains.h, 0x0200, 0x80, mountains.data, mountains.w, off_x % mountains.w, 0)
   spr(16, 0, 60, 16, 6)
   palt()
 
   -- water
   palt(0,false) -- black = opaque
   palt(8,true) -- red = transparent
+  --pal(7,6) pal(6,12) pal(12,13) pal(13,1)
   frame = flr(water_cycle % 1 * 12)
   off_x = water.w * (scroll_mul + frame * 5 % 12 / 12)
   -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
   blit_bigpic(water.h, 0x0200, 0x80, water.data, water.w, off_x % water.w, 0)
-  spr(16, 0, 88, 16, 4)
-
-  -- water layer 2
-  if true then
-    -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
-    off_x = water.w * (scroll_mul * 1.5 + (frame + 6) * 5 % 12 / 12)
-    blit_bigpic(water.h, 0x0200, 0x80, water.data, water.w, off_x % water.w, 0)
-    spr(16, 0, 100, 16, 4)
-  end
-  palt()
+  spr(16, 0, 84, 16, 4)
+  pal()
 
   -- character
   local owl = image_list[2 + owl_mode]
   frame = flr(fly_cycle % 1 * 16)
   page = flr(frame / 4)
+-- HACK
+owl_page = -1
   if page != owl_page then
     -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
     blit_bigpic(owl.h, 0x0200, 0x80, owl.data, owl.w, owl.w / 4 * page, 0)
     owl_page = page
   end
--- HACK
-owl_page = -1
   palt(8,true) -- red = transparent
   spr(16 + frame % 4 * 4, owl_x, owl_y, owl.w / 16 / 8, owl.h / 8)
   palt()
+
+  -- water layer 2
+  if true then
+    palt(8,true) -- red = transparent
+    -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+    frame = flr(water_cycle % 1 * 12)
+    off_x = water.w * (scroll_mul * 1.5 + (frame + 6) * 5 % 12 / 12)
+    blit_bigpic(water.h, 0x0200, 0x80, water.data, water.w, off_x % water.w, 0)
+    spr(16, 0, 96, 16, 4)
+    palt()
+  end
 
   -- debug
   cursor(90,120)

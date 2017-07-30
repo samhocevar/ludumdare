@@ -29,7 +29,7 @@ all: $(CART)
 	@# Dither our images, compress them (lossily), then uncompress them again
 	eval $$(sed 's/--.*//' $(SRC) | grep 'file.*"$<"' | tr -d ' {}' | tr , '\n') \
 	 && ./dither $< $$w $$h $@.png $@.tmp \
-	 && cat $@.tmp | ./fork-zlib/minigzip -9 -l$$tolerance | dd | (gunzip 2>/dev/null || true) >| $@
+	 && cat $@.tmp | dd | ./fork-zlib/minigzip -9 -l$$tolerance | dd | (gunzip 2>/dev/null || true) >| $@
 	rm -f $@.tmp
 
 $(CART): $(SRC) $(LIB) $(IMGDATA) dither
