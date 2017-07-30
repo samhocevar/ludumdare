@@ -31,10 +31,14 @@ image_list = {
 
   -- [5]: some mountains
   { file="data/mountains.png", w=288, h=48, tolerance=2000, scroll=true },
+
+  -- [6]: foreground trees
+  { file="data/trees.png", w=400, h=128, tolerance=60000, scroll=true },
 }
 background = image_list[1]
 water = image_list[4]
 mountains = image_list[5]
+trees = image_list[6]
 
 facts = {}
 global_rom = {
@@ -282,6 +286,17 @@ owl_page = -1
     spr(16, 0, 96, 16, 4)
     palt()
   end
+
+  -- trees
+  palt(8,true) -- red = transparent
+  palt(0,false)
+  -- args: lines, dst, dstwidth, src, srcwidth, xoff, yoff
+  off_x = trees.w * (scroll_mul * 8.0)
+  blit_bigpic(trees.h / 2, 0x0200, 0x80, trees.data, trees.w, off_x % trees.w, 0)
+  spr(16, 0, 0, 16, 8)
+  blit_bigpic(trees.h / 2, 0x0200, 0x80, trees.data, trees.w, off_x % trees.w, 64)
+  spr(16, 0, 64, 16, 8)
+  palt()
 
   -- debug
   cursor(90,120)
