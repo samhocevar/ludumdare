@@ -20,6 +20,7 @@ LIB = $(shell sed 's/--.*//' $(SRC) | tr "'" '"' | grep 'dofile *. *"' | cut -f2
 TMPSRC = obj/$(SRC)
 TMPDATA = obj/source.Z
 TMPCART = obj/cart.p8
+TMPCART2 = obj/cart-preprocessed.p8
 
 CART = ld39.p8
 
@@ -41,20 +42,20 @@ $(CART): $(SRC) $(LIB) $(IMGDATA) dither
 	($(ZEPTOOL) $(TMPSRC) --todata; cat /dev/null $(IMGDATA)) | $(ZCOMPRESS) >| $(TMPDATA)
 	@# Put first 0x4300 bytes of compressed data in cartridge
 	$(ZEPTOOL) $(TMPSRC) --data $(TMPDATA) --top8 \
-	    | sed '/-- xxx: begin remove/,/-- xxx: end remove/d' \
-	    | sed '6,$${s/ *--.*//}' | grep . \
 	   >| $(TMPCART)
 	@# Put remaining compressed data in ROM variable, and
 	@# add extra newline so that size is at least 1 (ugly hack)
-	sed '/global_rom = {/q' < $(TMPCART) >| $@
-	echo '[0]=' >> $@
+	sed '/global_rom = {/q' < $(TMPCART) >| $(TMPCART2)
+	echo '[0]=' >> $(TMPCART2)
 	(cat $(TMPDATA) | dd bs=1 skip=17152; echo '') | od -v -An -x --endian=little \
 	  | xargs -n2 | awk '{ print "0x"$$2"."$$1"," }' | sed 's/0*,/,/ ; s/0x00*/0x/g' \
-	  | xargs -n 6 | tr -d ' ' >> $@
-	sed '0,/global_rom = {/d' < $(TMPCART) >> $@
+	  | xargs -n 6 | tr -d ' ' >> $(TMPCART2)
+	sed '0,/global_rom = {/d' < $(TMPCART) >> $(TMPCART2)
+	@# Optimise code
+	cat $(TMPCART2) | $(srcdir)/preprocess.sh >| $@
 	@# Create PNG cartridge
 	$(ZEPTOOL) $@ --topng -o $@.png
 	@#rm -f $(TMPDATA)
 
-CLEANFILES += $(CART) $(TMPSRC) $(TMPDATA) $(TMPCART) $(IMGDATA)
+CLEANFILES += $(CART) $(TMPSRC) $(TMPDATA) $(TMPCART) $(TMPCART2) $(IMGDATA)
 
