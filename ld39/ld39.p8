@@ -613,7 +613,8 @@ blit_bigpic(owl.h,0x0200,0x80,owl.data,owl.w,owl.w/4*page,0)
 owl_page=page
 end
 palt(8,true)
-spr(16+frame%4*4,owl_x,owl_y,owl.w/16/8,owl.h/8)
+local dy=frame>=2 and frame<=9 and 24 or 0
+spr(16+frame%4*4+dy+dy,owl_x,owl_y+dy,owl.w/16/8,owl.h/8-3)
 palt()
 if true then
 palt(8,true)

@@ -19,8 +19,14 @@ image_list = {
   -- [1]: the background
   { file="data/background.png", w=128, h=96, tolerance=62200, scroll=true },
 
-  -- storing 16x1 sprites compresses better than 4x4 (22528 -> 5226 vs. 5505
+  -- storing 16x1 sprites compresses better than 4x4 (22528 -> 5226 vs. 5505)
   -- also, tolerance could be increased here but beware of artifacts
+  --
+  -- Tried to store sprites in a more efficient way by moving them up, but
+  -- that would compress to 4526 bytes instead of 4550, which is fewer bytes
+  -- gained than the array to store offsets... even moving frames 2-10 up 24
+  -- pixels, so as to create a .png 24 lines smaller would compress to 4590
+  -- instead of 4550. Go figure!
   { file="data/owl-indexed.png", w=512, h=88, tolerance=10000 },
   { file="data/owl-power.png", w=512, h=120, tolerance=200000 },
 
@@ -273,7 +279,8 @@ owl_page = -1
     owl_page = page
   end
   palt(8,true) -- red = transparent
-  spr(16 + frame % 4 * 4, owl_x, owl_y, owl.w / 16 / 8, owl.h / 8)
+  local dy = frame >= 2 and frame <= 9 and 24 or 0 -- optimise how many tiles we blit
+  spr(16 + frame % 4 * 4 + dy + dy, owl_x, owl_y + dy, owl.w / 16 / 8, owl.h / 8 - 3)
   palt()
 
   -- water layer 2
