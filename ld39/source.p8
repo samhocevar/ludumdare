@@ -33,7 +33,7 @@ image_list = {
   { file="data/mountains.png", w=288, h=48, tolerance=2000, scroll=true },
 
   -- [6]: foreground trees
-  { file="data/trees.png", w=400, h=128, tolerance=60000, scroll=true },
+  { file="data/trees.png", w=336, h=128, tolerance=60000, scroll=true },
 }
 background = image_list[1]
 water = image_list[4]
