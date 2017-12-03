@@ -10,25 +10,34 @@ tstep=0.125
 -- sim precision
 dt=0.25
 
-STATE_AIMING=1
-STATE_SHOOTING=2
+STATE_START=1
+STATE_AIMING=2
+STATE_SHOOTING=3
+
+SPRITE_BALL=16
+SPRITE_LIFE=32
 
 -- state
-level = 1
-power = 30
-state = STATE_AIMING
+level = 15
+power = 20
+state = STATE_START
 world = {}
 balls = {}
-startx,starty,starta=64,120,0.25
+start = {x=64,y=120,a=0.25}
+
+function clear_world()
+  for n=0,w*h-1 do world[n]={type=0} end
+end
 
 function add_line()
   -- fill stuff at random
   local a={}
-  for n=0,1+rnd(w-1) do
+  for n=0,2+rnd(w) do
     add(a,flr(rnd(w)))
   end
+  local newlevel = level%5>0 and level or level * 2
   for n in all(a) do
-    world[n]={type=11,level=level}
+    world[n]={type=11,level=newlevel,hit=0}
   end
   -- we need at least a level up
   n=flr(rnd(w))
@@ -39,27 +48,41 @@ function add_line()
     world[n]=world[n-w]
   end
   -- empty first line
-  for n=0,w-1 do world[n]=nil end
+  for n=0,w-1 do world[n]={type=0} end
   -- level up!
   level+=1
 end
 
 function launch()
-  vx,vy=vel*cos(starta),vel*sin(starta)
   balls={}
   for i=1,power do
-    add(balls,{order=i,x=startx,y=starty,vx=vx,vy=vy})
+    angle=start.a+rnd(0x.01)-0x.005
+    vx,vy=vel*cos(angle),vel*sin(angle)
+    add(balls,{order=i,x=start.x,y=start.y,vx=vx,vy=vy})
   end
   launcht=0
   state = STATE_SHOOTING
 end
 
 function _update60()
-  if btn(1) then starta=max(0x0.08,starta-0x0.01) end
-  if btn(0) then starta=min(0x0.78,starta+0x0.01) end
+  if btn(1) then start.a=max(0x0.08,start.a-0x0.01) end
+  if btn(0) then start.a=min(0x0.78,start.a+0x0.01) end
 
   if btnp(5) then
     if state==STATE_AIMING then launch() end
+  end
+
+  if state==STATE_START then
+    clear_world()
+    state = STATE_AIMING
+  end
+
+  if state==STATE_SHOOTING then
+    if #balls==0 then
+      -- debug
+      --add_line()
+      state = STATE_AIMING
+    end
   end
 
   -- debug
@@ -70,6 +93,51 @@ function _update60()
   for i=dt,1,dt do
     simstep()
   end
+  worldstep()
+end
+
+function hit_left(b,ti,tj)
+  if b.vx<0 and ti>=0 then
+    t=world[ti+tj*w]
+    if t!=nil and t.type==11 and t.level>0 and b.x<ti*18+18-1+3 and b.y>tj*14+1-2 and b.y<tj*14+14-1+2 then
+      b.x,b.vx=2*(ti*18+18-1+3)-b.x,-b.vx
+      t.level-=1
+      t.hit=1
+    end
+  end
+end
+
+function hit_right(b,ti,tj)
+  if b.vx>0 and ti<w then
+    t=world[ti+tj*w]
+    if t!=nil and t.type==11 and t.level>0 and b.x>ti*18+1-3 and b.y>tj*14+1-2 and b.y<tj*14+14-1+2 then
+      b.x,b.vx=2*(ti*18+1-3)-b.x,-b.vx
+      t.level-=1
+      t.hit=1
+    end
+  end
+end
+
+function hit_top(b,ti,tj)
+  if b.vy<0 and tj>=0 then
+    t=world[ti+tj*w]
+    if t!=nil and t.type==11 and t.level>0 and b.y<tj*14+14-1+3 and b.x>ti*18+1-2 and b.x<ti*18+18-1+2 then
+      b.y,b.vy=2*(tj*14+14-1+3)-b.y,-b.vy
+      t.level-=1
+      t.hit=1
+    end
+  end
+end
+
+function hit_bottom(b,ti,tj)
+  if b.vy>0 and tj<h then
+    t=world[ti+tj*w]
+    if t!=nil and t.type==11 and t.level>0 and b.y>tj*14+1-3 and b.x>ti*18+1-2 and b.x<ti*18+18-1+2 then
+      b.y,b.vy=2*(tj*14+1-3)-b.y,-b.vy
+      t.level-=1
+      t.hit=1
+    end
+  end
 end
 
 function simstep()
@@ -79,41 +147,64 @@ function simstep()
     for b in all(balls) do
       if launcht > b.order then
         b.x+=b.vx*dt
+        b.y+=b.vy*dt
+        -- check for tiles
+        ti=flr((b.x-9)/18)
+        tj=flr((b.y-7)/14)
+        -- wall bounce X
         if b.x>128-3 then b.x,b.vx=2*(128-3)-b.x,-b.vx end
         if b.x<3 then b.x,b.vx=2*3-b.x,-b.vx end
-        b.y+=b.vy*dt
+        -- wall bounce Y
         if b.y<3 then b.y,b.vy=2*3-b.y,-b.vy end
+        -- tile bounce X
+        hit_left(b,ti,tj)
+        hit_left(b,ti,tj+1)
+        hit_right(b,ti+1,tj)
+        hit_right(b,ti+1,tj+1)
+        -- tile bounce Y
+        hit_top(b,ti,tj)
+        hit_top(b,ti+1,tj)
+        hit_bottom(b,ti,tj+1)
+        hit_bottom(b,ti+1,tj+1)
+        -- fall on the floor -- FIXME: bounce?
         --if b.y>128-3 then b.vx,b.vy=0,0 end
-        -- FIXME: bounce?
         if b.y>128 then del(balls,b) end
       end
     end
-    if #balls==0 then
-      state = STATE_AIMING
+  end
+end
+
+function worldstep()
+  for t in all(world) do
+    if t.type>10 and t.hit>0 then
+      t.hit-=0.25
     end
   end
 end
 
 function dobrick(i,j,tile)
-  if tile==nil then
-    return
-  end
-  x,y=1+i*18,1+j*14
-  if tile.type > 10 then
-    -- bricks
+  -- tile coord to world
+  x,y=i*18+9,j*14+7
+  if tile.type>10 then -- bricks
+    if tile.hit>0 then
+      x+=rnd(3)-1
+      y+=rnd(3)-1
+    end
     sx,sy=8,0 // 8,16
-    dx=tile.level<10 and 7 or tile.level<100 and 5 or 3
-    dy=4
+    tdx=tile.level<10 and -1 or tile.level<100 and -3 or -5
+    tdy=-2
     if tile.type==12 then
-      dx+=1
-      dy-=2
+      tdx+=1
+      tdy-=2
       sy+=16
     end
-    sspr(sx,sy,sx+17,sy+16,x,y)
-    print(tile.level,x+dx,y+dy,0) 
-  else
+    if tile.level>0 then
+      sspr(sx,sy,sx+17,sy+13,x-8,y-6)
+      print(tile.level,x+tdx,y+tdy,0)
+    end
+  elseif tile.type>0 then
     -- bonuses
-    spr(32,x+5,y+3)
+    spr(SPRITE_LIFE,x-3,y-3)
   end
 end
 
@@ -132,15 +223,16 @@ function _draw()
   print(power,100,120,7)
 
   if state == STATE_AIMING then
-    dx,dy=cos(starta),sin(starta)
+    dx,dy=cos(start.a),sin(start.a)
     for l=rnd(8),128,8 do
-      line(startx+dx*l,starty+dy*l,startx+dx*(l+1),starty+dy*(l+1),10+rnd(6))
+      line(start.x+dx*l,start.y+dy*l,start.x+dx*(l+1),start.y+dy*(l+1),6+rnd(5))
     end
+    spr(SPRITE_BALL,start.x-2.5,start.y-2.5)
   elseif state == STATE_SHOOTING then
     for i=1,#balls do
       b=balls[i]
       if launcht > b.order then
-        spr(16,b.x-2.5,b.y-2.5)
+        spr(SPRITE_BALL,b.x-2.5,b.y-2.5)
       end
     end
   end
