@@ -18,8 +18,8 @@ SPRITE_BALL=16
 SPRITE_LIFE=32
 
 -- state
-level = 15
-power = 20
+level = 1
+power = 1
 state = STATE_START
 world = {}
 balls = {}
@@ -74,13 +74,13 @@ function _update60()
 
   if state==STATE_START then
     clear_world()
+    add_line()
     state = STATE_AIMING
   end
 
   if state==STATE_SHOOTING then
     if #balls==0 then
-      -- debug
-      --add_line()
+      add_line()
       state = STATE_AIMING
     end
   end
@@ -140,17 +140,36 @@ function hit_bottom(b,ti,tj)
   end
 end
 
+function sqdist(p1,p2)
+  local dx,dy=p1.x-p2.x,p1.y-p2.y
+  return dx*dx+dy*dy
+end
+
 function simstep()
   -- update balls
   if state == STATE_SHOOTING then
     launcht+=tstep*dt
     for b in all(balls) do
       if launcht > b.order then
-        b.x+=b.vx*dt
-        b.y+=b.vy*dt
-        -- check for tiles
+        -- bonus tile?
+        ti=flr(b.x/18)
+        tj=flr(b.y/14)
+        t=world[ti+tj*w]
+        if t!=nil and t.type<=10 then
+          c={x=ti*18+9,y=tj*14+7}
+          if sqdist(b,c)<8*8 then
+            if t.type==1 then
+              power+=1
+              t.type=0
+            end
+          end
+        end
+        -- find closest tiles
         ti=flr((b.x-9)/18)
         tj=flr((b.y-7)/14)
+        -- advance
+        b.x+=b.vx*dt
+        b.y+=b.vy*dt
         -- wall bounce X
         if b.x>128-3 then b.x,b.vx=2*(128-3)-b.x,-b.vx end
         if b.x<3 then b.x,b.vx=2*3-b.x,-b.vx end
@@ -199,6 +218,11 @@ function dobrick(i,j,tile)
       sy+=16
     end
     if tile.level>0 then
+      if tile.level<5 then pal(13)
+      elseif tile.level<10 then pal(13,14)
+      elseif tile.level<20 then pal(13,15)
+      elseif tile.level<50 then pal(13,12)
+      else pal(13,11) end
       sspr(sx,sy,sx+17,sy+13,x-8,y-6)
       print(tile.level,x+tdx,y+tdy,0)
     end
@@ -209,9 +233,11 @@ function dobrick(i,j,tile)
 end
 
 function _draw()
-  fillp(0xaf5f)
-  rectfill(0,0,127,127,1)
-  fillp()
+  local p={0xffff,0xaf5f,0xaa55,0x0a05,0x0}
+  for n=1,#p do
+    fillp(p[n])
+    circfill(64+n*5,64+n*5,100-(n-1)*20,16)
+  end
 
   for n=0,w*h-1 do
     i,j=n%w,flr(n/w)
