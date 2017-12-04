@@ -3,7 +3,6 @@ version 15
 __lua__
 -- kabloo8
 -- by sam hocevar
-
 cartdata("kabloo8")
 
 -- constants
@@ -50,6 +49,16 @@ boot()
 
 function clear_world()
   for n=0,w*h-1 do world[n]={type=0} end
+end
+
+function randomize()
+  for n=0,w*h-1 do
+    if world[n].type>10 then
+      k=world[n].level
+      k=flr(rnd(k/4)+rnd(3*k/4))
+      world[n].level=k
+    end
+  end
 end
 
 function add_line()
@@ -121,7 +130,7 @@ function _update60()
   elseif state==state_start then
     clear_world()
     -- debug
-    --power=141 level=141 add_line() add_line() add_line()
+    --power=141 level=141 add_line() add_line() add_line() randomize()
     add_line()
     state = state_aiming
   elseif state==state_aiming then
@@ -279,7 +288,7 @@ function worldstep()
   end
 end
 
-function dobrick(i,j,tile)
+function draw_brick(i,j,tile)
   -- tile coord to world
   x,y=i*18+9,j*14+7
   if tile.type>10 then -- bricks
@@ -298,29 +307,33 @@ function dobrick(i,j,tile)
     if tile.level>0 then
       l=tile.level
       while l>=80 do l/=32 end
-      if tile.hit>0 and rnd(2)>1 then pal(13,7)
-      elseif l<5 then pal(13)
-      elseif l<10 then pal(13,14)
-      elseif l<20 then pal(13,15)
-      elseif l<40 then pal(13,12)
-      else pal(13,11) end
+      if tile.hit>0 and rnd(2)>1 then f,b=0,7
+      elseif l<5 then f,b=1,13
+      elseif l<10 then f,b=2,14
+      elseif l<20 then f,b=4,15
+      elseif l<40 then f,b=1,12
+      else f,b=5,11 end
+      pal(13,b)
       sspr(sx,sy,17,14,x-8,y-6)
-      print(tile.level,x+tdx,y+tdy,0)
+      print(tile.level,x+tdx,y+tdy,f)
       pal(13,13)
     end
-  elseif tile.type==1 then
-    -- extra lfie
-    spr(sprite_life,x-3,y-3)
-  elseif tile.type==3 then
-    -- bounce
-    palt(0,false) palt(8,true)
-    spr(sprite_bounce,x-3,y-3)
-    palt()
-  elseif tile.type==2 then
-    -- double ball
-    palt(0,false) palt(8,true)
-    sspr(0,24,10,8,x-4,y-2)
-    palt()
+  elseif tile.type>0 then
+    circ(x,y,6,8+rnd(8))
+    if tile.type==1 then
+      -- extra lfie
+      spr(sprite_life,x-3,y-3)
+    elseif tile.type==3 then
+      -- bounce
+      palt(0,false) palt(8,true)
+      spr(sprite_bounce,x-4,y-3)
+      palt()
+    elseif tile.type==2 then
+      -- double ball
+      palt(0,false) palt(8,true)
+      sspr(0,24,10,8,x-5,y-2)
+      palt()
+    end
   end
 end
 
@@ -340,7 +353,7 @@ end
 function draw_world()
   for n=0,w*h-1 do
     i,j=n%w,flr(n/w)
-    dobrick(i,j,world[n])
+    draw_brick(i,j,world[n])
   end
 end
 
