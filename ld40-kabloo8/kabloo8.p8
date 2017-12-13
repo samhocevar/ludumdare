@@ -21,7 +21,8 @@ state_menu=2
 state_start=3
 state_aiming=4
 state_shooting=5
-state_dead=6
+state_falling=6
+state_dead=7
 
 sprite_ball=16
 sprite_goldenball=35
@@ -144,11 +145,19 @@ function _update60()
     worldstep()
     if #balls==0 and balls_todo==0 then
       end_of_turn()
-      state = state_aiming
+      fallt=0
+      state=state_falling
+    end
+  elseif state==state_falling then
+    --if fallt<0.25 then
+    --end
+    fallt+=0x.03
+    if fallt>1 then
+      state=state_aiming
       for i=0,w-1 do
         t=world[i+(h-1)*w]
         if t.type>10 and t.level>0 then
-          state = state_dead
+          state=state_dead
         end
       end
     end
@@ -293,7 +302,23 @@ end
 
 function draw_brick(i,j,tile)
   -- tile coord to world
-  x,y=i*18+9,j*14+7
+  local x,y=i*18+9,j*14+7
+  -- adjust for falling
+  if state==state_falling then
+    if fallt<0.25 then
+      y-=14
+      if j==1 then
+        y+=14*fallt/0.25-14
+      end
+    elseif fallt<0.75 then
+      x+=fallt*(rnd(4)-1)
+      if fallt<0.5 then
+        y-=14
+      else
+        y-=(0.75-fallt)*3*14
+      end
+    end
+  end
   if tile.type>10 then -- bricks
     if tile.hit>0 then
       x+=rnd(3)-1
@@ -343,7 +368,7 @@ end
 function draw_hud()
   spr(16,92,1) -- ball in the hud
   print(":"..power,100,2,7)
-  if state==state_shooting then
+  if state==state_shooting or state==state_falling then
     n=balls_todo
   else
     n=power
@@ -358,9 +383,11 @@ function draw_hud()
 end
 
 function draw_world()
-  for n=0,w*h-1 do
-    i,j=n%w,flr(n/w)
-    draw_brick(i,j,world[n])
+  for j=0,h-1 do
+    for i=0,w-1 do
+      local n=j*w+i
+      draw_brick(i,j,world[n])
+    end
   end
 end
 
@@ -414,6 +441,8 @@ function _draw()
     palt(0,false) palt(8,true) -- balls use red for transparency
     draw_hud()
     palt()
+  elseif state == state_falling then
+    draw_world()
   elseif state == state_dead then
     draw_world()
     rectfill(30,57,128-30,128-57,1)
