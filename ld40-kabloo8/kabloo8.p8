@@ -33,12 +33,12 @@ sprite_bounce=37
 sfx_brick=0
 sfx_wall=1
 sfx_lostball=2
+sfx_launch=3
 
 -- state
 function boot()
   level = 1
   power = 1
-  launcht = 0
   state = state_boot
   world = {}
   balls = {}
@@ -95,14 +95,11 @@ function add_line()
   level+=1
 end
 
-function launch()
-  balls={}
-  for i=1,power do
-    angle=start.a+rnd(0x.002)-0x.001
-    vx,vy=vel*cos(angle),vel*sin(angle)
-    add(balls,{order=i,x=start.x,y=start.y,vx=vx,vy=vy,double=false})
-  end
+function do_shoot()
+  balls_todo=power
+  balls_done=0
   launcht=0
+  balls={}
   state = state_shooting
 end
 
@@ -112,7 +109,6 @@ function end_of_turn()
       t.type=0
     end
   end
-  launcht=0
   add_line()
 end
 
@@ -136,7 +132,7 @@ function _update60()
   elseif state==state_aiming then
     if btn(1) then start.a=max(0x0.08,start.a-0x0.01) end
     if btn(0) then start.a=min(0x0.78,start.a+0x0.01) end
-    if btnp(5) then launch() end
+    if btnp(5) then do_shoot() end
   elseif state==state_shooting then
     for i=dt,1,dt do
       simstep()
@@ -146,7 +142,7 @@ function _update60()
       for i=dt,3,dt do simstep() end
     end
     worldstep()
-    if #balls==0 then
+    if #balls==0 and balls_todo==0 then
       end_of_turn()
       state = state_aiming
       for i=0,w-1 do
@@ -220,62 +216,69 @@ function simstep()
   -- update balls
   if state == state_shooting then
     launcht+=tstep*dt
+    while launcht>0 and balls_todo>0 do
+      angle=start.a+rnd(0x.002)-0x.001
+      vx,vy=vel*cos(angle),vel*sin(angle)
+      add(balls,{x=start.x,y=start.y,vx=vx,vy=vy,double=false})
+      sfx(sfx_launch)
+      balls_todo-=1
+      balls_done+=1
+      launcht-=1
+    end
     for b in all(balls) do
-      if launcht > b.order then
-        -- bonus tile?
-        ti=flr(b.x/18)
-        tj=flr(b.y/14)
-        t=world[ti+tj*w]
-        if t!=nil and t.type<=10 then
-          c={x=ti*18+9,y=tj*14+7}
-          if sqdist(b,c)<8*8 then
-            if t.type==1 then
-              power+=1
-              if power>hiscore then
-                hiscore=power
-                dset(0,hiscore)
-              end
-              t.type=0
-            elseif t.type==2 and not b.double then
-              vx1=(b.vx-b.vy/3)*0.948683 -- 3/sqrt(10)
-              vy1=(b.vy+b.vx/3)*0.948683
-              vx2=(b.vx+b.vy/3)*0.948683
-              vy2=(b.vy-b.vx/3)*0.948683
-              b.vx,b.vy,b.double=vx1,vy1,true
-              add(balls,{order=0,x=b.x,y=b.y,vx=vx2,vy=vy2,double=true,bounce=b.bounce})
-              t.used=true
-            elseif t.type==3 and not b.bounce then
-              b.bounce=1
-              t.used=true
+      -- bonus tile?
+      ti=flr(b.x/18)
+      tj=flr(b.y/14)
+      t=world[ti+tj*w]
+      if t!=nil and t.type<=10 then
+        c={x=ti*18+9,y=tj*14+7}
+        if sqdist(b,c)<8*8 then
+          if t.type==1 then
+            power+=1
+            if power>hiscore then
+              hiscore=power
+              dset(0,hiscore)
             end
+            t.type=0
+          elseif t.type==2 and not b.double then
+            vx1=(b.vx-b.vy/3)*0.948683 -- 3/sqrt(10)
+            vy1=(b.vy+b.vx/3)*0.948683
+            vx2=(b.vx+b.vy/3)*0.948683
+            vy2=(b.vy-b.vx/3)*0.948683
+            b.vx,b.vy,b.double=vx1,vy1,true
+            add(balls,{x=b.x,y=b.y,vx=vx2,vy=vy2,double=true,bounce=b.bounce})
+            t.used=true
+          elseif t.type==3 and not b.bounce then
+            b.bounce=1
+            t.used=true
           end
         end
-        -- find closest tiles
-        ti=flr((b.x-9)/18)
-        tj=flr((b.y-7)/14)
-        -- advance
-        b.x+=b.vx*dt
-        b.y+=b.vy*dt
-        -- wall bounce x
-        if b.x>128-3 then b.x,b.vx=2*(128-3)-b.x,-b.vx sfx(sfx_wall) end
-        if b.x<3 then b.x,b.vx=2*3-b.x,-b.vx sfx(sfx_wall) end
-        -- wall bounce y
-        if b.bounce==1 and b.y>128-3 then b.y,b.vy,b.bounce=2*(128-3)-b.y,-b.vy,2 sfx(sfx_wall) end
-        if b.y<3 then b.y,b.vy=2*3-b.y,-b.vy sfx(sfx_wall) end
-        -- tile bounce x
-        hit_left(b,ti,tj)
-        hit_left(b,ti,tj+1)
-        hit_right(b,ti+1,tj)
-        hit_right(b,ti+1,tj+1)
-        -- tile bounce y
-        hit_top(b,ti,tj)
-        hit_top(b,ti+1,tj)
-        hit_bottom(b,ti,tj+1)
-        hit_bottom(b,ti+1,tj+1)
-        -- fall on the floor -- fixme: bounce?
-        --if b.y>128-3 then b.vx,b.vy=0,0 end
-        if b.y>128 then del(balls,b) sfx(sfx_lostball) end
       end
+      -- find closest tiles
+      ti=flr((b.x-9)/18)
+      tj=flr((b.y-7)/14)
+      -- advance
+      b.x+=b.vx*dt
+      b.y+=b.vy*dt
+      -- wall bounce x
+      if b.x>128-3 then b.x,b.vx=2*(128-3)-b.x,-b.vx sfx(sfx_wall) end
+      if b.x<3 then b.x,b.vx=2*3-b.x,-b.vx sfx(sfx_wall) end
+      -- wall bounce y
+      if b.bounce==1 and b.y>128-3 then b.y,b.vy,b.bounce=2*(128-3)-b.y,-b.vy,2 sfx(sfx_wall) end
+      if b.y<3 then b.y,b.vy=2*3-b.y,-b.vy sfx(sfx_wall) end
+      -- tile bounce x
+      hit_left(b,ti,tj)
+      hit_left(b,ti,tj+1)
+      hit_right(b,ti+1,tj)
+      hit_right(b,ti+1,tj+1)
+      -- tile bounce y
+      hit_top(b,ti,tj)
+      hit_top(b,ti+1,tj)
+      hit_bottom(b,ti,tj+1)
+      hit_bottom(b,ti+1,tj+1)
+      -- fall on the floor -- fixme: bounce?
+      --if b.y>128-3 then b.vx,b.vy=0,0 end
+      if b.y>128 then del(balls,b) sfx(sfx_lostball) end
     end
   end
 end
@@ -340,7 +343,11 @@ end
 function draw_hud()
   spr(16,92,1) -- ball in the hud
   print(":"..power,100,2,7)
-  n=max(flr(power-launcht),0)
+  if state==state_shooting then
+    n=balls_todo
+  else
+    n=power
+  end
   if n>0 then
     print(n,start.x+5,start.y-1,6)
     print("⬅️➡️:aim",3,start.y-1,6)
@@ -394,14 +401,12 @@ function _draw()
     palt(0,false) palt(8,true) -- balls use red for transparency
     for i=1,#balls do
       b=balls[i]
-      if launcht > b.order then
-        if b.bounce then
-          spr(sprite_greenball,b.x-2.5,b.y-2.5)
-        elseif b.double then
-          spr(sprite_goldenball,b.x-2.5,b.y-2.5)
-        else
-          spr(sprite_ball,b.x-2.5,b.y-2.5)
-        end
+      if b.bounce then
+        spr(sprite_greenball,b.x-2.5,b.y-2.5)
+      elseif b.double then
+        spr(sprite_goldenball,b.x-2.5,b.y-2.5)
+      else
+        spr(sprite_ball,b.x-2.5,b.y-2.5)
       end
     end
     palt()
@@ -582,6 +587,7 @@ __label__
 11111111111111111111111111111111111111111111010101010101010101010101010101010101010013315001010101010101010101010101111111111111
 
 __sfx__
-000100001737013370103600e36009350063400433001310043000330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000
+000100001737013370103600e36009350063400433001310043000330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000100003d0301b300093000830000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0004000012050100500e0500c0500b0400a0400804006030040200301002010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001000003750067500b75010750167501e7502375021600226000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
