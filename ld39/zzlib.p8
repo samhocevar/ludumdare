@@ -46,30 +46,15 @@ local function bs_init(data)
   function bs:write(n)
     local d = band(self.outpos, 0.75)
     local off = flr(self.outpos)
-    if d==0 then
-      n=shr(n,16)
-    else
-      if d==0.25 then
-        n=shr(n,8)
-      elseif d==0.75 then
-        n=shl(n,8)
-      end
-      n+=self.out[off]
-    end
+    local n = rotl(n,d*32-16)
+    if (d!=0) n += self.out[off]
     self.out[off] = n
     self.outpos += 0.25
   end
   function bs:readback(off)
-    local d = band(self.outpos + off * 0.25, 0.75)
-    local n = self.out[flr(self.outpos + off * 0.25)]
-    if d==0 then
-      n=shl(n,16)
-    elseif d==0.25 then
-      n=shl(n,8)
-    elseif d==0.75 then
-      n=shr(n,8)
-    end
-    return band(n,0xff)
+    local o = self.outpos + off * 0.25
+    local n = self.out[flr(o)]
+    return band(rotr(n,o*32-16),0xff)
   end
   return bs
 end
