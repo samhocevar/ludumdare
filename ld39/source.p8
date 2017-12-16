@@ -53,11 +53,8 @@ global_rom = {
 -- xxx: begin remove
 function get_mem(address,size)
   local a={}
-  for i=0,size/4-1,64 do
-    memcpy(0x5e00,address+i*4,0x100)
-    for j=0,63 do
-      a[i+j]=dget(j)
-    end
+  for i=0,size/4-1 do
+    a[i]=peek4(address+i*4)
   end
   return a
 end
@@ -70,12 +67,8 @@ end
 -- offset: number of u32, offset inside src
 function u32_to_memory(dest,src,size,offset)
   offset = offset or 0
-  for i=0,size/4-1,64 do
-    local first = i + offset
-    for j=0,63 do
-      dset(j,src[first+j])
-    end
-    memcpy(dest+i*4,0x5e00,0x100)
+  for i=0,size/4-1 do
+    poke4(dest+i*4,src[offset+i])
   end
 end
 
@@ -100,9 +93,9 @@ function blit_bigpic(lines, dst, dstwidth, src, srcwidth, xoff, yoff)
   for line = 0,lines-1 do
     local off = srcoff + srcwidth * line
     -- read line + special wrap around case
-    for j = 0,w1    do dset(j,data[off + j]) end
+    for j = 0,w1    do poke4(0x5e00+4*j,data[off + j]) end
     off -= srcwidth
-    for j = w1+1,w2 do dset(j,data[off + j]) end
+    for j = w1+1,w2 do poke4(0x5e00+4*j,data[off + j]) end
     memcpy(dst + dstwidth * line, tmp_mem, dstwidth)
   end
 end
