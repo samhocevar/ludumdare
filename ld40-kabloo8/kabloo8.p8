@@ -310,13 +310,11 @@ function draw_brick(i,j,tile)
       if j==1 then
         y+=14*fallt/0.25-14
       end
-    elseif fallt<0.75 then
+    elseif fallt<0.5 then
       x+=fallt*(rnd(4)-1)
-      if fallt<0.5 then
-        y-=14
-      else
-        y-=(0.75-fallt)*3*14
-      end
+      y-=14
+    elseif fallt<0.65 then
+      y-=(0.65-fallt)*4*14
     end
   end
   if tile.type>10 then -- bricks
