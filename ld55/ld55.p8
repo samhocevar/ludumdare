@@ -2,14 +2,23 @@ pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
 
+local MY_SEED = 0x123
+
+local MAX_LEVEL = 20 -- more than that and people will get bored
+
 local MODE_SELECT_RUNE = 0
 local MODE_PLACE_RUNE = 1
+local MODE_RESET_LEVEL = 2
+local MODE_NEXT_LEVEL = 3
 
 local SPR_CARD = 1
 local SPR_ARROW = 9
 local SPR_BUBBLE = 21
 
+local SFX_UI_BEEP = 16
+local SFX_WIN = 07
 local SFX_THUD = 17
+local SFX_LOSE = SFX_THUD
 
 -- Compute pentagram points
 pts = {}
@@ -38,7 +47,7 @@ seg = {
 pieces = {
 --   0x3, // 1+2
      0x7, // 1+2+3
-  0x4924, // 3+6+9+12+15
+--  0x4924, // 3+6+9+12+15
     0x23, // 1+2+6
   0x4003, // 15+1+2
    0x122, // 2+6+9
@@ -49,6 +58,38 @@ pieces = {
   0x4a00, // + mirror
     0x58, // 4+5+7
 }
+
+-- Utility function to rotate bits
+function rot(bits) return (bits << 3 | bits >> 12) & 0x7fff end
+
+-- Generate levels with a fixed seed
+levels = {}
+tmp = rnd()
+srand(MY_SEED)
+for n = 1,99 do
+  -- level 1 has one rune, level 2 has 2 runes, etc.
+  local total = min(n, 5)
+  -- levels 1 - 3 have one required rune, levels 4 - 6 have two, etc.
+  local good = min((n + 2) \ 3, 4)
+  local bits = 0x7fff
+  local visited = {}
+  local list = {}
+  for _ = 1,good do
+    local n = rnd(pieces)
+    add(list, n)
+    visited[n] = true
+    for _ = 0,rnd(10) do n = rot(n) end
+    bits ^^= n
+  end
+  while #list < total do
+    local n = rnd(pieces)
+    while visited[n] do n = rnd(pieces) end
+    add(list, n, 1 + flr(rnd(#list)))
+    visited[n] = true
+  end
+  add(levels, {bits, list})
+end
+srand(tmp)
 
 -- gradients
 grad = {
@@ -71,8 +112,18 @@ grad = {
 
 -- bubbles
 bubbles = {}
-for n=1,50 do
-  add(bubbles, {rnd(136) - 8, rnd(136) - 8, flr(rnd(7)), 0.125 + rnd(0.5)})
+bubble_aim = 0
+
+function load_level(n, win)
+  level = n
+  if win then
+    level_score = n * n
+  else
+    level_score = max(1, level_score - 1)
+  end
+  state[1] = levels[n][1]
+  queue = pack(unpack(levels[n][2]))
+  bubble_aim = min(100, 10 * n)
 end
 
 function _init()
@@ -80,82 +131,129 @@ function _init()
   anims = 0
   queue = {}
   state = { 0, 0x7fff, 0x7fff }
-  level = 1
+  load_level(1, true)
   shake = 0
   score = 0
   arrow = 1
   mode = MODE_SELECT_RUNE
+  mode_timer = 0
   steer = 0
 end
 
 local PREV_RUNE = 0
 local NEXT_RUNE = 1
-local APPLY_RUNE = 4
+local BTN_SELECT = 4
 local CANCEL = 5
 local TURN_LEFT = 0
 local TURN_RIGHT = 1
 
 function _update60()
   anims += 1
+  mode_timer += 1
   shake = max(0, shake - 1)
-  while #queue < 5 do add(queue, rnd(pieces)) sel = queue[1] end
   steer *= 0x.e
   if mode == MODE_SELECT_RUNE then
     -- Cycle through runes
     if btnp(PREV_RUNE) then
-      arrow = (arrow + #queue - 2) % #queue + 1
-      sel = queue[arrow]
-      sfx(16)
+      --repeat
+        arrow = (arrow + #queue - 2) % #queue + 1
+      --until queue[arrow] != 0
+      sfx(SFX_UI_BEEP)
     elseif btnp(NEXT_RUNE) then
-      arrow = 1 + arrow % #queue
-      sel = queue[arrow]
-      sfx(16)
+      --repeat
+        arrow = 1 + arrow % #queue
+      --until queue[arrow] != 0
+      sfx(SFX_UI_BEEP)
     end
-    if btnp(APPLY_RUNE) then
-      mode = MODE_PLACE_RUNE
-      sfx(16)
+    if btnp(BTN_SELECT) then
+      if queue[arrow] == 0 then
+        shake = 10
+        sfx(SFX_THUD)
+      else
+        mode = MODE_PLACE_RUNE
+        sel = queue[arrow]
+        sfx(SFX_UI_BEEP)
+      end
     end
   elseif mode == MODE_PLACE_RUNE then
     -- Turn left/right
     if btnp(TURN_LEFT) then
       sel = (sel >> 3 | sel << 12) & 0x7fff
       steer -= 0.2
-      sfx(16)
+      sfx(SFX_UI_BEEP)
     elseif btnp(TURN_RIGHT) then
       sel = (sel << 3 | sel >> 12) & 0x7fff
       steer += 0.2
-      sfx(16)
+      sfx(SFX_UI_BEEP)
     end
-    if btnp(APPLY_RUNE) then
-      --state ^^= sel
-      if state[1] & sel != 0 then
+    if btnp(BTN_SELECT) then
+      if false and state[1] & sel != 0 then
         shake = 10
         sfx(SFX_THUD)
       else
-        state[1] |= sel
-        deli(queue, 1)
+        state[1] ^^= sel
+        --state[1] |= sel
+        --deli(queue, 1)
+        queue[arrow] = 0
         mode = MODE_SELECT_RUNE
-        sfx(16)
+        sfx(SFX_UI_BEEP)
+        if state[1] == 0x7fff then
+          mode = MODE_NEXT_LEVEL
+          mode_timer = 0
+        else
+          local bits = 0
+          for _, n in ipairs(queue) do bits |= n end
+          if bits == 0 then
+            mode = MODE_RESET_LEVEL
+            mode_timer = 0
+          end
+        end
       end
     elseif btnp(CANCEL) then
       mode = MODE_SELECT_RUNE
-      sfx(16)
+      sfx(SFX_UI_BEEP)
     end
     if btnp(2) then
       local tmp = state[1]
       deli(state, 1)
       add(state, tmp)
     end
+  elseif mode == MODE_NEXT_LEVEL then
+    if mode_timer == 2 then
+      sfx(SFX_WIN)
+    elseif mode_timer == 40 then
+      score += level_score
+      if level >= MAX_LEVEL then
+        mode = MODE_WIN
+      else
+        load_level(level + 1, true)
+        mode = MODE_SELECT_RUNE
+      end
+    end
+  elseif mode == MODE_RESET_LEVEL then
+    if mode_timer == 2 then
+      sfx(SFX_LOSE)
+      shake = 10
+    elseif mode_timer == 40 then
+      load_level(level, false)
+      mode = MODE_SELECT_RUNE
+    end
   end
   -- Update bubbles
-  for _, b in ipairs(bubbles) do
+  if #bubbles < bubble_aim then
+    add(bubbles, {rnd(136) - 8, rnd(136) - 8, 0, 0.125 + rnd(0.5)})
+  end
+  local todelete = nil
+  for i, b in ipairs(bubbles) do
     b[2] -= b[4]
     b[3] = (b[3] + 0.125) % 7
     if b[3] == 0 then
       b[1] = rnd(136) - 8
       b[2] = rnd(136) - 8
+      if #bubbles > bubble_aim then todelete = i end
     end
   end
+  if todelete then deli(bubbles, todelete) end
 end
 
 function draw_jline(x1, y1, x2, y2, cols)
@@ -197,10 +295,6 @@ function draw_poly(bits, x, y, sx, sy, angle, center, cols)
   end
 end
 
-function rot(bits)
-  return (bits << 3 | bits >> 12) & 0x7fff
-end
-
 function draw_pentagram(x, y, sx, sy, bits, cols)
   ovalfill(x - sx * 1.02, y - sy * 1.02, x + sx * 1.06, y + sy * 1.06, 0)
   for i=1,20 do
@@ -232,9 +326,15 @@ function _draw()
   cls(0)
   -- Draw the main pentagram
   local px, py, sx, sy = 48, 46, 42, 32
+  if mode == MODE_NEXT_LEVEL then
+    sx /= 1 + mode_timer / 5
+    sy /= 1 + mode_timer / 5
+  end
   if shake > 0 then
     px += rnd(shake * 0.25) - shake * 0.25
     py += rnd(shake * 0.25) - shake * 0.25
+    camera(rnd(shake * 0.25) - shake * 0.25,
+           rnd(shake * 0.25) - shake * 0.25)
   end
   local grad = {1, 2, 8, 8}
   -- green: 1, 3, 11, 11
@@ -244,7 +344,8 @@ function _draw()
   draw_pentagram(110, 48, 12, 9, state[3], grad)
   -- Draw the selection
   if mode == MODE_PLACE_RUNE then
-    draw_poly(sel, px, py, sx, sy, steer, false, {5, 6, 7})
+    draw_poly(sel & ~state[1], px, py, sx, sy, steer, false, {5, 6, 7})
+    draw_poly(sel & state[1], px, py, sx, sy, steer, false, {1, 5, 12})
   end
   -- Draw score etc.
   xprint('level '..pad(level, 2), 94, 62)
@@ -253,17 +354,26 @@ function _draw()
   for _, b in ipairs(bubbles) do
     spr(SPR_BUBBLE + b[3], b[1], b[2])
   end
-  -- Draw the runes
-  palt(0, false)
-  palt(1, true)
-  for i, bits in ipairs(queue) do
-    local cx, cy = 24 * i - 18, 90
-    if i == arrow then cy -= 4 end
-    draw_card(cx, cy, bits)
+  if mode == MODE_WIN then
+    xprint('oH GOSH YOU WON LEVEL '..MAX_LEVEL..'...', 12, 94)
+    xprint('sorry for the bland ending!', 8, 110)
   end
-  palt()
-  if mode == MODE_SELECT_RUNE then
-    spr(SPR_ARROW, 24 * arrow - 16, 122 - 3 * sin(anims >> 5) ^ 2, 2, 1)
+  -- Draw the runes
+  if mode == MODE_SELECT_RUNE or mode == MODE_PLACE_RUNE then
+    palt(0, false)
+    palt(1, true)
+    for i, bits in ipairs(queue) do
+      local cx, cy = 24 * i - 18, 90
+      if i == arrow then
+        cy -= 3
+        if mode == MODE_PLACE_RUNE then bits = 0 end
+      end
+      draw_card(cx, cy, bits)
+    end
+    palt()
+    if mode == MODE_SELECT_RUNE then
+      spr(SPR_ARROW, 24 * arrow - 16, 120 - 3 * sin(anims >> 5) ^ 2, 2, 1)
+    end
   end
   srand(seed)
 end
@@ -309,7 +419,7 @@ __sfx__
 471000001f7501f7501f7501d7501f7501d7501c7501c7501c7501d7501f7501f7501d7501f7501f7501f750217501f7501d7501d7501c7501d7501f7501d7501c7501a7501c7501d7501f7501d7501f75021750
 c32000000006302063000630204300063020630006302043000630206300063020430006302063000630204300063020630006302043000630206300063020430006302063000630204300063020630006302043
 011000001ca50000001ca50000001da500000021a500000021a50000001ca500000021a500000021a500000023a50000001ca500000023a500000023a50000001da500000023a500000024a500000023a5000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000300002b1503015034150361502a1503115033150251502c1503015023150281502b1501c15020150231501215015150181500d1500c1500e15011150091400b1400b140021400313003130041200000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
